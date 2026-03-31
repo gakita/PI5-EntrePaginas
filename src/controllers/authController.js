@@ -1,0 +1,65 @@
+const authService = require('../services/authService');
+
+async function register(req, res, next) {
+  try {
+    const { name, email, password } = req.body;
+
+    if (!name || !email || !password) {
+      return res.status(400).json({
+        message: 'Nome, email e senha sao obrigatorios.',
+      });
+    }
+
+    const result = await authService.register(name, email, password);
+
+    return res.status(201).json({
+      message: 'Usuario cadastrado com sucesso.',
+      token: result.token,
+      user: result.user,
+    });
+  } catch (error) {
+    return next(error);
+  }
+}
+
+async function login(req, res, next) {
+  try {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+      return res.status(400).json({
+        message: 'Email e senha sao obrigatorios.',
+      });
+    }
+
+    const result = await authService.login(email, password);
+
+    if (!result) {
+      return res.status(401).json({
+        message: 'Credenciais invalidas.',
+      });
+    }
+
+    return res.status(200).json({
+      message: 'Login realizado com sucesso.',
+      token: result.token,
+      user: result.user,
+    });
+  } catch (error) {
+    return next(error);
+  }
+}
+
+function me(req, res) {
+  return res.status(200).json({
+    user: {
+      email: req.user.email,
+    },
+  });
+}
+
+module.exports = {
+  register,
+  login,
+  me,
+};
