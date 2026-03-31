@@ -6,15 +6,20 @@
 
 // Composables
 import { createRouter, createWebHistory } from 'vue-router'
-import Index from '@/pages/index.vue'
+import HomePage from '@/pages/Home.vue'
+import LoginPage from '@/pages/Login.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     {
       path: '/',
-      component: Index,
+      component: HomePage,
     },
+    {
+      path: '/login',
+      component: LoginPage
+    }
   ],
 })
 
