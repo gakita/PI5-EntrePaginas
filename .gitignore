@@ -9,3 +9,4 @@ tnsnames.ora
 sqlnet.ora
 cwallet.sso
 ewallet.pem
+.DS_Store/
