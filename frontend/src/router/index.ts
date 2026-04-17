@@ -6,7 +6,7 @@
 
 // Composables
 import { createRouter, createWebHistory } from 'vue-router'
-import HomePage from '@/pages/Home.vue'
+import HomePage from '@/pages/home.vue'
 import LoginPage from '@/pages/Login.vue'
 
 const router = createRouter({
@@ -18,8 +18,8 @@ const router = createRouter({
     },
     {
       path: '/login',
-      component: LoginPage
-    }
+      component: LoginPage,
+    },
   ],
 })
 

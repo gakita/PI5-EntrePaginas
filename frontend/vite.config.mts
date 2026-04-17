@@ -27,8 +27,8 @@ export default defineConfig({
             weights: [400, 700],
           },
           {
-            name: 'Roboto',
-            weights: [100, 300, 400, 500, 700, 900],
+            name: 'Playfair Display',
+            weights: [400, 500, 600, 700, 800, 900],
             styles: ['normal', 'italic'],
           },
         ],
