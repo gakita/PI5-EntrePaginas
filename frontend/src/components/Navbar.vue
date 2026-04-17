@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import logo from '@/assets/logo.svg'
+import logo from "../assets/Logo.png"
 
 const navLinks = [
   { label: 'Início',        to: '/' },
