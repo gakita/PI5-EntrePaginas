@@ -10,3 +10,8 @@ sqlnet.ora
 cwallet.sso
 ewallet.pem
 .DS_Store/
+.idea/
+.vscode/
+*.toml
+.ruler/
+Claude.MD
