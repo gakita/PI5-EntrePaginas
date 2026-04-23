@@ -16,9 +16,24 @@ Backend em JavaScript com Node.js + Express, autenticacao via JWT e persistencia
 npm install
 ```
 
-2. Crie o arquivo `.env` com base no `.env.example`.
+2. Crie o arquivo `.env` a partir do `.env.example`:
 
-3. Inicie a API:
+```bash
+cp .env.example .env
+```
+
+No PowerShell, use:
+
+```powershell
+Copy-Item .env.example .env
+```
+
+3. Preencha o arquivo `.env` com os valores reais do seu ambiente.
+
+O arquivo `.env.example` pode ficar salvo no GitHub como modelo, sem segredos.
+O arquivo `.env` deve ficar apenas na sua maquina, com as credenciais reais.
+
+4. Inicie a API:
 
 ```bash
 npm run dev
