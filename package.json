@@ -4,7 +4,7 @@
   "description": "Backend Node.js com Express, Oracle Database e autenticacao JWT",
   "main": "server.js",
   "scripts": {
-    "dev": "nodemon server.js",
+    "dev": "node server.js",
     "start": "node server.js",
     "seed:user": "node scripts/seedTestUser.js"
   },
