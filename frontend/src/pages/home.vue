@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted, onBeforeUnmount } from 'vue'
-import Navbar from '@/components/navbar.vue'
+import Navbar from '@/components/Navbar.vue'
 import fundoImg from '@/assets/FUNDO.png'
 
 const heroSearch = ref('')

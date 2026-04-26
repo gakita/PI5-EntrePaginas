@@ -9,7 +9,7 @@ const router = createRouter({
     // Public routes
     {
       path: '/',
-      component: () => import('@/pages/Home.vue'),
+      component: () => import('@/pages/home.vue'),
       meta: { requiresAuth: true },
     },
     {
@@ -21,6 +21,11 @@ const router = createRouter({
       path: '/registrar',
       component: () => import('@/pages/Register.vue'),
       meta: { guest: true },
+    },
+    {
+      path: '/catalogo',
+      component: () => import('@/pages/Catalogo.vue'),
+      meta: { requiresAuth: true },
     },
 
     // // Protected routes

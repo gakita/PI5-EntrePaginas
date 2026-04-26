@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import logo from "../assets/Logo.png"
+import logo from "../assets/Logo_EntrePaginas.svg"
+import bookmarkIcon from "../assets/Bookmark-favorites_2.svg"
+import profileIcon from "../assets/Icone_perfil.svg"
 
 const navLinks = [
   { label: 'Início',        to: '/' },
@@ -10,7 +12,7 @@ const navLinks = [
 ]
 
 // TODO: substituir por authStore.isLoggedIn quando o store existir
-const isLoggedIn = ref(false)
+const isLoggedIn = ref(true)
 
 const userMenuItems = [
   { label: 'Perfil',  to: '/perfil',  icon: 'mdi-account-outline' },
@@ -26,45 +28,63 @@ const userMenuItems = [
       </router-link>
     </v-app-bar-title>
 
-    <div class="nav-links">
-      <template v-for="(link, index) in navLinks" :key="link.to">
-        <router-link :to="link.to" :exact="link.to === '/'">{{ link.label }}</router-link>
-        <span v-if="index < navLinks.length - 1" class="nav-separator" />
-      </template>
-    </div>
-
     <template #append>
-      <template v-if="!isLoggedIn">
-        <v-btn
-          variant="outlined"
-          class="login-btn"
-          :to="'/login'"
-        >
-          Entrar
-        </v-btn>
-      </template>
+      <div class="nav-links">
+        <template v-for="(link, index) in navLinks" :key="link.to">
+          <router-link :to="link.to" :exact="link.to === '/'">{{ link.label }}</router-link>
+          <span class="nav-separator" />
+        </template>
+      </div>
 
-      <template v-else>
-        <v-menu location="bottom end" transition="fade-transition">
-          <template #activator="{ props }">
+      <div class="actions">
+        <template v-if="!isLoggedIn">
+          <v-btn
+            variant="outlined"
+            class="login-btn"
+            :to="'/login'"
+          >
+            Entrar
+          </v-btn>
+        </template>
+
+        <template v-else>
+          <div class="bookmark-container">
             <v-btn
-              v-bind="props"
-              icon="mdi-account-circle-outline"
-              class="user-btn"
-            />
-          </template>
+              icon
+              class="action-btn"
+              :to="'/favoritos'"
+            >
+              <v-img :src="bookmarkIcon" class="bookmark-icon" width="66" />
+            </v-btn>
+          </div>
 
-          <v-list class="user-menu">
-            <v-list-item
-              v-for="item in userMenuItems"
-              :key="item.to"
-              :to="item.to"
-              :prepend-icon="item.icon"
-              :title="item.label"
-            />
-          </v-list>
-        </v-menu>
-      </template>
+          <span class="nav-separator" />
+
+          <v-menu location="bottom end" transition="fade-transition">
+            <template #activator="{ props }">
+              <v-btn
+                v-bind="props"
+                class="user-btn-container"
+                icon
+              >
+                <v-avatar size="40">
+                  <v-img :src="profileIcon" alt="Profile" />
+                </v-avatar>
+              </v-btn>
+            </template>
+
+            <v-list class="user-menu">
+              <v-list-item
+                v-for="item in userMenuItems"
+                :key="item.to"
+                :to="item.to"
+                :prepend-icon="item.icon"
+                :title="item.label"
+              />
+            </v-list>
+          </v-menu>
+        </template>
+      </div>
     </template>
   </v-app-bar>
 </template>
@@ -73,13 +93,16 @@ const userMenuItems = [
 .v-app-bar {
   background-color: rgb(var(--v-theme-background)) !important;
   border-bottom: 3px solid rgba(155, 138, 117, 0.25) !important;
-  height: 94px !important;
+  height: 78px !important;
   padding-inline: 38px;
+  overflow: visible !important;
 }
 
 .v-app-bar :deep(.v-toolbar__content) {
-  height: 94px !important;
+  height: 78px !important;
   align-items: center;
+  overflow: visible !important;
+  position: relative;
 }
 
 .v-app-bar-title {
@@ -87,8 +110,8 @@ const userMenuItems = [
 }
 
 .v-app-bar-title :deep(.v-img) {
-  width: 147px;
-  height: 47px;
+  width: 136px;
+  height: 43px;
   object-fit: contain;
 }
 
@@ -100,16 +123,14 @@ const userMenuItems = [
 .nav-links {
   display: flex;
   align-items: center;
-  gap: 40px;
-  flex: 1;
-  justify-content: center;
+  gap: 22px;
 }
 
 .nav-links a {
   font-family: "Playfair Display", serif;
-  font-size: 20px;
+  font-size: 17px;
   font-weight: 400;
-  line-height: 29px;
+  line-height: 24px;
   letter-spacing: 0.5px;
   color: rgb(var(--v-theme-secondary));
   text-decoration: none;
@@ -142,11 +163,52 @@ const userMenuItems = [
 
 .nav-separator {
   display: inline-block;
-  width: 10px;
-  height: 10px;
+  width: 7px;
+  height: 7px;
   border-radius: 50%;
   background-color: rgba(155, 138, 117, 0.25);
   flex-shrink: 0;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  margin-left: 24px;
+}
+
+.bookmark-container {
+  position: static;
+  width: 58px;
+  height: 78px;
+  display: flex;
+  align-items: center;
+  overflow: visible;
+}
+
+.action-btn {
+  position: absolute;
+  top: -18px;
+  width: 58px !important;
+  height: 124px !important;
+  border-radius: 0 !important;
+  padding: 0 !important;
+  overflow: visible !important;
+}
+
+.action-btn :deep(.v-btn__content) {
+  height: 124px;
+  overflow: visible;
+}
+
+.bookmark-icon {
+  transform: translateY(-32px) scale(1.14);
+  transform-origin: top center;
+}
+
+.user-btn-container {
+  width: 36px !important;
+  height: 36px !important;
 }
 
 .login-btn {
