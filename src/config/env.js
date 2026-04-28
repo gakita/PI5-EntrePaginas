@@ -16,4 +16,8 @@ module.exports = {
   oraclePoolMin: Number(process.env.ORACLE_POOL_MIN || 1),
   oraclePoolMax: Number(process.env.ORACLE_POOL_MAX || 5),
   oraclePoolIncrement: Number(process.env.ORACLE_POOL_INCREMENT || 1),
+
+  // ── Gemini (LLM) ──
+  geminiApiKey: process.env.GEMINI_API_KEY,
+  geminiModel: process.env.GEMINI_MODEL || 'gemini-2.5-flash-lite',
 };
