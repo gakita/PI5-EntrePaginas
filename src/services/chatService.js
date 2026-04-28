@@ -1,103 +1,183 @@
 /**
- * chatService.js — Camada de regra de negócio (Service) do chat.
+ * chatService.js — Camada de regra de negócio do chat.
  *
- * Este serviço orquestra o fluxo completo de uma mensagem:
- *   1. Busca a conversa existente no banco (se houver)
- *   2. Adiciona a mensagem do usuário ao histórico
- *   3. Chama o Gemini (via llmService) para gerar a resposta
- *   4. Adiciona a resposta da IA ao histórico
- *   5. Salva o histórico atualizado no banco (upsert)
- *   6. Retorna a resposta para o controller
+ * Orquestra o fluxo completo de cada funcionalidade do chat:
  *
- * A separação em camadas (Controller → Service → Model) é um
- * padrão de arquitetura que facilita manutenção e testes:
- *   - Controller: lida com HTTP (req/res)
- *   - Service: lida com regras de negócio
- *   - Model: lida com o banco de dados
+ *   sendMessage()       → recebe mensagem, chama Gemini, enriquece, salva
+ *   getHistory()        → busca conversa do banco
+ *   clearHistory()      → apaga conversa
+ *   closeConversation() → salva preferências inferidas e sugestões (RF13/RIA07)
+ *   getPreferences()    → retorna preferências salvas
+ *   updatePreferences() → atualiza preferências manualmente
  */
 
-const chatModel = require('../models/chatModel');
-const llmService = require('./llmService');
+const chatModel      = require('../models/chatModel');
+const preferenceModel = require('../models/preferenceModel');
+const suggestionModel = require('../models/suggestionModel');
+const llmService     = require('./llmService');
+const catalogService = require('./catalogService');
+const logger         = require('../utils/logger');
 
 /**
- * Processa uma nova mensagem do usuário e retorna a resposta da IA.
+ * Processa uma nova mensagem e retorna a resposta da IA enriquecida.
  *
- * @param {string} userEmail - Email do usuário autenticado (vem do token JWT).
- * @param {string} userMessage - Texto da mensagem enviada pelo usuário.
- * @returns {object} Objeto com { reply, recommendations, messageCount }
+ * Fluxo:
+ *   1. Busca preferências reais do usuário (RIA01)
+ *   2. Busca histórico da conversa
+ *   3. Adiciona mensagem do usuário ao histórico
+ *   4. Chama Gemini com preferências e histórico
+ *   5. Enriquece recomendações com Google Books (RIA04)
+ *   6. Salva histórico atualizado (com recommendations embutidas) no banco (RF12)
+ *   7. Retorna resposta ao controller
+ *
+ * @param {string} userEmail
+ * @param {string} userMessage
  */
 async function sendMessage(userEmail, userMessage) {
-  // ── PASSO 1: Buscar conversa existente ──
-  // Se o usuário já conversou antes, buscamos o histórico
-  // para manter o contexto (RIA01: contexto mínimo).
-  const existingConversation = await chatModel.findByUserEmail(userEmail);
+  logger.info('Chat message received', { userEmail });
 
-  // Se existe conversa, usa as mensagens dela; senão, começa com array vazio
+  // ── Passo 1: Preferências reais (RIA01) ──
+  // Busca do banco; se ainda não existirem, o llmService usa as padrão.
+  const preferences = await preferenceModel.findByUserEmail(userEmail);
+
+  // ── Passo 2: Histórico da conversa ──
+  const existingConversation = await chatModel.findByUserEmail(userEmail);
   const messages = existingConversation ? existingConversation.messages : [];
 
-  // ── PASSO 2: Adicionar mensagem do usuário ao histórico ──
+  // ── Passo 3: Adicionar mensagem do usuário ──
   messages.push({
     role: 'user',
     content: userMessage,
     timestamp: new Date().toISOString(),
   });
 
-  // ── PASSO 3: Chamar o Gemini ──
-  // Passamos todo o histórico para que o modelo tenha contexto
-  // das mensagens anteriores da conversa.
-  const aiResponse = await llmService.generateRecommendation(messages);
+  // ── Passo 4: Chamar o Gemini ──
+  // Passamos as preferências reais para personalizar o prompt (RIA01)
+  const aiResponse = await llmService.generateRecommendation(messages, preferences);
 
-  // ── PASSO 4: Adicionar resposta da IA ao histórico ──
+  // ── Passo 5: Enriquecer com Google Books (RIA04) ──
+  // Adiciona capa, sinopse e data de publicação a cada recomendação
+  const enrichedRecs = await catalogService.enrichRecommendations(aiResponse.recommendations);
+
+  // ── Passo 6: Adicionar resposta da IA ao histórico ──
+  // Guardamos as recommendations junto à mensagem para usar no /close
   messages.push({
     role: 'assistant',
     content: aiResponse.message,
+    recommendations: enrichedRecs, // armazenado para RF13
     timestamp: new Date().toISOString(),
   });
 
-  // ── PASSO 5: Salvar no banco (upsert) ──
-  // O upsert garante que:
-  //   - Se não existe conversa → cria uma nova (INSERT)
-  //   - Se já existe → atualiza com o histórico completo (UPDATE)
-  // Isso atende o RF12: "salvar somente a última conversa"
+  // ── Passo 7: Salvar no banco (RF12 — só a última conversa) ──
   await chatModel.upsertConversation(userEmail, messages);
 
-  // ── PASSO 6: Retornar resposta ──
-  return {
-    reply: aiResponse.message,
-    recommendations: aiResponse.recommendations,
+  logger.info('Chat message processed', {
+    userEmail,
     messageCount: messages.length,
+    recommendationsCount: enrichedRecs.length,
+  });
+
+  return {
+    reply:           aiResponse.message,
+    recommendations: enrichedRecs,
+    messageCount:    messages.length,
   };
 }
 
 /**
  * Retorna o histórico da última conversa do usuário.
- *
- * @param {string} userEmail - Email do usuário autenticado.
- * @returns {object} Objeto com { messages }
  */
 async function getHistory(userEmail) {
   const conversation = await chatModel.findByUserEmail(userEmail);
-
-  // Se não existe conversa, retorna array vazio
-  if (!conversation) {
-    return { messages: [] };
-  }
-
+  if (!conversation) return { messages: [] };
   return { messages: conversation.messages };
 }
 
 /**
  * Limpa o histórico do chat (inicia nova conversa).
- * A próxima mensagem do usuário criará uma conversa nova.
- *
- * @param {string} userEmail - Email do usuário autenticado.
  */
 async function clearHistory(userEmail) {
   await chatModel.deleteByUserEmail(userEmail);
+  logger.info('Chat history cleared', { userEmail });
+}
+
+/**
+ * Encerra a conversa atual: salva preferências inferidas e sugestões (RF13/RIA07).
+ *
+ * Fluxo:
+ *   1. Busca a conversa atual no banco
+ *   2. Coleta todas as recomendações de mensagens do assistente
+ *   3. Pede ao Gemini para inferir as preferências da conversa (RIA07)
+ *   4. Salva preferências no banco (mesclando com as existentes)
+ *   5. Salva sugestões no banco (deduplica por título)
+ *
+ * @param {string} userEmail
+ */
+async function closeConversation(userEmail) {
+  logger.info('Closing conversation', { userEmail });
+
+  const conversation = await chatModel.findByUserEmail(userEmail);
+
+  if (!conversation || conversation.messages.length === 0) {
+    return { saved: false, reason: 'Nenhuma conversa ativa.' };
+  }
+
+  // ── Coleta todas as recomendações armazenadas nas mensagens da IA ──
+  const allRecommendations = conversation.messages
+    .filter((m) => m.role === 'assistant' && Array.isArray(m.recommendations))
+    .flatMap((m) => m.recommendations);
+
+  // Deduplica por título (mesmo livro pode ter sido recomendado mais de uma vez)
+  const seen = new Set();
+  const uniqueRecs = allRecommendations.filter((r) => {
+    if (!r.title || seen.has(r.title.toLowerCase())) return false;
+    seen.add(r.title.toLowerCase());
+    return true;
+  });
+
+  // ── Inferir preferências com Gemini (RIA07) ──
+  const inferredPrefs = await llmService.inferPreferences(conversation.messages);
+
+  // ── Salvar preferências no banco (mescla com as existentes) ──
+  const savedPrefs = await preferenceModel.upsertPreferences(userEmail, inferredPrefs);
+
+  // ── Salvar sugestões no banco ──
+  await suggestionModel.saveAll(userEmail, uniqueRecs);
+
+  logger.info('Conversation closed', {
+    userEmail,
+    suggestionsSaved: uniqueRecs.length,
+    preferencesUpdated: true,
+  });
+
+  return {
+    saved: true,
+    suggestionsSaved: uniqueRecs.length,
+    preferencesUpdated: savedPrefs,
+  };
+}
+
+/**
+ * Retorna as preferências salvas do usuário.
+ */
+async function getPreferences(userEmail) {
+  const prefs = await preferenceModel.findByUserEmail(userEmail);
+  // Se ainda não tem preferências, retorna o padrão
+  return prefs || { genres: [], types: [], favoriteAuthors: [] };
+}
+
+/**
+ * Atualiza as preferências manualmente (via frontend de configurações).
+ */
+async function updatePreferences(userEmail, preferences) {
+  return preferenceModel.upsertPreferences(userEmail, preferences);
 }
 
 module.exports = {
   sendMessage,
   getHistory,
   clearHistory,
+  closeConversation,
+  getPreferences,
+  updatePreferences,
 };

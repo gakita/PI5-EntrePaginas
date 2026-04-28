@@ -1,15 +1,15 @@
 /**
- * chatRoutes.js — Definição das rotas do chat.
+ * chatRoutes.js — Definição de todas as rotas do chat.
  *
- * Todas as rotas usam o authMiddleware, o que significa que
- * o usuário PRECISA estar autenticado (ter um token JWT válido)
- * para usar o chat. Isso atende o requisito RNF05 de controle
- * de acesso e garante o isolamento de dados por usuário.
+ * Todas as rotas exigem autenticação JWT (authMiddleware).
  *
  * Rotas disponíveis:
- *   POST   /chat/message  → Envia mensagem e recebe resposta da IA
- *   GET    /chat/history   → Busca histórico da última conversa
- *   DELETE /chat/history   → Limpa histórico (nova conversa)
+ *   POST   /chat/message        → Envia mensagem, recebe resposta da IA enriquecida
+ *   GET    /chat/history        → Busca histórico da última conversa
+ *   DELETE /chat/history        → Limpa histórico (inicia nova conversa)
+ *   POST   /chat/close          → Encerra conversa (salva preferências + sugestões)
+ *   GET    /chat/preferences    → Retorna preferências de leitura do usuário
+ *   PUT    /chat/preferences    → Atualiza preferências manualmente
  */
 
 const express = require('express');
@@ -19,9 +19,14 @@ const authMiddleware = require('../middlewares/authMiddleware');
 
 const router = express.Router();
 
-// Todas as rotas do chat exigem autenticação
-router.post('/message', authMiddleware, chatController.sendMessage);
-router.get('/history', authMiddleware, chatController.getHistory);
-router.delete('/history', authMiddleware, chatController.clearHistory);
+// ── Conversa ──
+router.post('/message',     authMiddleware, chatController.sendMessage);
+router.get('/history',      authMiddleware, chatController.getHistory);
+router.delete('/history',   authMiddleware, chatController.clearHistory);
+router.post('/close',       authMiddleware, chatController.closeConversation);
+
+// ── Preferências ──
+router.get('/preferences',  authMiddleware, chatController.getPreferences);
+router.put('/preferences',  authMiddleware, chatController.updatePreferences);
 
 module.exports = router;

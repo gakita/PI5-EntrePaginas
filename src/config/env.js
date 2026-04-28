@@ -20,4 +20,7 @@ module.exports = {
   // ── Gemini (LLM) ──
   geminiApiKey: process.env.GEMINI_API_KEY,
   geminiModel: process.env.GEMINI_MODEL || 'gemini-2.5-flash-lite',
+
+  // ── Google Books (enriquecimento de catálogo — opcional) ──
+  googleBooksApiKey: process.env.GOOGLE_BOOKS_API_KEY || null,
 };

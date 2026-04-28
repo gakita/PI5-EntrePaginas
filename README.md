@@ -65,7 +65,9 @@ npm run dev
 | `npm start` | Inicia o servidor em modo produção |
 | `npm run seed:user` | Cria/atualiza um usuário de teste no banco |
 | `npm run db:chat` | Cria a tabela `CONVERSAS` no Oracle |
+| `npm run db:preferences` | Cria as tabelas `PREFERENCIAS_USUARIO` e `SUGESTOES_CONVERSA` |
 | `npm run test:chat` | Roda todos os testes do chat (requer servidor no ar) |
+| `npm run chat:play` | Inicia o chat interativo no terminal |
 
 ---
 
@@ -156,14 +158,18 @@ Content-Type: application/json
       "type": "mangá",
       "author": "Hiromu Arakawa",
       "justification": "Uma história épica com alquimia, aventura e profundidade emocional.",
-      "sensitiveContent": true
+      "sensitiveContent": true,
+      "coverUrl": "https://books.google.com/books/content?id=...",
+      "synopsis": "Neste mundo existem alquimistas, pessoas que estudam e realizam a arte da transmutação..."
     },
     {
       "title": "Frieren: Beyond Journey's End",
       "type": "mangá",
       "author": "Kanehito Yamada",
       "justification": "Uma fantasia reflexiva e emocionante sobre o tempo e memória.",
-      "sensitiveContent": false
+      "sensitiveContent": false,
+      "coverUrl": null,
+      "synopsis": null
     }
   ],
   "messageCount": 2
@@ -201,6 +207,60 @@ Authorization: Bearer SEU_TOKEN
 
 ```json
 { "message": "Historico do chat limpo com sucesso." }
+```
+
+#### Encerrar Conversa (Salvar Histórico)
+
+O fluxo ideal não é apenas limpar o chat, mas **encerrá-lo**. Isso faz a IA analisar as mensagens trocadas, inferir os gostos do usuário e salvar essas preferências no banco. Também guarda o histórico de obras que foram sugeridas.
+
+```http
+POST /chat/close
+Authorization: Bearer SEU_TOKEN
+```
+
+**Resposta:**
+
+```json
+{
+  "message": "Conversa encerrada e dados salvos com sucesso.",
+  "suggestionsSaved": 3,
+  "preferencesUpdated": {
+    "genres": ["fantasia", "ficção científica"],
+    "types": ["mangá", "livro"],
+    "favoriteAuthors": ["Hiromu Arakawa"]
+  }
+}
+```
+
+#### Buscar e Atualizar Preferências
+
+As preferências do usuário (usadas para personalizar o chat) podem ser buscadas ou atualizadas manualmente pelo frontend (ex: na tela de Configurações do perfil).
+
+```http
+GET /chat/preferences
+Authorization: Bearer SEU_TOKEN
+```
+
+**Resposta:**
+
+```json
+{
+  "genres": ["fantasia", "terror"],
+  "types": ["livro"],
+  "favoriteAuthors": ["Stephen King"]
+}
+```
+
+```http
+PUT /chat/preferences
+Authorization: Bearer SEU_TOKEN
+Content-Type: application/json
+
+{
+  "genres": ["romance"],
+  "types": ["hq", "livro"],
+  "favoriteAuthors": ["Jane Austen"]
+}
 ```
 
 ---
@@ -434,3 +494,4 @@ Em produção, troque pelo endereço real do backend.
 | `ORACLE_WALLET_PASSWORD` | Senha do Wallet |
 | `GEMINI_API_KEY` | API Key do Google Gemini |
 | `GEMINI_MODEL` | Modelo do Gemini (padrão: `gemini-2.5-flash-lite`) |
+| `GOOGLE_BOOKS_API_KEY` | API Key da Google Books API (Opcional, usado para enriquecimento do catálogo com capa e sinopse) |
