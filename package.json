@@ -6,7 +6,10 @@
   "scripts": {
     "dev": "node server.js",
     "start": "node server.js",
-    "seed:user": "node scripts/seedTestUser.js"
+    "seed:user": "node scripts/seedTestUser.js",
+    "db:chat": "node scripts/createChatTable.js",
+    "test:chat": "node scripts/testChat.js",
+    "chat:play": "node scripts/chat.js"
   },
   "keywords": [
     "node",

@@ -1,6 +1,7 @@
 const express = require('express');
 
 const authRoutes = require('./authRoutes');
+const chatRoutes = require('./chatRoutes');
 
 const router = express.Router();
 
@@ -10,6 +11,11 @@ router.get('/health', (req, res) => {
   });
 });
 
+// Rotas de autenticação (cadastro, login, me)
 router.use('/auth', authRoutes);
 
+// Rotas do chat de recomendação com IA
+router.use('/chat', chatRoutes);
+
 module.exports = router;
+

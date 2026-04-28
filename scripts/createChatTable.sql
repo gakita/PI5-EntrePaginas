@@ -15,7 +15,7 @@
 -- tenha no máximo 1 registro (1 conversa).
 -- ============================================================
 
-CREATE TABLE FERNANDO.CONVERSAS (
+CREATE TABLE CONVERSAS (
     CODIGO         NUMBER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     USUARIO_EMAIL  VARCHAR2(255) NOT NULL,
     MENSAGENS      CLOB NOT NULL,
@@ -25,5 +25,5 @@ CREATE TABLE FERNANDO.CONVERSAS (
 
 -- Índice UNIQUE: garante que só exista 1 conversa por usuário.
 -- Se o usuário já tiver uma conversa, fazemos UPDATE (não INSERT).
-CREATE UNIQUE INDEX FERNANDO.IDX_CONV_USUARIO
-    ON FERNANDO.CONVERSAS(USUARIO_EMAIL);
+CREATE UNIQUE INDEX IDX_CONV_USUARIO
+    ON CONVERSAS(USUARIO_EMAIL);
