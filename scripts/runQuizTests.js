@@ -83,9 +83,42 @@ async function waitForServer() {
   throw new Error(`API nao respondeu em ${baseUrl}/health dentro de ${HEALTH_TIMEOUT_MS}ms`);
 }
 
+function classifyQuizRouteStatus(status) {
+  if (status === 401) return 'available';
+  if (status === 404) return 'missing';
+  return 'unexpected';
+}
+
+async function assertQuizRoutesAvailable() {
+  const response = await fetch(`${baseUrl}/quiz/start`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({}),
+  });
+  const routeStatus = classifyQuizRouteStatus(response.status);
+
+  if (routeStatus === 'available') {
+    console.log('[ok] Rotas do quiz disponiveis');
+    return;
+  }
+
+  if (routeStatus === 'missing') {
+    throw new Error(
+      [
+        'A API em execucao respondeu 404 para /quiz/start.',
+        'Isso normalmente indica que o servidor foi iniciado antes das rotas do quiz serem adicionadas.',
+        'Pare o processo atual do npm run dev/server.js e rode este comando novamente.',
+      ].join(' ')
+    );
+  }
+
+  throw new Error(`Resposta inesperada em /quiz/start sem token: HTTP ${response.status}`);
+}
+
 async function ensureServer() {
   if (await isServerReady()) {
     console.log(`[ok] API ja esta rodando em ${baseUrl}`);
+    await assertQuizRoutesAvailable();
     return;
   }
 
@@ -105,6 +138,7 @@ async function ensureServer() {
 
   await waitForServer();
   console.log(`[ok] API pronta em ${baseUrl}`);
+  await assertQuizRoutesAvailable();
 }
 
 function stopServer() {
@@ -139,11 +173,19 @@ async function main() {
   ]);
 }
 
-main()
-  .catch((error) => {
-    console.error('\nFalha ao executar testes do quiz:', error.message);
-    process.exitCode = 1;
-  })
-  .finally(() => {
-    stopServer();
-  });
+if (require.main === module) {
+  main()
+    .catch((error) => {
+      console.error('\nFalha ao executar testes do quiz:', error.message);
+      process.exitCode = 1;
+    })
+    .finally(() => {
+      stopServer();
+    });
+}
+
+module.exports = {
+  _test: {
+    classifyQuizRouteStatus,
+  },
+};
