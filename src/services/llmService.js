@@ -30,7 +30,7 @@ const DEFAULT_PREFERENCES = {
  *
  * @param {object} preferences - Preferências do usuário.
  */
-function buildSystemInstruction(preferences) {
+function buildSystemInstruction(preferences, readBooks = []) {
   const prefs = preferences || DEFAULT_PREFERENCES;
 
   return `
@@ -49,6 +49,9 @@ PREFERÊNCIAS DO USUÁRIO:
 - Gêneros favoritos: ${prefs.genres.length > 0 ? prefs.genres.join(', ') : 'não definido'}
 - Tipos aceitos: ${prefs.types.length > 0 ? prefs.types.join(', ') : 'qualquer'}
 - Autores favoritos: ${prefs.favoriteAuthors?.length > 0 ? prefs.favoriteAuthors.join(', ') : 'nenhum definido'}
+
+LIVROS QUE O USUÁRIO JÁ LEU (Baseie-se nestes, mas NÃO os recomende novamente):
+${readBooks.length > 0 ? readBooks.map(b => `- ${b.title} (Nota: ${b.rating}/5)` + (b.comment ? ` - Comentário: ${b.comment}` : '')).join('\n') : 'Nenhum histórico de leitura registrado.'}
 
 Quando fizer recomendações, responda SEMPRE neste formato JSON (sem markdown, sem crases):
 {
@@ -82,12 +85,12 @@ const genAI = new GoogleGenerativeAI(env.geminiApiKey);
  * @param {object|null} preferences - Preferências reais do usuário (ou null para usar padrão)
  * @returns {{ message: string, recommendations: Array }}
  */
-async function generateRecommendation(messageHistory, preferences = null) {
+async function generateRecommendation(messageHistory, preferences = null, readBooks = []) {
   const start = Date.now();
 
   const model = genAI.getGenerativeModel({
     model: env.geminiModel,
-    systemInstruction: buildSystemInstruction(preferences), // Usa preferências reais (RIA01)
+    systemInstruction: buildSystemInstruction(preferences, readBooks), // Usa preferências reais e histórico (RIA01)
   });
 
   // Converte nosso formato {role, content} para o formato do Gemini {role, parts}

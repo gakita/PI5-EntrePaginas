@@ -14,6 +14,7 @@
 const chatModel      = require('../models/chatModel');
 const preferenceModel = require('../models/preferenceModel');
 const suggestionModel = require('../models/suggestionModel');
+const avaliacaoModel  = require('../models/avaliacaoModel');
 const llmService     = require('./llmService');
 const catalogService = require('./catalogService');
 const logger         = require('../utils/logger');
@@ -40,6 +41,9 @@ async function sendMessage(userEmail, userMessage) {
   // Busca do banco; se ainda não existirem, o llmService usa as padrão.
   const preferences = await preferenceModel.findByUserEmail(userEmail);
 
+  // ── Passo 1.5: Histórico de Leitura (Avaliações) ──
+  const readBooks = await avaliacaoModel.findReadBooksByUserEmail(userEmail);
+
   // ── Passo 2: Histórico da conversa ──
   const existingConversation = await chatModel.findByUserEmail(userEmail);
   const messages = existingConversation ? existingConversation.messages : [];
@@ -52,8 +56,8 @@ async function sendMessage(userEmail, userMessage) {
   });
 
   // ── Passo 4: Chamar o Gemini ──
-  // Passamos as preferências reais para personalizar o prompt (RIA01)
-  const aiResponse = await llmService.generateRecommendation(messages, preferences);
+  // Passamos as preferências reais e livros lidos para personalizar o prompt (RIA01)
+  const aiResponse = await llmService.generateRecommendation(messages, preferences, readBooks);
 
   // ── Passo 5: Enriquecer com Google Books (RIA04) ──
   // Adiciona capa, sinopse e data de publicação a cada recomendação
