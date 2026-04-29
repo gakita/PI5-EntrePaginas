@@ -10,7 +10,6 @@ const selectGenre = (genre: string) => {
   selectedGenre.value = genre
 }
 
-// Mocks for UI demonstration
 const aiResponse = `Baseado no que você me disse, acho que esses livros são exatamente o que você procura! Eles misturam ficção e elementos fantásticos de uma forma incrível.`
 
 const recommendedBooks = [
@@ -37,7 +36,6 @@ const removeFilter = () => {
 
     <main class="chat-container">
       <div class="chat-content">
-        <!-- AI Response Area -->
         <div class="chat-message ai-message">
           <div class="ai-avatar">
             <v-icon size="32" color="#110C07">mdi-robot-outline</v-icon>
@@ -59,7 +57,6 @@ const removeFilter = () => {
         </div>
       </div>
 
-      <!-- Chat Input Bar -->
       <div class="chat-input-wrapper">
         <div class="chat-input-bar">
           <div v-if="selectedGenre" class="filter-tag">
@@ -118,7 +115,7 @@ const removeFilter = () => {
   display: flex;
   flex-direction: column;
   position: relative;
-  padding-bottom: 120px; /* Space for fixed input */
+  padding-bottom: 120px;
   overflow-y: auto;
 }
 
@@ -186,7 +183,6 @@ const removeFilter = () => {
   line-height: 1.4;
   margin-bottom: 8px;
   opacity: 0.9;
-  /* Truncate to 2 lines */
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
@@ -207,7 +203,6 @@ const removeFilter = () => {
   opacity: 0.8;
 }
 
-/* Chat Input Bar */
 .chat-input-wrapper {
   position: fixed;
   bottom: 40px;
@@ -226,9 +221,9 @@ const removeFilter = () => {
   width: 100%;
   max-width: 804px;
   height: 66px;
-  background-color: #2A1F14; /* Same dark tone */
+  background-color: #2A1F14;
   border: 2px solid rgba(232, 213, 183, 0.25);
-  border-radius: 33px; /* Rounded borders */
+  border-radius: 33px;
   padding: 0 24px;
   box-shadow: 0px 6px 12px rgba(0, 0, 0, 0.3);
 }
@@ -237,7 +232,7 @@ const removeFilter = () => {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  background: rgba(255, 255, 255, 0.1); /* Glass effect */
+  background: rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.2);
