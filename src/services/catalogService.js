@@ -3,9 +3,11 @@
  *
  * Após o Gemini gerar as recomendações, este serviço busca na
  * Google Books API informações adicionais sobre cada obra:
+ *   - Título, autores e gêneros oficiais do catálogo
  *   - URL da capa (thumbnail)
  *   - Sinopse (description)
  *   - Data de publicação
+ *   - Links e metadados para preview / Google Books Embedded Viewer
  *
  * A Google Books API é gratuita para buscas básicas (sem API key),
  * com limite de ~1000 requisições/dia. Com API key, o limite aumenta.
@@ -23,7 +25,7 @@ const TIMEOUT_MS = 5000;
  * Busca dados de enriquecimento para uma obra na Google Books API.
  *
  * @param {object} rec - Recomendação do Gemini {title, author, type, ...}
- * @returns {object} Recomendação enriquecida com coverUrl, synopsis e publishedDate.
+ * @returns {object} Recomendação enriquecida com metadados do Google Books.
  */
 async function enrichOne(rec) {
   try {
@@ -45,26 +47,39 @@ async function enrichOne(rec) {
     if (!response.ok) {
       logger.warn('Google Books API retornou erro', { status: response.status, title: rec.title });
       // Retorna campos nulos para manter schema consistente (não lança erro)
-      return { ...rec, coverUrl: null, synopsis: null, publishedDate: null };
+      return withEmptyCatalogFields(rec);
     }
 
     const data = await response.json();
 
     // Se não encontrou resultados, retorna com campos nulos (garante schema consistente)
     if (!data.items || data.items.length === 0) {
-      return { ...rec, coverUrl: null, synopsis: null, publishedDate: null };
+      return withEmptyCatalogFields(rec);
     }
 
-    const info = data.items[0].volumeInfo;
+    const volume = data.items[0];
+    const info = volume.volumeInfo || {};
+    const access = volume.accessInfo || {};
+    const authors = Array.isArray(info.authors) ? info.authors : [];
+    const genres = Array.isArray(info.categories) ? info.categories : [];
 
     // Adiciona os campos de enriquecimento à recomendação original
     return {
       ...rec,
+      googleBooksId: volume.id || null,
+      title:         info.title || rec.title || null,
+      authors,
+      genres,
+      author:        authors.length > 0 ? authors.join(', ') : rec.author || null,
       // Thumbnail em HTTPS (a API retorna HTTP por padrão)
       coverUrl:      info.imageLinks?.thumbnail?.replace('http://', 'https://') || null,
       // Trunca a sinopse em 500 caracteres para não sobrecarregar a resposta
       synopsis:      info.description ? info.description.substring(0, 500) : null,
       publishedDate: info.publishedDate || null,
+      previewLink:   info.previewLink || null,
+      webReaderLink: access.webReaderLink || null,
+      embeddable:    Boolean(access.embeddable),
+      viewability:   access.viewability || null,
     };
   } catch (err) {
     // Em caso de erro (timeout, rede, etc.), loga e retorna com campos nulos (RNF12)
@@ -73,8 +88,24 @@ async function enrichOne(rec) {
     } else {
       logger.warn('Erro ao enriquecer recomendação', { title: rec.title, error: err.message });
     }
-    return { ...rec, coverUrl: null, synopsis: null, publishedDate: null };
+    return withEmptyCatalogFields(rec);
   }
+}
+
+function withEmptyCatalogFields(rec) {
+  return {
+    ...rec,
+    googleBooksId: null,
+    authors:       [],
+    genres:        [],
+    coverUrl:      null,
+    synopsis:      null,
+    publishedDate: null,
+    previewLink:   null,
+    webReaderLink: null,
+    embeddable:    false,
+    viewability:   null,
+  };
 }
 
 /**
@@ -107,6 +138,17 @@ async function enrichRecommendations(recommendations) {
   return enriched;
 }
 
+async function findBookMetadata({ title, author }) {
+  return enrichOne({
+    title,
+    author,
+    type: null,
+    justification: null,
+    sensitiveContent: false,
+  });
+}
+
 module.exports = {
   enrichRecommendations,
+  findBookMetadata,
 };
