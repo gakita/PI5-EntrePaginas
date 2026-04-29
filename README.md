@@ -273,6 +273,8 @@ Content-Type: application/json
 
 O quiz atende ao RF10: começa com perguntas objetivas genéricas e, depois das respostas iniciais, usa a IA para criar perguntas adaptativas até o limite de 8 perguntas. Todas as rotas exigem autenticação JWT.
 
+Guia detalhado para o frontend: [README_QUIZ_FRONTEND.md](README_QUIZ_FRONTEND.md).
+
 Antes de usar o quiz, crie a tabela:
 
 ```bash
