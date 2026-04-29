@@ -72,12 +72,12 @@ async function enrichOne(rec) {
       genres,
       author:        authors.length > 0 ? authors.join(', ') : rec.author || null,
       // Thumbnail em HTTPS (a API retorna HTTP por padrão)
-      coverUrl:      info.imageLinks?.thumbnail?.replace('http://', 'https://') || null,
+      coverUrl:      toHttps(info.imageLinks?.thumbnail),
       // Trunca a sinopse em 500 caracteres para não sobrecarregar a resposta
       synopsis:      info.description ? info.description.substring(0, 500) : null,
       publishedDate: info.publishedDate || null,
-      previewLink:   info.previewLink || null,
-      webReaderLink: access.webReaderLink || null,
+      previewLink:   toHttps(info.previewLink),
+      webReaderLink: toHttps(access.webReaderLink),
       embeddable:    Boolean(access.embeddable),
       viewability:   access.viewability || null,
     };
@@ -90,6 +90,10 @@ async function enrichOne(rec) {
     }
     return withEmptyCatalogFields(rec);
   }
+}
+
+function toHttps(url) {
+  return typeof url === 'string' ? url.replace(/^http:\/\//, 'https://') : null;
 }
 
 function withEmptyCatalogFields(rec) {

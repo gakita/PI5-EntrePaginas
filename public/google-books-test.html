@@ -1,0 +1,356 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Teste Google Books</title>
+    <style>
+      :root {
+        color-scheme: light;
+        font-family: Arial, Helvetica, sans-serif;
+        background: #f5f7fb;
+        color: #1f2937;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+      }
+
+      main {
+        width: min(1120px, calc(100% - 32px));
+        margin: 32px auto;
+      }
+
+      h1 {
+        margin: 0 0 8px;
+        font-size: 28px;
+        line-height: 1.2;
+      }
+
+      p {
+        line-height: 1.5;
+      }
+
+      form {
+        display: grid;
+        grid-template-columns: minmax(180px, 1fr) minmax(180px, 1fr) auto;
+        gap: 12px;
+        margin: 24px 0;
+        align-items: end;
+      }
+
+      label {
+        display: grid;
+        gap: 6px;
+        font-size: 14px;
+        font-weight: 700;
+      }
+
+      input,
+      button {
+        min-height: 42px;
+        border-radius: 6px;
+        font: inherit;
+      }
+
+      input {
+        width: 100%;
+        border: 1px solid #cbd5e1;
+        padding: 0 12px;
+      }
+
+      button,
+      a.button {
+        border: 0;
+        background: #2563eb;
+        color: #fff;
+        padding: 0 16px;
+        font-weight: 700;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 42px;
+        border-radius: 6px;
+      }
+
+      button:disabled {
+        opacity: 0.6;
+        cursor: wait;
+      }
+
+      .status {
+        min-height: 24px;
+        margin: 8px 0 20px;
+        color: #475569;
+      }
+
+      .result {
+        display: none;
+        grid-template-columns: 220px minmax(0, 1fr);
+        gap: 28px;
+        align-items: start;
+        padding: 24px;
+        background: #fff;
+        border: 1px solid #dbe3ef;
+        border-radius: 8px;
+      }
+
+      .result.visible {
+        display: grid;
+      }
+
+      .cover {
+        width: 100%;
+        min-height: 320px;
+        border-radius: 6px;
+        background: #e5e7eb;
+        object-fit: cover;
+        border: 1px solid #d1d5db;
+      }
+
+      dl {
+        display: grid;
+        grid-template-columns: 130px minmax(0, 1fr);
+        gap: 10px 16px;
+        margin: 18px 0;
+      }
+
+      dt {
+        font-weight: 700;
+        color: #334155;
+      }
+
+      dd {
+        margin: 0;
+      }
+
+      .actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin: 18px 0;
+      }
+
+      .viewer {
+        display: none;
+        width: 100%;
+        height: 520px;
+        margin-top: 24px;
+        border: 1px solid #dbe3ef;
+        background: #fff;
+      }
+
+      .viewer.visible {
+        display: block;
+      }
+
+      @media (max-width: 760px) {
+        main {
+          width: min(100% - 20px, 640px);
+          margin: 20px auto;
+        }
+
+        form,
+        .result {
+          grid-template-columns: 1fr;
+        }
+
+        .cover {
+          max-width: 220px;
+          min-height: 300px;
+        }
+
+        dl {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Teste Google Books</h1>
+      <p>Busca feita pelo backend em <code>/books/search</code>. A pagina mostra os metadados usados nos cards de recomendacao.</p>
+
+      <form id="searchForm">
+        <label>
+          Titulo
+          <input id="title" name="title" value="Duna" autocomplete="off" required>
+        </label>
+        <label>
+          Autor
+          <input id="author" name="author" value="Frank Herbert" autocomplete="off">
+        </label>
+        <button id="submitButton" type="submit">Buscar</button>
+      </form>
+
+      <div id="status" class="status"></div>
+
+      <section id="result" class="result" aria-live="polite">
+        <img id="cover" class="cover" alt="">
+        <div>
+          <h2 id="bookTitle"></h2>
+          <dl>
+            <dt>Autores</dt>
+            <dd id="authors"></dd>
+            <dt>Generos</dt>
+            <dd id="genres"></dd>
+            <dt>Publicado em</dt>
+            <dd id="publishedDate"></dd>
+            <dt>Google Books ID</dt>
+            <dd id="googleBooksId"></dd>
+            <dt>Visualizacao</dt>
+            <dd id="viewability"></dd>
+          </dl>
+          <p id="synopsis"></p>
+          <div class="actions">
+            <a id="previewLink" class="button" href="#" target="_blank" rel="noreferrer">Abrir preview</a>
+            <a id="readerLink" class="button" href="#" target="_blank" rel="noreferrer">Abrir leitor</a>
+          </div>
+          <div id="viewerMessage" class="status"></div>
+        </div>
+      </section>
+
+      <div id="viewerCanvas" class="viewer"></div>
+    </main>
+
+    <script src="https://www.google.com/books/jsapi.js"></script>
+    <script>
+      const form = document.getElementById('searchForm');
+      const submitButton = document.getElementById('submitButton');
+      const statusEl = document.getElementById('status');
+      const resultEl = document.getElementById('result');
+      const viewerEl = document.getElementById('viewerCanvas');
+      const viewerMessage = document.getElementById('viewerMessage');
+
+      if (window.google && google.books) {
+        google.books.load({ language: 'pt-BR' });
+      }
+
+      form.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        await searchBook();
+      });
+
+      async function searchBook() {
+        const title = document.getElementById('title').value.trim();
+        const author = document.getElementById('author').value.trim();
+        const params = new URLSearchParams({ title });
+
+        if (author) params.set('author', author);
+
+        setLoading(true);
+        clearViewer();
+
+        try {
+          const response = await fetch(`/books/search?${params.toString()}`);
+          const book = await response.json();
+
+          if (!response.ok) {
+            throw new Error(book.message || 'Erro ao buscar livro.');
+          }
+
+          renderBook(book);
+          loadViewer(book);
+          statusEl.textContent = book.googleBooksId
+            ? 'Livro encontrado no Google Books.'
+            : 'Nenhum volume encontrado para essa busca.';
+        } catch (error) {
+          resultEl.classList.remove('visible');
+          statusEl.textContent = error.message;
+        } finally {
+          setLoading(false);
+        }
+      }
+
+      function renderBook(book) {
+        resultEl.classList.add('visible');
+
+        document.getElementById('bookTitle').textContent = book.title || 'Titulo nao encontrado';
+        document.getElementById('authors').textContent = formatList(book.authors) || book.author || 'Nao informado';
+        document.getElementById('genres').textContent = formatList(book.genres) || 'Nao informado';
+        document.getElementById('publishedDate').textContent = book.publishedDate || 'Nao informado';
+        document.getElementById('googleBooksId').textContent = book.googleBooksId || 'Nao encontrado';
+        document.getElementById('viewability').textContent = [
+          book.viewability || 'Nao informado',
+          book.embeddable ? 'embutivel' : 'nao embutivel',
+        ].join(' / ');
+        document.getElementById('synopsis').textContent = book.synopsis || 'Sinopse nao disponivel.';
+
+        const cover = document.getElementById('cover');
+        cover.src = book.coverUrl || svgPlaceholder();
+        cover.alt = book.title ? `Capa de ${book.title}` : 'Capa nao disponivel';
+
+        setLink('previewLink', book.previewLink);
+        setLink('readerLink', book.webReaderLink);
+      }
+
+      function loadViewer(book) {
+        if (!book.embeddable || !book.googleBooksId || !window.google || !google.books) {
+          viewerMessage.textContent = 'Embedded Viewer indisponivel para este resultado.';
+          return;
+        }
+
+        viewerMessage.textContent = 'Carregando Embedded Viewer...';
+        viewerEl.classList.add('visible');
+
+        google.books.setOnLoadCallback(() => {
+          const viewer = new google.books.DefaultViewer(viewerEl);
+          viewer.load(
+            [book.googleBooksId, book.previewLink].filter(Boolean),
+            () => {
+              viewerMessage.textContent = 'O Google Books nao liberou preview embutido para este volume.';
+              clearViewer();
+            },
+            () => {
+              viewerMessage.textContent = 'Embedded Viewer carregado.';
+            }
+          );
+        });
+      }
+
+      function clearViewer() {
+        viewerEl.classList.remove('visible');
+        viewerEl.innerHTML = '';
+        viewerMessage.textContent = '';
+      }
+
+      function formatList(values) {
+        return Array.isArray(values) ? values.filter(Boolean).join(', ') : '';
+      }
+
+      function setLink(id, href) {
+        const link = document.getElementById(id);
+        if (href) {
+          link.href = href;
+          link.style.display = 'inline-flex';
+        } else {
+          link.removeAttribute('href');
+          link.style.display = 'none';
+        }
+      }
+
+      function setLoading(isLoading) {
+        submitButton.disabled = isLoading;
+        submitButton.textContent = isLoading ? 'Buscando...' : 'Buscar';
+        statusEl.textContent = isLoading ? 'Consultando backend...' : '';
+      }
+
+      function svgPlaceholder() {
+        return 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(`
+          <svg xmlns="http://www.w3.org/2000/svg" width="320" height="480" viewBox="0 0 320 480">
+            <rect width="320" height="480" fill="#e5e7eb"/>
+            <text x="160" y="235" text-anchor="middle" fill="#475569" font-family="Arial" font-size="22">Sem capa</text>
+          </svg>
+        `);
+      }
+
+      searchBook();
+    </script>
+  </body>
+</html>

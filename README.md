@@ -161,19 +161,35 @@ Content-Type: application/json
       "title": "Fullmetal Alchemist",
       "type": "mangá",
       "author": "Hiromu Arakawa",
+      "authors": ["Hiromu Arakawa"],
+      "genres": ["Comics & Graphic Novels"],
       "justification": "Uma história épica com alquimia, aventura e profundidade emocional.",
       "sensitiveContent": true,
       "coverUrl": "https://books.google.com/books/content?id=...",
-      "synopsis": "Neste mundo existem alquimistas, pessoas que estudam e realizam a arte da transmutação..."
+      "synopsis": "Neste mundo existem alquimistas, pessoas que estudam e realizam a arte da transmutação...",
+      "publishedDate": "2014",
+      "googleBooksId": "abc123",
+      "previewLink": "https://books.google.com/books?id=abc123",
+      "webReaderLink": "https://play.google.com/books/reader?id=abc123",
+      "embeddable": true,
+      "viewability": "PARTIAL"
     },
     {
       "title": "Frieren: Beyond Journey's End",
       "type": "mangá",
       "author": "Kanehito Yamada",
+      "authors": [],
+      "genres": [],
       "justification": "Uma fantasia reflexiva e emocionante sobre o tempo e memória.",
       "sensitiveContent": false,
       "coverUrl": null,
-      "synopsis": null
+      "synopsis": null,
+      "publishedDate": null,
+      "googleBooksId": null,
+      "previewLink": null,
+      "webReaderLink": null,
+      "embeddable": false,
+      "viewability": null
     }
   ],
   "messageCount": 2
@@ -181,6 +197,19 @@ Content-Type: application/json
 ```
 
 > O campo `sensitiveContent: true` indica que o item tem temas sensíveis (violência, saúde mental, etc.) — use isso no frontend para exibir um aviso de confirmação (RF11).
+> Os campos `authors`, `genres`, `coverUrl`, `synopsis`, `publishedDate`, `googleBooksId`, `previewLink`, `webReaderLink`, `embeddable` e `viewability` vêm do Google Books quando o volume é encontrado.
+
+#### Testar metadados do Google Books
+
+```http
+GET /books/search?title=Duna&author=Frank%20Herbert
+```
+
+Essa rota simples consulta o Google Books pelo backend e retorna os mesmos campos usados para enriquecer as recomendações. Para testar visualmente, suba a API e abra:
+
+```text
+http://localhost:3000/google-books-test.html
+```
 
 #### Buscar histórico da conversa
 
@@ -627,4 +656,4 @@ Em produção, troque pelo endereço real do backend.
 | `ORACLE_WALLET_PASSWORD` | Senha do Wallet |
 | `GEMINI_API_KEY` | API Key do Google Gemini |
 | `GEMINI_MODEL` | Modelo do Gemini (padrão: `gemini-2.5-flash-lite`) |
-| `GOOGLE_BOOKS_API_KEY` | API Key da Google Books API (Opcional, usado para enriquecimento do catálogo com capa e sinopse) |
+| `GOOGLE_BOOKS_API_KEY` | API Key da Google Books API (Opcional, usado para enriquecimento do catálogo com capa, autores, gêneros, sinopse e links de preview) |

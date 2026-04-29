@@ -23,7 +23,7 @@ test('enriches recommendations with Google Books metadata and viewer fields', as
                 categories: ['Fiction', 'Science Fiction'],
                 description: 'Uma obra classica de ficcao cientifica.',
                 publishedDate: '1965',
-                previewLink: 'https://books.google.com/books?id=abc123',
+                previewLink: 'http://books.google.com/books?id=abc123',
                 imageLinks: {
                   thumbnail: 'http://books.google.com/books/content?id=abc123&printsec=frontcover&img=1',
                 },
@@ -31,7 +31,7 @@ test('enriches recommendations with Google Books metadata and viewer fields', as
               accessInfo: {
                 embeddable: true,
                 viewability: 'PARTIAL',
-                webReaderLink: 'https://play.google.com/books/reader?id=abc123',
+                webReaderLink: 'http://play.google.com/books/reader?id=abc123',
               },
             },
           ],
