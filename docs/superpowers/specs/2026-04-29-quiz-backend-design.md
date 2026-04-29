@@ -179,6 +179,7 @@ Create `src/services/quizService.js` with:
 - adaptive question generation through `llmService`
 - finish behavior
 - preference saving through `preferenceModel`
+- fetching reading history through `avaliacaoModel`
 - recommendation enrichment through `catalogService`
 
 ### Model

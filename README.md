@@ -66,7 +66,10 @@ npm run dev
 | `npm run seed:user` | Cria/atualiza um usuário de teste no banco |
 | `npm run db:chat` | Cria a tabela `CONVERSAS` no Oracle |
 | `npm run db:preferences` | Cria as tabelas `PREFERENCIAS_USUARIO` e `SUGESTOES_CONVERSA` |
+| `npm run db:quiz` | Cria a tabela `QUIZ_SESSOES` no Oracle |
+| `npm test` | Roda testes unitários com o runner nativo do Node.js |
 | `npm run test:chat` | Roda todos os testes do chat (requer servidor no ar) |
+| `npm run test:quiz` | Roda o fluxo manual do quiz (requer servidor no ar) |
 | `npm run chat:play` | Inicia o chat interativo no terminal |
 
 ---
@@ -127,7 +130,7 @@ O chat usa o **Google Gemini** para recomendar livros, HQs e mangás. Todas as r
 
 ```
 Usuário envia mensagem
-    → Backend monta contexto (histórico + preferências)
+    → Backend monta contexto (histórico + preferências + livros lidos da tabela AVALIACOES)
     → Gemini gera recomendações em JSON
     → Backend salva a conversa no Oracle
     → Retorna resposta + lista de recomendações
@@ -261,6 +264,121 @@ Content-Type: application/json
   "types": ["hq", "livro"],
   "favoriteAuthors": ["Jane Austen"]
 }
+```
+
+---
+
+## Quiz Adaptativo de Recomendação
+
+O quiz atende ao RF10: começa com perguntas objetivas genéricas e, depois das respostas iniciais, usa a IA para criar perguntas adaptativas até o limite de 8 perguntas. Todas as rotas exigem autenticação JWT.
+
+Antes de usar o quiz, crie a tabela:
+
+```bash
+npm run db:quiz
+```
+
+### Fluxo geral
+
+```
+Frontend inicia o quiz
+    → Backend cria 3 perguntas genéricas
+    → Usuário responde uma por vez
+    → IA gera próximas perguntas adaptativas
+    → Usuário finaliza
+    → Backend infere preferências, salva opcionalmente, cruza com histórico de leitura (AVALIACOES) e retorna recomendações enriquecidas
+```
+
+### Iniciar quiz
+
+```http
+POST /quiz/start
+Authorization: Bearer SEU_TOKEN
+```
+
+**Resposta:**
+
+```json
+{
+  "sessionId": "9f0b9a6e-0d7c-4b52-8d6a-1c9e7a4c6d3a",
+  "maxQuestions": 8,
+  "questions": [
+    {
+      "id": "preferred_type",
+      "text": "Qual formato voce quer ler agora?",
+      "options": ["Livro", "HQ", "Manga", "Tanto faz"]
+    }
+  ],
+  "questionNumber": 1,
+  "canFinish": false
+}
+```
+
+### Responder pergunta
+
+```http
+POST /quiz/answer
+Authorization: Bearer SEU_TOKEN
+Content-Type: application/json
+
+{
+  "sessionId": "9f0b9a6e-0d7c-4b52-8d6a-1c9e7a4c6d3a",
+  "questionId": "preferred_type",
+  "answer": "Manga"
+}
+```
+
+Depois da terceira resposta, o backend passa a retornar uma pergunta adaptativa gerada pela IA.
+
+```json
+{
+  "sessionId": "9f0b9a6e-0d7c-4b52-8d6a-1c9e7a4c6d3a",
+  "answeredCount": 3,
+  "maxQuestions": 8,
+  "question": {
+    "id": "ai_4",
+    "text": "Voce prefere uma historia mais leve ou mais intensa?",
+    "options": ["Leve", "Intensa", "Reflexiva", "Com muita acao"]
+  },
+  "canFinish": true,
+  "isComplete": false
+}
+```
+
+### Finalizar quiz
+
+```http
+POST /quiz/finish
+Authorization: Bearer SEU_TOKEN
+Content-Type: application/json
+
+{
+  "sessionId": "9f0b9a6e-0d7c-4b52-8d6a-1c9e7a4c6d3a",
+  "savePreferences": true
+}
+```
+
+**Resposta:**
+
+```json
+{
+  "message": "Aqui estao algumas recomendacoes baseadas no seu quiz.",
+  "preferences": {
+    "genres": ["fantasia", "misterio"],
+    "types": ["manga"],
+    "favoriteAuthors": []
+  },
+  "recommendations": [],
+  "preferencesSaved": true
+}
+```
+
+### Testar o Quiz
+
+Com o servidor rodando (`npm run dev` em outro terminal), execute:
+
+```bash
+npm run test:quiz -- --email=admin@example.com --password=123456
 ```
 
 ---
