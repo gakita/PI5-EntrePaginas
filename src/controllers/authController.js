@@ -58,8 +58,35 @@ function me(req, res) {
   });
 }
 
+async function updateMe(req, res, next) {
+  try {
+    const updatedUser = await authService.updateMe(req.user.email, req.body);
+
+    return res.status(200).json({
+      message: 'Usuario atualizado com sucesso.',
+      user: updatedUser,
+    });
+  } catch (error) {
+    return next(error);
+  }
+}
+
+async function deleteMe(req, res, next) {
+  try {
+    await authService.deleteMe(req.user.email, req.body);
+
+    return res.status(200).json({
+      message: 'Conta deletada com sucesso.',
+    });
+  } catch (error) {
+    return next(error);
+  }
+}
+
 module.exports = {
   register,
   login,
   me,
+  updateMe,
+  deleteMe,
 };

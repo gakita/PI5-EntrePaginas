@@ -9,6 +9,7 @@
  *   closeConversation() → salva preferências inferidas e sugestões (RF13/RIA07)
  *   getPreferences()    → retorna preferências salvas
  *   updatePreferences() → atualiza preferências manualmente
+ *   clearPreferences()  → apaga/reseta preferências salvas
  */
 
 const chatModel      = require('../models/chatModel');
@@ -177,6 +178,14 @@ async function updatePreferences(userEmail, preferences) {
   return preferenceModel.upsertPreferences(userEmail, preferences);
 }
 
+/**
+ * Apaga as preferências salvas do usuário.
+ */
+async function clearPreferences(userEmail) {
+  await preferenceModel.deleteByUserEmail(userEmail);
+  logger.info('User preferences cleared', { userEmail });
+}
+
 module.exports = {
   sendMessage,
   getHistory,
@@ -184,4 +193,5 @@ module.exports = {
   closeConversation,
   getPreferences,
   updatePreferences,
+  clearPreferences,
 };

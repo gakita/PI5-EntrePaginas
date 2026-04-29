@@ -112,7 +112,28 @@ async function upsertPreferences(email, { genres = [], types = [], favoriteAutho
   }
 }
 
+async function deleteByUserEmail(email) {
+  const connection = await getConnection();
+
+  try {
+    const result = await connection.execute(
+      `
+        DELETE FROM PREFERENCIAS_USUARIO
+        WHERE LOWER(USUARIO_EMAIL) = LOWER(:email)
+      `,
+      { email }
+    );
+
+    await connection.commit();
+
+    return result.rowsAffected > 0;
+  } finally {
+    await connection.close();
+  }
+}
+
 module.exports = {
   findByUserEmail,
   upsertPreferences,
+  deleteByUserEmail,
 };

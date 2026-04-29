@@ -10,6 +10,7 @@
  *   - closeConversation (POST /chat/close)
  *   - getPreferences    (GET /chat/preferences)
  *   - updatePreferences (PUT /chat/preferences)
+ *   - clearPreferences  (DELETE /chat/preferences)
  */
 
 const chatService = require('../services/chatService');
@@ -136,6 +137,27 @@ async function updatePreferences(req, res, next) {
   }
 }
 
+/**
+ * DELETE /chat/preferences
+ * Apaga/reseta as preferências de leitura do usuário.
+ */
+async function clearPreferences(req, res, next) {
+  try {
+    await chatService.clearPreferences(req.user.email);
+
+    return res.status(200).json({
+      message: 'Preferencias resetadas com sucesso.',
+      preferences: {
+        genres: [],
+        types: [],
+        favoriteAuthors: [],
+      },
+    });
+  } catch (error) {
+    return next(error);
+  }
+}
+
 module.exports = {
   sendMessage,
   getHistory,
@@ -143,4 +165,5 @@ module.exports = {
   closeConversation,
   getPreferences,
   updatePreferences,
+  clearPreferences,
 };
