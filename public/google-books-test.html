@@ -297,17 +297,28 @@
         }
 
         viewerMessage.textContent = 'Carregando Embedded Viewer...';
-        viewerEl.classList.add('visible');
+        let loaded = false;
+
+        const timeout = setTimeout(() => {
+          if (!loaded) {
+            clearViewer();
+            viewerMessage.textContent = 'Embedded Viewer nao carregou. Use o botao "Abrir preview".';
+          }
+        }, 5000);
 
         google.books.setOnLoadCallback(() => {
           const viewer = new google.books.DefaultViewer(viewerEl);
           viewer.load(
             [book.googleBooksId, book.previewLink].filter(Boolean),
             () => {
+              clearTimeout(timeout);
               viewerMessage.textContent = 'O Google Books nao liberou preview embutido para este volume.';
               clearViewer();
             },
             () => {
+              loaded = true;
+              clearTimeout(timeout);
+              viewerEl.classList.add('visible');
               viewerMessage.textContent = 'Embedded Viewer carregado.';
             }
           );
@@ -317,7 +328,6 @@
       function clearViewer() {
         viewerEl.classList.remove('visible');
         viewerEl.innerHTML = '';
-        viewerMessage.textContent = '';
       }
 
       function formatList(values) {

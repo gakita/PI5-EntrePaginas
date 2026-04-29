@@ -29,19 +29,24 @@ const TIMEOUT_MS = 5000;
  */
 async function enrichOne(rec) {
   try {
-    // Monta a query de busca com título + autor (quando disponível)
-    const query = [rec.title, rec.author].filter(Boolean).join(' ');
+    // Monta a query com operadores do Google Books para aumentar precisão.
+    const query = buildBookQuery(rec);
     const encodedQuery = encodeURIComponent(query);
-
-    // Monta a URL com ou sem API key
-    const keyParam = env.googleBooksApiKey ? `&key=${env.googleBooksApiKey}` : '';
-    const url = `https://www.googleapis.com/books/v1/volumes?q=${encodedQuery}&maxResults=1${keyParam}`;
 
     // Usa AbortController para timeout — evita que uma API lenta trave o chat
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), TIMEOUT_MS);
 
-    const response = await fetch(url, { signal: controller.signal });
+    let response = await fetch(buildSearchUrl(encodedQuery, true), { signal: controller.signal });
+
+    if (shouldRetryWithoutKey(response) && env.googleBooksApiKey) {
+      logger.warn('Google Books API com key falhou; tentando busca publica', {
+        status: response.status,
+        title: rec.title,
+      });
+      response = await fetch(buildSearchUrl(encodedQuery, false), { signal: controller.signal });
+    }
+
     clearTimeout(timeout);
 
     if (!response.ok) {
@@ -90,6 +95,29 @@ async function enrichOne(rec) {
     }
     return withEmptyCatalogFields(rec);
   }
+}
+
+function buildBookQuery(rec) {
+  const parts = [];
+
+  if (rec.title) {
+    parts.push(`intitle:"${rec.title}"`);
+  }
+
+  if (rec.author) {
+    parts.push(`inauthor:"${rec.author}"`);
+  }
+
+  return parts.join(' ') || [rec.title, rec.author].filter(Boolean).join(' ');
+}
+
+function buildSearchUrl(encodedQuery, includeKey) {
+  const keyParam = includeKey && env.googleBooksApiKey ? `&key=${env.googleBooksApiKey}` : '';
+  return `https://www.googleapis.com/books/v1/volumes?q=${encodedQuery}&maxResults=1${keyParam}`;
+}
+
+function shouldRetryWithoutKey(response) {
+  return response.status === 403 || response.status === 429 || response.status >= 500;
 }
 
 function toHttps(url) {
