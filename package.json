@@ -13,6 +13,7 @@
     "db:quiz": "node scripts/createQuizTable.js",
     "test:chat": "node scripts/testChat.js",
     "test:quiz": "node scripts/testQuiz.js",
+    "test:quiz:run": "node scripts/runQuizTests.js",
     "chat:play": "node scripts/chat.js"
   },
   "keywords": [

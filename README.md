@@ -69,7 +69,8 @@ npm run dev
 | `npm run db:quiz` | Cria a tabela `QUIZ_SESSOES` no Oracle |
 | `npm test` | Roda testes unitários com o runner nativo do Node.js |
 | `npm run test:chat` | Roda todos os testes do chat (requer servidor no ar) |
-| `npm run test:quiz` | Roda o fluxo manual do quiz (requer servidor no ar) |
+| `npm run test:quiz` | Roda os cenários HTTP completos do quiz (requer servidor no ar) |
+| `npm run test:quiz:run` | Cria/verifica tabela, sobe a API se necessário e roda os cenários do quiz |
 | `npm run chat:play` | Inicia o chat interativo no terminal |
 
 ---
@@ -379,6 +380,18 @@ Com o servidor rodando (`npm run dev` em outro terminal), execute:
 
 ```bash
 npm run test:quiz -- --email=admin@example.com --password=123456
+```
+
+Para executar o fluxo completo em um comando, incluindo `db:quiz` e subida automática da API quando ela não estiver rodando:
+
+```bash
+npm run test:quiz:run -- --email=admin@example.com --password=123456
+```
+
+Se a tabela já existir e você quiser pular a etapa de banco:
+
+```bash
+npm run test:quiz:run -- --skip-db --email=admin@example.com --password=123456
 ```
 
 ---
