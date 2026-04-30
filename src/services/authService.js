@@ -1,8 +1,12 @@
 const bcrypt = require('bcrypt');
+const crypto = require('crypto');
 const jwt = require('jsonwebtoken');
 
 const env = require('../config/env');
+const emailService = require('./emailService');
+const passwordResetTokenModel = require('../models/passwordResetTokenModel');
 const userModel = require('../models/userModel');
+const logger = require('../utils/logger');
 
 function sanitizeUser(user) {
   return {
@@ -20,6 +24,14 @@ function generateToken(user) {
     env.jwtSecret,
     { expiresIn: env.jwtExpiresIn }
   );
+}
+
+function hashResetToken(token) {
+  return crypto.createHash('sha256').update(token).digest('hex');
+}
+
+function generateResetToken() {
+  return crypto.randomBytes(32).toString('hex');
 }
 
 async function register(name, email, password) {
@@ -46,6 +58,77 @@ async function register(name, email, password) {
     user: safeUser,
     token,
   };
+}
+
+async function requestPasswordReset(email) {
+  const normalizedEmail = email.trim().toLowerCase();
+  const user = await userModel.findByEmail(normalizedEmail);
+
+  if (!user) {
+    return {
+      emailSent: false,
+    };
+  }
+
+  const token = generateResetToken();
+  const tokenHash = hashResetToken(token);
+  const expiresAt = new Date(Date.now() + env.passwordResetTokenMinutes * 60 * 1000);
+
+  await passwordResetTokenModel.deleteByEmail(normalizedEmail);
+  await passwordResetTokenModel.createToken({
+    email: normalizedEmail,
+    tokenHash,
+    expiresAt,
+  });
+
+  let emailSent = false;
+
+  try {
+    emailSent = await emailService.sendPasswordResetEmail({
+      email: normalizedEmail,
+      token,
+    });
+  } catch (error) {
+    logger.error('Password reset email failed', {
+      email: normalizedEmail,
+      error: error.message,
+    });
+  }
+
+  return {
+    emailSent,
+    resetToken: env.nodeEnv === 'production' ? undefined : token,
+  };
+}
+
+async function resetPassword(token, newPassword) {
+  if (typeof newPassword !== 'string' || newPassword.length < 6) {
+    const error = new Error('Nova senha deve ter pelo menos 6 caracteres.');
+    error.statusCode = 400;
+    throw error;
+  }
+
+  const tokenHash = hashResetToken(token.trim());
+  const resetToken = await passwordResetTokenModel.findValidByTokenHash(tokenHash);
+
+  if (!resetToken) {
+    const error = new Error('Token invalido ou expirado.');
+    error.statusCode = 400;
+    throw error;
+  }
+
+  const passwordHash = await bcrypt.hash(newPassword, 10);
+  const updatedUser = await userModel.updateUserByEmail(resetToken.email, { passwordHash });
+
+  if (!updatedUser) {
+    const error = new Error('Usuario nao encontrado.');
+    error.statusCode = 404;
+    throw error;
+  }
+
+  await passwordResetTokenModel.markAsUsed(resetToken.id);
+
+  return sanitizeUser(updatedUser);
 }
 
 async function login(email, password) {
@@ -168,6 +251,8 @@ async function deleteMe(currentEmail, data = {}) {
 module.exports = {
   register,
   login,
+  requestPasswordReset,
+  resetPassword,
   updateMe,
   deleteMe,
 };

@@ -9,6 +9,7 @@
     "seed:user": "node scripts/seedTestUser.js",
     "db:chat": "node scripts/createChatTable.js",
     "db:preferences": "node scripts/createPreferencesTable.js",
+    "db:password-reset": "node scripts/createPasswordResetTokensTable.js",
     "test:chat": "node scripts/testChat.js",
     "chat:play": "node scripts/chat.js"
   },
@@ -29,6 +30,7 @@
     "dotenv": "^17.2.3",
     "express": "^5.1.0",
     "jsonwebtoken": "^9.0.2",
+    "nodemailer": "^8.0.7",
     "oracledb": "^6.9.0"
   },
   "devDependencies": {
