@@ -26,10 +26,10 @@ const bookCards = computed(() =>
 .cards-panel {
   display: grid;
   grid-template-columns: repeat(5, minmax(90px, 1fr));
-  gap: 14px;
+  gap: 10px;
   height: 100%;
   min-height: 0;
-  padding: 30px 26px;
+  padding: 18px 18px;
   border: 1px solid rgba(232, 213, 183, 0.25);
   border-radius: 15px;
   background: rgba(42, 31, 20, 0.75);
@@ -63,7 +63,7 @@ const bookCards = computed(() =>
 
 .book-card {
   width: 100%;
-  aspect-ratio: 200 / 275;
+  aspect-ratio: 200 / 250;
   border-radius: 15px;
   background-color: #120d07;
 }
@@ -71,8 +71,8 @@ const bookCards = computed(() =>
 @media (max-width: 1400px) {
   .cards-panel {
     grid-template-columns: repeat(5, minmax(78px, 1fr));
-    gap: 12px;
-    padding: 24px 18px;
+    gap: 10px;
+    padding: 16px 14px;
   }
 }
 
@@ -86,7 +86,7 @@ const bookCards = computed(() =>
 @media (max-width: 760px) {
   .cards-panel {
     grid-template-columns: repeat(2, minmax(120px, 1fr));
-    gap: 16px;
+    gap: 12px;
     padding: 16px;
   }
 }

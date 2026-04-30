@@ -25,14 +25,12 @@ const backgroundImage = `url(${fundoImg})`
     <div class="catalog-page__bg" />
 
     <section class="catalog-page__content">
-      <h1 class="catalog-page__title">Catálogo</h1>
-
       <div class="catalog-layout">
-        <FiltersPanel :groups="filterGroups" />
+        <FiltersPanel :groups="filterGroups" title="Catálogo" />
         <div class="books-area">
           <CatalogGlow
             class="books-area__light"
-            top="-155px"
+            top="-100px"
             width="777px"
             height="777px"
             :opacity="0.8"
@@ -47,7 +45,7 @@ const backgroundImage = `url(${fundoImg})`
 <style scoped>
 .catalog-page {
   position: relative;
-  height: calc(100vh);
+  height: calc(100vh - 65px);
   background-color: #110c07;
   overflow: hidden;
 }
@@ -68,26 +66,16 @@ const backgroundImage = `url(${fundoImg})`
   width: min(1820px, 100% - 96px);
   height: 100%;
   margin: 0 auto;
-  padding: 44px 0 20px;
+  padding: 20px 0 16px;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
 }
 
-.catalog-page__title {
-  margin: 0 0 44px;
-  font-family: 'Playfair Display', serif;
-  font-size: clamp(38px, 4.4vw, 64px);
-  font-weight: 700;
-  line-height: 1;
-  color: #e8d5b7;
-  text-shadow: 0 6px 3px rgba(0, 0, 0, 0.25);
-}
-
 .catalog-layout {
   display: grid;
-  grid-template-columns: 340px 1fr;
-  gap: 24px;
+  grid-template-columns: 380px 1fr;
+  gap: 22px;
   align-items: stretch;
   flex: 1;
   min-height: 0;
@@ -104,16 +92,10 @@ const backgroundImage = `url(${fundoImg})`
   height: 777px;
 }
 
-.books-area__grid {
-  position: relative;
-  z-index: 1;
-  height: 100%;
-}
-
 @media (max-width: 1400px) {
   .catalog-layout {
     grid-template-columns: 300px 1fr;
-    gap: 20px;
+    gap: 16px;
   }
 
   .books-area__light {
@@ -132,8 +114,8 @@ const backgroundImage = `url(${fundoImg})`
 
   .catalog-page__content {
     height: auto;
-    padding-top: 64px;
-    padding-bottom: 64px;
+    padding-top: 40px;
+    padding-bottom: 40px;
   }
 
   .catalog-layout {

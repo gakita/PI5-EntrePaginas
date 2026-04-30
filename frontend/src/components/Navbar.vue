@@ -5,10 +5,10 @@ import bookmarkIcon from "../assets/Bookmark-favorites_2.svg"
 import profileIcon from "../assets/Icone_perfil.svg"
 
 const navLinks = [
-  { label: 'Início',        to: '/' },
-  { label: 'Categorias',    to: '/categorias' },
-  { label: 'Recomendações', to: '/recomendacoes' },
-  { label: 'Catálogo',      to: '/catalogo' },
+  { label: 'ÍNICIO',        to: '/' },
+  { label: 'CATEGORIAS',    to: '/categorias' },
+  { label: 'RECOMENDAÇÕES', to: '/recomendacoes' },
+  { label: 'CATÁLOGO',      to: '/catalogo' },
 ]
 
 // TODO: substituir por authStore.isLoggedIn quando o store existir
@@ -93,13 +93,13 @@ const userMenuItems = [
 .v-app-bar {
   background-color: rgb(var(--v-theme-background)) !important;
   border-bottom: 3px solid rgba(155, 138, 117, 0.25) !important;
-  height: 78px !important;
+  height: 65px !important;
   padding-inline: 38px;
   overflow: visible !important;
 }
 
 .v-app-bar :deep(.v-toolbar__content) {
-  height: 78px !important;
+  height: 65px !important;
   align-items: center;
   overflow: visible !important;
   position: relative;
@@ -110,8 +110,8 @@ const userMenuItems = [
 }
 
 .v-app-bar-title :deep(.v-img) {
-  width: 136px;
-  height: 43px;
+  width: 100px;
+  height: 35px;
   object-fit: contain;
 }
 
@@ -127,8 +127,8 @@ const userMenuItems = [
 }
 
 .nav-links a {
-  font-family: "Playfair Display", serif;
-  font-size: 17px;
+  font-family: "Neuton", serif;
+  font-size: 16px;
   font-weight: 400;
   line-height: 24px;
   letter-spacing: 0.5px;
@@ -190,7 +190,9 @@ const userMenuItems = [
   position: absolute;
   top: -18px;
   width: 58px !important;
-  height: 124px !important;
+  height: 110px !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
   border-radius: 0 !important;
   padding: 0 !important;
   overflow: visible !important;
