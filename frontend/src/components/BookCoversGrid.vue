@@ -1,23 +1,25 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+  import { computed } from 'vue'
 
-const props = withDefaults(defineProps<{
-  total?: number
-}>(), {
-  total: 15,
-})
+  const props = withDefaults(defineProps<{
+    total?: number
+  }>(), {
+    total: 15,
+  })
 
-const bookCards = computed(() =>
-  Array.from({ length: props.total }, (_, index) => ({ id: index + 1 })),
-)
+  const bookCards = computed(() =>
+    Array.from({ length: props.total }, (_, index) => ({ id: index + 1 })),
+  )
 </script>
 
 <template>
   <section class="cards-panel">
-    <article
+    <router-link
       v-for="card in bookCards"
       :key="card.id"
+      :aria-label="`Abrir livro ${card.id}`"
       class="book-card"
+      :to="`/livros/${card.id}`"
     />
   </section>
 </template>
@@ -62,10 +64,25 @@ const bookCards = computed(() =>
 }
 
 .book-card {
+  display: block;
   width: 100%;
   aspect-ratio: 200 / 275;
   border-radius: 15px;
   background-color: #120d07;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  border: 1px solid transparent;
+  text-decoration: none;
+}
+
+.book-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.25);
+  border-color: rgba(201, 162, 39, 0.45);
+}
+
+.book-card:focus-visible {
+  outline: 2px solid #c9a227;
+  outline-offset: 3px;
 }
 
 @media (max-width: 1400px) {
