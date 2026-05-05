@@ -9,7 +9,7 @@ tnsnames.ora
 sqlnet.ora
 cwallet.sso
 ewallet.pem
-.DS_Store/
+.DS_Store
 .idea/
 .vscode/
 *.toml
