@@ -6,11 +6,15 @@
   "scripts": {
     "dev": "node server.js",
     "start": "node server.js",
+    "test": "node --test",
     "seed:user": "node scripts/seedTestUser.js",
     "db:chat": "node scripts/createChatTable.js",
     "db:preferences": "node scripts/createPreferencesTable.js",
     "db:password-reset": "node scripts/createPasswordResetTokensTable.js",
+    "db:quiz": "node scripts/createQuizTable.js",
     "test:chat": "node scripts/testChat.js",
+    "test:quiz": "node scripts/testQuiz.js",
+    "test:quiz:run": "node scripts/runQuizTests.js",
     "chat:play": "node scripts/chat.js"
   },
   "keywords": [

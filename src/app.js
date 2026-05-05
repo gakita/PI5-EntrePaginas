@@ -1,5 +1,6 @@
 const express = require('express');
 const cors = require('cors');
+const path = require('path');
 
 const env = require('./config/env');
 const routes = require('./routes');
@@ -14,6 +15,7 @@ app.use(
   })
 );
 app.use(express.json());
+app.use(express.static(path.join(__dirname, '..', 'public')));
 
 app.use(routes);
 app.use(notFound);

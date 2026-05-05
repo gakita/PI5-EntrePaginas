@@ -3,6 +3,8 @@ const express = require('express');
 const authRoutes = require('./authRoutes');
 const chatRoutes = require('./chatRoutes');
 const usersRoutes = require('./usersRoutes');
+const quizRoutes = require('./quizRoutes');
+const bookRoutes = require('./bookRoutes');
 
 const router = express.Router();
 
@@ -20,5 +22,11 @@ router.use('/users', usersRoutes);
 
 // Rotas do chat de recomendação com IA
 router.use('/chat', chatRoutes);
+
+// Rotas do quiz adaptativo de recomendação
+router.use('/quiz', quizRoutes);
+
+// Rotas simples de consulta ao catálogo Google Books
+router.use('/books', bookRoutes);
 
 module.exports = router;
