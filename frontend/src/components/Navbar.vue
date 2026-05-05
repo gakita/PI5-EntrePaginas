@@ -1,8 +1,13 @@
 <script setup lang="ts">
 import { ref } from 'vue'
+import { useRouter } from 'vue-router'
+import { useAuthStore } from '@/stores/authStore'
 import logo from "../assets/Logo_EntrePaginas.svg"
 import bookmarkIcon from "../assets/Bookmark-favorites_2.svg"
 import profileIcon from "../assets/Icone_perfil.svg"
+
+const router = useRouter()
+const auth = useAuthStore()
 
 const navLinks = [
   { label: 'Início',        to: '/' },
@@ -16,8 +21,13 @@ const isLoggedIn = ref(true)
 
 const userMenuItems = [
   { label: 'Perfil',  to: '/perfil',  icon: 'mdi-account-outline' },
-  { label: 'Sair',    to: '/logout',  icon: 'mdi-logout'           },
+  { label: 'Sair',    action: handleLogout, icon: 'mdi-logout'     },
 ]
+
+function handleLogout() {
+  auth.clearToken()
+  router.push('/login')
+}
 </script>
 
 <template>
@@ -76,10 +86,11 @@ const userMenuItems = [
             <v-list class="user-menu">
               <v-list-item
                 v-for="item in userMenuItems"
-                :key="item.to"
+                :key="item.label"
                 :to="item.to"
                 :prepend-icon="item.icon"
                 :title="item.label"
+                @click="item.action?.()"
               />
             </v-list>
           </v-menu>
