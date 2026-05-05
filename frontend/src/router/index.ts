@@ -27,6 +27,11 @@ const router = createRouter({
       component: () => import('@/pages/Catalogo.vue'),
       meta: { requiresAuth: true },
     },
+    {
+      path: '/livros/:id',
+      component: () => import('@/pages/BookDescPage.vue'),
+      meta: { requiresAuth: true },
+    },
 
     // // Protected routes
     // {
