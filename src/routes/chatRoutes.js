@@ -10,6 +10,7 @@
  *   POST   /chat/close          → Encerra conversa (salva preferências + sugestões)
  *   GET    /chat/preferences    → Retorna preferências de leitura do usuário
  *   PUT    /chat/preferences    → Atualiza preferências manualmente
+ *   DELETE /chat/preferences    → Apaga/reseta preferências
  */
 
 const express = require('express');
@@ -28,5 +29,6 @@ router.post('/close',       authMiddleware, chatController.closeConversation);
 // ── Preferências ──
 router.get('/preferences',  authMiddleware, chatController.getPreferences);
 router.put('/preferences',  authMiddleware, chatController.updatePreferences);
+router.delete('/preferences', authMiddleware, chatController.clearPreferences);
 
 module.exports = router;

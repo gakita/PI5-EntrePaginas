@@ -114,6 +114,37 @@ Content-Type: application/json
 
 Retorna um `token` JWT. Use ele no header `Authorization: Bearer <token>` em todas as rotas protegidas.
 
+### Solicitar recuperacao de senha
+
+```http
+POST /auth/forgot-password
+Content-Type: application/json
+
+{
+  "email": "joao@example.com"
+}
+```
+
+Retorna sempre uma mensagem generica para nao revelar se o e-mail existe. Se o SMTP estiver configurado e o e-mail estiver cadastrado, envia um link/token para redefinir a senha.
+
+Antes de usar, crie a tabela:
+
+```bash
+npm run db:password-reset
+```
+
+### Redefinir senha
+
+```http
+POST /auth/reset-password
+Content-Type: application/json
+
+{
+  "token": "TOKEN_RECEBIDO_NO_EMAIL",
+  "newPassword": "novaSenha123"
+}
+```
+
 ### Rota protegida (verificar token)
 
 ```http
@@ -664,3 +695,11 @@ Em produção, troque pelo endereço real do backend.
 | `GEMINI_API_KEY` | API Key do Google Gemini |
 | `GEMINI_MODEL` | Modelo do Gemini (padrão: `gemini-2.5-flash-lite`) |
 | `GOOGLE_BOOKS_API_KEY` | API Key da Google Books API (Opcional, usado para enriquecimento do catálogo com capa, autores, gêneros, sinopse e links de preview) |
+| `SMTP_HOST` | Servidor SMTP para envio de recuperacao de senha |
+| `SMTP_PORT` | Porta SMTP (padrao: `587`) |
+| `SMTP_SECURE` | Use `true` para SMTP com TLS direto, geralmente porta `465` |
+| `SMTP_USER` | Usuario da conta SMTP |
+| `SMTP_PASS` | Senha/app password da conta SMTP |
+| `MAIL_FROM` | Remetente exibido nos e-mails |
+| `PASSWORD_RESET_FRONTEND_URL` | URL do frontend de redefinicao; o backend adiciona `?token=...` |
+| `PASSWORD_RESET_TOKEN_MINUTES` | Tempo de validade do token (padrao: `30`) |
