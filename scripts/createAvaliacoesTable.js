@@ -93,6 +93,9 @@ async function main() {
     );
 
     if (columns.has('COD_LIVRO') && columns.has('TITULO')) {
+      await connection.execute('ALTER TABLE AVALIACOES MODIFY (COD_LIVRO NULL)');
+      console.log('+ Coluna COD_LIVRO alterada para NULLABLE.');
+
       await connection.execute(
         `
           UPDATE AVALIACOES A

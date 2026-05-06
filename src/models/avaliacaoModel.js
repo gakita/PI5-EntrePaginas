@@ -42,11 +42,11 @@ async function upsertByUserEmail(email, { googleBooksId, title, rating, comment 
         SELECT A.CODIGO
         FROM AVALIACOES A
         JOIN FERNANDO.USUARIOS_TESTE U ON A.COD_USUARIO = U.CODIGO
-        WHERE LOWER(U.EMAIL) = LOWER(:email)
-          AND A.GOOGLE_BOOKS_ID = :googleBooksId
-        FETCH FIRST 1 ROWS ONLY
+        WHERE LOWER(U.EMAIL) = LOWER(:e)
+          AND A.GOOGLE_BOOKS_ID = :gbid
+          AND ROWNUM = 1
       `,
-      { email, googleBooksId }
+      { e: email, gbid: googleBooksId }
     );
 
     if (existing.rows && existing.rows.length > 0) {
@@ -73,25 +73,17 @@ async function upsertByUserEmail(email, { googleBooksId, title, rating, comment 
       await connection.execute(
         `
           INSERT INTO AVALIACOES (GOOGLE_BOOKS_ID, TITULO, NOTA, COMENTARIO, COD_USUARIO)
-          VALUES (
-            :googleBooksId,
-            :title,
-            :rating,
-            :comment,
-            (
-              SELECT CODIGO
-              FROM FERNANDO.USUARIOS_TESTE
-              WHERE LOWER(EMAIL) = LOWER(:email)
-              FETCH FIRST 1 ROWS ONLY
-            )
-          )
+          SELECT :gbid, :t, :r, :c, CODIGO
+          FROM FERNANDO.USUARIOS_TESTE
+          WHERE LOWER(EMAIL) = LOWER(:e)
+            AND ROWNUM = 1
         `,
         {
-          googleBooksId,
-          title,
-          rating,
-          comment: comment || null,
-          email,
+          gbid: googleBooksId,
+          t: title,
+          r: rating,
+          c: comment || null,
+          e: email,
         }
       );
     }

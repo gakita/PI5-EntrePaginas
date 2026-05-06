@@ -12,7 +12,8 @@ test('returns curated home categories for the carousel', () => {
   assert.deepEqual(categories[0], {
     slug: 'fantasia',
     label: 'Fantasia',
-    imageUrl: '/images/categories/fantasia.png',
+    imageUrl: '/images/categories/generic-book.svg',
+    fallbackImageUrl: '/images/categories/generic-book.svg',
     googleBooksQuery: 'subject:fantasy',
   });
 });

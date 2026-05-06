@@ -262,11 +262,19 @@ Retorna a lista curada usada no carrossel da home:
   {
     "slug": "fantasia",
     "label": "Fantasia",
-    "imageUrl": "/images/categories/fantasia.png",
+    "imageUrl": "/images/categories/generic-book.svg",
+    "fallbackImageUrl": "/images/categories/generic-book.svg",
     "googleBooksQuery": "subject:fantasy"
   }
 ]
 ```
+
+Fluxo recomendado para o frontend:
+
+1. Buscar as categorias em `GET /books/categories`.
+2. Para cada categoria, buscar um item em `GET /books?category=...&limit=1`.
+3. Usar `coverUrl` do primeiro item como imagem do card.
+4. Se `coverUrl` vier `null`, usar `fallbackImageUrl`.
 
 #### Catalogo geral com filtros
 

@@ -65,7 +65,7 @@ test('upserts a new evaluation when no previous row exists', async () => {
     async execute(sql, binds) {
       executed.push({ sql, binds });
 
-      if (sql.includes('FETCH FIRST 1 ROWS ONLY')) {
+      if (sql.includes('SELECT A.CODIGO')) {
         return { rows: [] };
       }
 
@@ -93,10 +93,10 @@ test('upserts a new evaluation when no previous row exists', async () => {
 
     assert.equal(executed.length, 2);
     assert.ok(executed[1].sql.includes('INSERT INTO AVALIACOES'));
-    assert.equal(executed[1].binds.googleBooksId, 'abc123');
-    assert.equal(executed[1].binds.title, 'Duna');
-    assert.equal(executed[1].binds.rating, 4);
-    assert.equal(executed[1].binds.comment, 'Muito bom');
+    assert.equal(executed[1].binds.gbid, 'abc123');
+    assert.equal(executed[1].binds.t, 'Duna');
+    assert.equal(executed[1].binds.r, 4);
+    assert.equal(executed[1].binds.c, 'Muito bom');
     assert.equal(committed, true);
   } finally {
     restore();
@@ -110,7 +110,7 @@ test('updates an existing evaluation when the user already rated the book', asyn
     async execute(sql, binds) {
       executed.push({ sql, binds });
 
-      if (sql.includes('FETCH FIRST 1 ROWS ONLY')) {
+      if (sql.includes('SELECT A.CODIGO')) {
         return { rows: [{ CODIGO: 7 }] };
       }
 

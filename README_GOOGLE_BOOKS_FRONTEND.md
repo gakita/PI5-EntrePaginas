@@ -81,6 +81,25 @@ async function buscarCategorias() {
 }
 ```
 
+Fluxo recomendado para o carrossel:
+
+```js
+async function montarCardDeCategoria(category) {
+  const data = await buscarCatalogo({
+    category: category.googleBooksQuery.replace(/^subject:/, ''),
+    limit: 1,
+  });
+
+  const firstBook = data.items[0] || null;
+
+  return {
+    slug: category.slug,
+    label: category.label,
+    imageUrl: firstBook?.coverUrl || category.fallbackImageUrl,
+  };
+}
+```
+
 ## Exemplo de card de recomendação
 
 ```html
