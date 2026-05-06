@@ -30,6 +30,7 @@ const router = createRouter({
     {
       path: import.meta.env.VITE_CHATBOT_ROUTE || '/chatbot',
       component: () => import('@/pages/Chatbot.vue'),
+      meta: { requiresAuth: true },
     },
 
     // // Protected routes
