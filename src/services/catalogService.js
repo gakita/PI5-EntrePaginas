@@ -305,12 +305,12 @@ function normalizeCategories(categories) {
 
 function buildSearchUrl(encodedQuery, includeKey) {
   const keyParam = includeKey && env.googleBooksApiKey ? `&key=${env.googleBooksApiKey}` : '';
-  return `https://www.googleapis.com/books/v1/volumes?q=${encodedQuery}&maxResults=1${keyParam}`;
+  return `https://www.googleapis.com/books/v1/volumes?q=${encodedQuery}&maxResults=1&langRestrict=pt&printType=books${keyParam}`;
 }
 
 function buildListUrl(encodedQuery, limit, startIndex, includeKey) {
   const keyParam = includeKey && env.googleBooksApiKey ? `&key=${env.googleBooksApiKey}` : '';
-  return `https://www.googleapis.com/books/v1/volumes?q=${encodedQuery}&startIndex=${startIndex}&maxResults=${limit}${keyParam}`;
+  return `https://www.googleapis.com/books/v1/volumes?q=${encodedQuery}&startIndex=${startIndex}&maxResults=${limit}&langRestrict=pt&printType=books${keyParam}`;
 }
 
 function shouldRetryWithoutKey(response) {

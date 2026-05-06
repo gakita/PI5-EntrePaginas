@@ -29,6 +29,7 @@ test('searches Google Books catalog with normalized filters and paginated respon
     assert.ok(url.includes(encodeURIComponent('subject:magic')));
     assert.ok(url.includes('startIndex=10'));
     assert.ok(url.includes('maxResults=10'));
+    assert.ok(url.includes('langRestrict=pt'));
 
     return {
       ok: true,
@@ -96,6 +97,7 @@ test('enriches recommendations with Google Books metadata and viewer fields', as
   global.fetch = async (url) => {
     assert.ok(url.includes('q=intitle%3A%22Duna%22%20inauthor%3A%22Frank%20Herbert%22'));
     assert.ok(url.includes('maxResults=1'));
+    assert.ok(url.includes('langRestrict=pt'));
 
     return {
       ok: true,

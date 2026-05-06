@@ -602,6 +602,13 @@
             
             <div id="auth-login-form">
                 <div class="form-group">
+                    <label>Nome</label>
+                    <div class="input-wrapper input-with-icon">
+                        <i data-lucide="user-round"></i>
+                        <input type="text" id="auth-name" value="Usuário Teste" placeholder="Seu nome">
+                    </div>
+                </div>
+                <div class="form-group">
                     <label>E-mail</label>
                     <div class="input-wrapper input-with-icon">
                         <i data-lucide="mail"></i>
@@ -681,7 +688,7 @@
                     <label>Categoria / Gênero</label>
                     <div class="input-wrapper input-with-icon">
                         <i data-lucide="tag"></i>
-                        <input type="text" id="catalog-category" placeholder="fantasy, science fiction...">
+                        <input type="text" id="catalog-category" placeholder="fantasia, ficcao cientifica, romance...">
                     </div>
                 </div>
             </div>
@@ -968,22 +975,40 @@
     }
 
     async function handleRegister() {
+        const name = document.getElementById('auth-name').value.trim();
         const email = document.getElementById('auth-email').value;
         const password = document.getElementById('auth-password').value;
-        const name = prompt("Qual seu nome?", "Usuário Teste");
-        
-        if (!name) return;
 
         const { data, status } = await apiCall('/auth/register', 'POST', { name, email, password });
         document.getElementById('auth-output').textContent = JSON.stringify(data, null, 2);
-        
-        if (status === 201) alert("Conta criada! Agora faça o login.");
+
+        if (status === 201 && data.token) {
+            currentToken = data.token;
+            localStorage.setItem('ep_token', currentToken);
+            localStorage.setItem('ep_email', data.user?.email || email);
+            updateAuthUI();
+            alert("Conta criada e login realizado com sucesso.");
+            return;
+        }
+
+        alert(data.message || 'Nao foi possivel criar a conta.');
     }
 
     async function handleForgotPassword() {
         const email = document.getElementById('auth-email').value;
-        const { data } = await apiCall('/auth/forgot-password', 'POST', { email });
+        const { data, status } = await apiCall('/auth/forgot-password', 'POST', { email });
         document.getElementById('auth-output').textContent = JSON.stringify(data, null, 2);
+
+        if (status !== 200) {
+            alert(data.message || 'Falha ao solicitar recuperacao de senha.');
+            return;
+        }
+
+        if (data.resetToken) {
+            alert(`${data.message}\n\nToken de teste:\n${data.resetToken}`);
+            return;
+        }
+
         alert(data.message);
     }
 
