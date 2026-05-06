@@ -1,0 +1,43 @@
+{
+  "name": "backend",
+  "version": "1.0.0",
+  "description": "Backend Node.js com Express, Oracle Database e autenticacao JWT",
+  "main": "server.js",
+  "scripts": {
+    "dev": "node server.js",
+    "start": "node server.js",
+    "test": "node --test",
+    "seed:user": "node scripts/seedTestUser.js",
+    "db:chat": "node scripts/createChatTable.js",
+    "db:preferences": "node scripts/createPreferencesTable.js",
+    "db:quiz": "node scripts/createQuizTable.js",
+    "db:password-reset": "node scripts/createPasswordResetTokensTable.js",
+    "test:chat": "node scripts/testChat.js",
+    "test:quiz": "node scripts/testQuiz.js",
+    "test:quiz:run": "node scripts/runQuizTests.js",
+    "chat:play": "node scripts/chat.js"
+  },
+  "keywords": [
+    "node",
+    "express",
+    "oracle",
+    "jwt",
+    "auth"
+  ],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "@google/generative-ai": "^0.24.1",
+    "bcrypt": "^6.0.0",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
+    "express": "^5.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "nodemailer": "^8.0.7",
+    "oracledb": "^6.9.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.14"
+  }
+}
