@@ -213,6 +213,8 @@ Se não houver informação suficiente para algum campo, retorne um array vazio 
 async function generateQuizQuestion(questions, answers) {
   const model = genAI.getGenerativeModel({ model: env.geminiModel });
 
+  logger.info('Generating adaptive quiz question...', { answeredCount: answers.length });
+
   const prompt = `
 Voce cria perguntas objetivas para um quiz de recomendacao de leitura do Entre Paginas.
 
@@ -237,13 +239,26 @@ Responda APENAS com JSON:
 }
 `;
 
-  const result = await model.generateContent(prompt);
-  const parsed = JSON.parse(cleanJsonText(result.response.text()));
+  try {
+    // Adicionando um timeout manual de 10s para a chamada da IA
+    const result = await Promise.race([
+      model.generateContent(prompt),
+      new Promise((_, reject) => setTimeout(() => reject(new Error('Gemini Timeout')), 10000))
+    ]);
 
-  return {
-    text: typeof parsed.text === 'string' ? parsed.text : '',
-    options: safeArray(parsed.options),
-  };
+    const text = result.response.text();
+    const parsed = JSON.parse(cleanJsonText(text));
+
+    logger.info('Adaptive quiz question generated successfully');
+
+    return {
+      text: typeof parsed.text === 'string' ? parsed.text : '',
+      options: safeArray(parsed.options),
+    };
+  } catch (error) {
+    logger.error('Error generating adaptive quiz question', { error: error.message });
+    throw error; // quizService ja tem o catch para fallback
+  }
 }
 
 async function inferQuizPreferences(answers) {
@@ -286,6 +301,8 @@ async function generateQuizRecommendations(answers, preferences = null, readBook
     systemInstruction: buildSystemInstruction(preferences, readBooks),
   });
 
+  logger.info('Generating final quiz recommendations...', { userEmail: preferences?.userEmail || 'unknown' });
+
   const prompt = `
 O usuario respondeu a um quiz de perfil de leitura.
 
@@ -312,8 +329,15 @@ Responda APENAS com JSON:
 `;
 
   try {
-    const result = await model.generateContent(prompt);
-    const parsed = JSON.parse(cleanJsonText(result.response.text()));
+    const result = await Promise.race([
+      model.generateContent(prompt),
+      new Promise((_, reject) => setTimeout(() => reject(new Error('Gemini Recommendation Timeout')), 15000))
+    ]);
+
+    const text = result.response.text();
+    const parsed = JSON.parse(cleanJsonText(text));
+
+    logger.info('Quiz recommendations generated successfully');
 
     return {
       message: parsed.message || 'Aqui estao algumas recomendacoes baseadas no seu quiz.',

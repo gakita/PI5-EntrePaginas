@@ -19,7 +19,7 @@ const env = require('../config/env');
 const logger = require('../utils/logger');
 
 // Tempo máximo para esperar resposta da API (ms)
-const TIMEOUT_MS = 5000;
+const TIMEOUT_MS = 10000;
 const DEFAULT_CATALOG_LIMIT = 10;
 const MAX_CATALOG_LIMIT = 20;
 
