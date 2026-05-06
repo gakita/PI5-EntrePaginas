@@ -1,0 +1,1203 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Entre Páginas — Premium Backend Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Outfit:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        :root {
+            --bg-color: #020617;
+            --surface: #0f172a;
+            --surface-hover: #1e293b;
+            --accent-primary: #6366f1;
+            --accent-secondary: #8b5cf6;
+            --accent-tertiary: #d946ef;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --success: #10b981;
+            --error: #ef4444;
+            --warning: #f59e0b;
+            --glass-bg: rgba(15, 23, 42, 0.6);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+            --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            background-image: 
+                radial-gradient(circle at 0% 0%, rgba(99, 102, 241, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 100% 100%, rgba(139, 92, 246, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 50% 50%, rgba(217, 70, 239, 0.05) 0%, transparent 50%);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+            line-height: 1.5;
+        }
+
+        h1, h2, h3, h4 {
+            font-family: 'Outfit', sans-serif;
+            letter-spacing: -0.02em;
+        }
+
+        header {
+            padding: 1.5rem 2rem;
+            border-bottom: 1px solid var(--glass-border);
+            background: rgba(2, 6, 23, 0.8);
+            backdrop-filter: blur(20px);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-content h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-tertiary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .header-content p {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            gap: 2.5rem;
+            flex-grow: 1;
+        }
+
+        /* Sidebar Navigation */
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            position: sticky;
+            top: 6rem;
+            height: fit-content;
+        }
+
+        .nav-item {
+            padding: 1rem 1.25rem;
+            background: transparent;
+            border: 1px solid transparent;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+
+        .nav-item i {
+            width: 20px;
+            height: 20px;
+            opacity: 0.7;
+        }
+
+        .nav-item:hover {
+            background: rgba(255, 255, 255, 0.03);
+            color: var(--text-primary);
+            transform: translateX(4px);
+        }
+
+        .nav-item.active {
+            background: rgba(99, 102, 241, 0.1);
+            border-color: rgba(99, 102, 241, 0.2);
+            color: var(--accent-primary);
+        }
+
+        .nav-item.active i {
+            opacity: 1;
+            color: var(--accent-primary);
+        }
+
+        /* Main Content */
+        .main-content {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+            animation: fadeIn 0.4s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            padding: 2.5rem;
+            box-shadow: var(--shadow-xl);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card-header {
+            margin-bottom: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .card-header-text h2 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+        }
+
+        .card-header-text p {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .badge {
+            padding: 0.4rem 0.8rem;
+            border-radius: 8px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .badge-auth { background: rgba(16, 185, 129, 0.1); color: var(--success); border: 1px solid rgba(16, 185, 129, 0.2); }
+        .badge-no-auth { background: rgba(239, 68, 68, 0.1); color: var(--error); border: 1px solid rgba(239, 68, 68, 0.2); }
+
+        /* Forms */
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.6rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+
+        .input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .input-wrapper i {
+            position: absolute;
+            left: 1rem;
+            color: var(--text-muted);
+            width: 18px;
+            height: 18px;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            color: white;
+            font-family: inherit;
+            font-size: 0.95rem;
+            transition: all 0.2s;
+        }
+
+        .input-with-icon input {
+            padding-left: 2.75rem;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+            background: rgba(15, 23, 42, 1);
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 0.75rem 1.5rem;
+            border: 1px solid transparent;
+            border-radius: 12px;
+            font-weight: 600;
+            font-family: 'Outfit', sans-serif;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.6rem;
+            font-size: 0.95rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            color: white;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
+            filter: brightness(1.1);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-primary);
+            border: 1px solid var(--glass-border);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-danger {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--error);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+        }
+
+        .btn-danger:hover {
+            background: var(--error);
+            color: white;
+        }
+
+        /* Result Area */
+        .result-area {
+            margin-top: 2.5rem;
+            border-top: 1px solid var(--glass-border);
+            padding-top: 2rem;
+        }
+
+        .result-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.25rem;
+        }
+
+        .result-header h3 {
+            font-size: 0.85rem;
+            color: var(--accent-primary);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            font-weight: 700;
+        }
+
+        .json-output {
+            background: #020617;
+            padding: 1.5rem;
+            border-radius: 16px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.875rem;
+            overflow-x: auto;
+            max-height: 450px;
+            border: 1px solid var(--glass-border);
+            white-space: pre-wrap;
+            color: #e2e8f0;
+            line-height: 1.6;
+        }
+
+        /* Visual Components */
+        .book-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 2rem;
+            margin-top: 1.5rem;
+        }
+
+        .book-card {
+            background: rgba(15, 23, 42, 0.4);
+            border-radius: 20px;
+            overflow: hidden;
+            border: 1px solid var(--glass-border);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+        }
+
+        .book-card:hover {
+            transform: translateY(-8px);
+            background: rgba(15, 23, 42, 0.6);
+            border-color: rgba(99, 102, 241, 0.3);
+            box-shadow: var(--shadow-xl);
+        }
+
+        .book-cover-container {
+            position: relative;
+            aspect-ratio: 2/3;
+            overflow: hidden;
+        }
+
+        .book-cover {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+        }
+
+        .book-card:hover .book-cover {
+            transform: scale(1.05);
+        }
+
+        .book-info {
+            padding: 1.25rem;
+        }
+
+        .book-title {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 0.4rem;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            color: var(--text-primary);
+        }
+
+        .book-author {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .sensitive-badge {
+            position: absolute;
+            top: 0.75rem;
+            right: 0.75rem;
+            background: rgba(239, 68, 68, 0.9);
+            backdrop-filter: blur(4px);
+            color: white;
+            font-size: 0.6rem;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-weight: 700;
+            text-transform: uppercase;
+            z-index: 10;
+        }
+
+        /* Chat UI */
+        .chat-container {
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+            height: 500px;
+            overflow-y: auto;
+            padding: 1.5rem;
+            background: rgba(2, 6, 23, 0.5);
+            border-radius: 20px;
+            margin-bottom: 1.5rem;
+            border: 1px solid var(--glass-border);
+            scrollbar-width: thin;
+            scrollbar-color: var(--accent-primary) transparent;
+        }
+
+        .chat-container::-webkit-scrollbar { width: 6px; }
+        .chat-container::-webkit-scrollbar-thumb { background: var(--accent-primary); border-radius: 10px; }
+
+        .msg {
+            max-width: 85%;
+            padding: 1rem 1.25rem;
+            border-radius: 20px;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            position: relative;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .msg-user {
+            align-self: flex-end;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            color: white;
+            border-bottom-right-radius: 4px;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.2);
+        }
+
+        .msg-ai {
+            align-self: flex-start;
+            background: var(--surface);
+            color: var(--text-primary);
+            border-bottom-left-radius: 4px;
+            border: 1px solid var(--glass-border);
+        }
+
+        /* Quiz UI */
+        .quiz-question {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 2rem;
+            color: var(--text-primary);
+            text-align: center;
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.25rem;
+        }
+
+        .option-btn {
+            background: var(--surface);
+            border: 1px solid var(--glass-border);
+            padding: 1.25rem;
+            border-radius: 16px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        .option-btn:hover {
+            background: rgba(99, 102, 241, 0.1);
+            border-color: var(--accent-primary);
+            color: var(--accent-primary);
+            transform: scale(1.02);
+        }
+
+        .quiz-progress-bar {
+            width: 100%;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            margin-bottom: 2rem;
+            overflow: hidden;
+        }
+
+        .quiz-progress-fill {
+            height: 100%;
+            background: linear-gradient(to right, var(--accent-primary), var(--accent-tertiary));
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+
+        /* Loading */
+        .loader {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255,255,255,0.1);
+            border-radius: 50%;
+            border-top-color: var(--accent-primary);
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .hidden { display: none !important; }
+
+        footer {
+            margin-top: auto;
+            padding: 3rem 2rem;
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            border-top: 1px solid var(--glass-border);
+            background: rgba(2, 6, 23, 0.5);
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.2); }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="header-content">
+        <h1><i data-lucide="book-open"></i> Entre Páginas</h1>
+        <p>Premium Backend Dashboard — Unified API Validation</p>
+    </div>
+    <div class="header-actions">
+        <div id="auth-status-badge" class="badge badge-no-auth">
+            <i data-lucide="shield-off"></i> <span>Desconectado</span>
+        </div>
+    </div>
+</header>
+
+<div class="container">
+    <div class="sidebar">
+        <div class="nav-item active" onclick="showSection('auth')">
+            <i data-lucide="lock"></i> Autenticação
+        </div>
+        <div class="nav-item" onclick="showSection('catalog')">
+            <i data-lucide="search"></i> Catálogo & Busca
+        </div>
+        <div class="nav-item" onclick="showSection('chat')">
+            <i data-lucide="message-square"></i> Chat com IA
+        </div>
+        <div class="nav-item" onclick="showSection('quiz')">
+            <i data-lucide="target"></i> Quiz de Perfil
+        </div>
+        <div class="nav-item" onclick="showSection('profile')">
+            <i data-lucide="user"></i> Perfil & Preferências
+        </div>
+    </div>
+
+    <div class="main-content">
+        <!-- Section: Auth -->
+        <div id="section-auth" class="section card">
+            <div class="card-header">
+                <div class="card-header-text">
+                    <h2>Acesso ao Sistema</h2>
+                    <p>Gerencie sua sessão e autenticação na API</p>
+                </div>
+            </div>
+            
+            <div id="auth-login-form">
+                <div class="form-group">
+                    <label>E-mail</label>
+                    <div class="input-wrapper input-with-icon">
+                        <i data-lucide="mail"></i>
+                        <input type="email" id="auth-email" value="admin@example.com" placeholder="seu@email.com">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Senha</label>
+                    <div class="input-wrapper input-with-icon">
+                        <i data-lucide="key"></i>
+                        <input type="password" id="auth-password" value="123456" placeholder="••••••••">
+                    </div>
+                </div>
+                <div class="btn-group">
+                    <button class="btn-primary" onclick="handleLogin()">
+                        <i data-lucide="log-in"></i> Entrar
+                    </button>
+                    <button class="btn-secondary" onclick="handleRegister()">
+                        <i data-lucide="user-plus"></i> Criar Conta
+                    </button>
+                    <button class="btn-secondary" onclick="handleForgotPassword()">
+                        <i data-lucide="help-circle"></i> Esqueci Senha
+                    </button>
+                </div>
+            </div>
+
+            <div id="auth-logged-info" class="hidden">
+                <div style="background: rgba(99, 102, 241, 0.05); padding: 1.5rem; border-radius: 16px; margin-bottom: 2rem; border: 1px solid rgba(99, 102, 241, 0.1);">
+                    <p style="color: var(--text-muted); font-size: 0.8rem; margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 700;">Usuário Ativo</p>
+                    <p style="font-size: 1.1rem; font-weight: 600; color: var(--accent-primary);" id="logged-user-email"></p>
+                </div>
+                <div class="form-group">
+                    <label>Token JWT Ativo</label>
+                    <textarea id="current-token" readonly rows="3" style="font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; background: #020617;"></textarea>
+                </div>
+                <button class="btn-danger" onclick="handleLogout()">
+                    <i data-lucide="log-out"></i> Sair da Conta
+                </button>
+            </div>
+
+            <div class="result-area">
+                <div class="result-header">
+                    <h3>Response Log</h3>
+                    <span id="auth-timer" style="font-family: 'JetBrains Mono'; font-size: 0.75rem; color: var(--accent-primary);"></span>
+                </div>
+                <pre id="auth-output" class="json-output">{ "message": "Aguardando ação..." }</pre>
+            </div>
+        </div>
+
+        <!-- Section: Catalog -->
+        <div id="section-catalog" class="section card hidden">
+            <div class="card-header">
+                <div class="card-header-text">
+                    <h2>Consulta ao Catálogo</h2>
+                    <p>Google Books API Integration & Local Database</p>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label>Termo de Busca</label>
+                <div class="input-wrapper input-with-icon">
+                    <i data-lucide="search"></i>
+                    <input type="text" id="catalog-query" placeholder="Ex: Duna, Harry Potter, Manga...">
+                </div>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                <div class="form-group">
+                    <label>Tipo de Mídia</label>
+                    <select id="catalog-type">
+                        <option value="">Todos os Formatos</option>
+                        <option value="livro">📚 Livro</option>
+                        <option value="hq">🦸 HQ</option>
+                        <option value="manga">⛩️ Mangá</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Categoria / Gênero</label>
+                    <div class="input-wrapper input-with-icon">
+                        <i data-lucide="tag"></i>
+                        <input type="text" id="catalog-category" placeholder="fantasy, science fiction...">
+                    </div>
+                </div>
+            </div>
+
+            <button class="btn-primary" onclick="searchCatalog()" style="width: 100%;">
+                <i data-lucide="search"></i> Pesquisar no Catálogo
+            </button>
+
+            <div class="result-area">
+                <div class="result-header">
+                    <h3>Resultados Visuais</h3>
+                </div>
+                <div id="catalog-visual-output" class="book-grid">
+                    <!-- Books will appear here -->
+                </div>
+                <div class="result-header" style="margin-top: 2.5rem;">
+                    <h3>Raw Data Structure</h3>
+                </div>
+                <pre id="catalog-output" class="json-output">[]</pre>
+            </div>
+        </div>
+
+        <!-- Section: Chat -->
+        <div id="section-chat" class="section card hidden">
+            <div class="card-header">
+                <div class="card-header-text">
+                    <h2>Chat de Recomendação</h2>
+                    <p>Assistente Inteligente com Personalidade IA</p>
+                </div>
+                <div class="btn-group" style="margin-top: 0;">
+                    <button class="btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.75rem;" onclick="getChatHistory()">
+                        <i data-lucide="history" style="width: 14px; height: 14px;"></i> Histórico
+                    </button>
+                    <button class="btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.75rem;" onclick="clearChat()">
+                        <i data-lucide="trash-2" style="width: 14px; height: 14px;"></i> Limpar
+                    </button>
+                    <button class="btn-primary" style="padding: 0.5rem 1rem; font-size: 0.75rem;" onclick="closeConversation()">
+                        <i data-lucide="check-circle" style="width: 14px; height: 14px;"></i> Encerrar & Salvar
+                    </button>
+                </div>
+            </div>
+            
+            <div id="chat-window" class="chat-container">
+                <div class="msg msg-ai">Olá! Eu sou o assistente do Entre Páginas. Como posso te ajudar a escolher sua próxima leitura hoje?</div>
+            </div>
+
+            <div style="display: flex; gap: 1rem;">
+                <div class="input-wrapper" style="flex-grow: 1;">
+                    <input type="text" id="chat-input" placeholder="Diga algo como 'Recomenda um livro de terror'..." onkeypress="if(event.key==='Enter') sendChatMessage()">
+                </div>
+                <button class="btn-primary" onclick="sendChatMessage()">
+                    <i data-lucide="send"></i>
+                </button>
+            </div>
+
+            <div class="result-area">
+                <div class="result-header">
+                    <h3>Recomendações Extraídas</h3>
+                </div>
+                <div id="chat-recs-output" class="book-grid"></div>
+            </div>
+        </div>
+
+        <!-- Section: Quiz -->
+        <div id="section-quiz" class="section card hidden">
+            <div class="card-header">
+                <div class="card-header-text">
+                    <h2>Quiz de Perfil</h2>
+                    <p>Descubra seu arquétipo de leitor</p>
+                </div>
+                <button class="btn-secondary" onclick="startQuiz()">
+                    <i data-lucide="refresh-cw"></i> Reiniciar
+                </button>
+            </div>
+            
+            <div id="quiz-intro" style="text-align: center; padding: 2rem;">
+                <div style="background: rgba(99, 102, 241, 0.1); width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem;">
+                    <i data-lucide="sparkles" style="width: 40px; height: 40px; color: var(--accent-primary);"></i>
+                </div>
+                <p style="font-size: 1.1rem; color: var(--text-secondary); margin-bottom: 2rem;">Responda algumas perguntas rápidas para que possamos entender seu estilo e sugerir as melhores leituras.</p>
+                <button class="btn-primary" onclick="startQuiz()" style="margin: 0 auto; padding: 1rem 2.5rem;">
+                    Começar Agora
+                </button>
+            </div>
+
+            <div id="quiz-active" class="hidden">
+                <div class="quiz-progress-bar">
+                    <div id="quiz-progress-fill" class="quiz-progress-fill"></div>
+                </div>
+                <div id="quiz-progress-text" style="margin-bottom: 1rem; font-size: 0.8rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;">Pergunta 1 de 8</div>
+                <div id="quiz-question-text" class="quiz-question">Carregando pergunta...</div>
+                <div id="quiz-options" class="options-grid">
+                    <!-- Options here -->
+                </div>
+                <div style="margin-top: 3rem; display: flex; justify-content: center; gap: 1rem;">
+                    <button id="btn-finish-quiz" class="btn-secondary hidden" onclick="finishQuiz(false)">
+                        <i data-lucide="eye"></i> Ver Sugestões
+                    </button>
+                    <button id="btn-save-finish-quiz" class="btn-primary hidden" onclick="finishQuiz(true)">
+                        <i data-lucide="save"></i> Salvar & Finalizar
+                    </button>
+                </div>
+            </div>
+
+            <div id="quiz-results" class="hidden">
+                <div style="text-align: center; margin-bottom: 3rem;">
+                    <h3 style="font-size: 2rem; margin-bottom: 1rem;">Resultado do Quiz</h3>
+                    <div id="quiz-message" style="font-size: 1.1rem; color: var(--text-secondary); font-style: italic;"></div>
+                </div>
+                <div id="quiz-recs-output" class="book-grid"></div>
+            </div>
+
+            <div class="result-area">
+                <div class="result-header">
+                    <h3>Debug Log</h3>
+                </div>
+                <pre id="quiz-output" class="json-output">Pronto para iniciar.</pre>
+            </div>
+        </div>
+
+        <!-- Section: Profile -->
+        <div id="section-profile" class="section card hidden">
+            <div class="card-header">
+                <div class="card-header-text">
+                    <h2>Preferências do Usuário</h2>
+                    <p>Personalize suas recomendações automáticas</p>
+                </div>
+                <button class="btn-primary" onclick="savePreferences()">
+                    <i data-lucide="check-circle"></i> Salvar Alterações
+                </button>
+            </div>
+            
+            <div class="form-group">
+                <label>Gêneros Favoritos</label>
+                <div class="input-wrapper input-with-icon">
+                    <i data-lucide="hash"></i>
+                    <input type="text" id="pref-genres" placeholder="Ação, Terror, Drama...">
+                </div>
+                <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.4rem;">Separe os gêneros por vírgula para melhor precisão.</p>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                <div class="form-group">
+                    <label>Tipos de Mídia Preferidos</label>
+                    <div class="input-wrapper input-with-icon">
+                        <i data-lucide="box"></i>
+                        <input type="text" id="pref-types" placeholder="livro, hq, manga">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Autores Favoritos</label>
+                    <div class="input-wrapper input-with-icon">
+                        <i data-lucide="pen-tool"></i>
+                        <input type="text" id="pref-authors" placeholder="Stephen King, J.K. Rowling...">
+                    </div>
+                </div>
+            </div>
+
+            <button class="btn-secondary" onclick="loadPreferences()" style="margin-top: 1rem;">
+                <i data-lucide="refresh-cw"></i> Recarregar do Servidor
+            </button>
+
+            <div class="result-area">
+                <div class="result-header">
+                    <h3>Histórico de Sugestões Salvas</h3>
+                </div>
+                <div id="profile-suggestions" class="book-grid"></div>
+                <div class="result-header" style="margin-top: 2.5rem;">
+                    <h3>Preferências (Raw JSON)</h3>
+                </div>
+                <pre id="profile-output" class="json-output">Aguardando...</pre>
+            </div>
+        </div>
+    </div>
+</div>
+
+<footer>
+    &copy; 2026 Entre Páginas — Projeto Integrador V (PUC-Campinas)
+</footer>
+
+<script>
+    let currentToken = localStorage.getItem('ep_token') || '';
+    let currentQuizSession = null;
+
+    // UI State Management
+    function showSection(sectionId) {
+        document.querySelectorAll('.section').forEach(s => {
+            s.style.opacity = '0';
+            s.style.transform = 'translateY(10px)';
+            setTimeout(() => s.classList.add('hidden'), 200);
+        });
+
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+        
+        setTimeout(() => {
+            const section = document.getElementById(`section-${sectionId}`);
+            section.classList.remove('hidden');
+            setTimeout(() => {
+                section.style.opacity = '1';
+                section.style.transform = 'translateY(0)';
+            }, 50);
+        }, 250);
+
+        event.currentTarget.classList.add('active');
+
+        if (sectionId === 'profile' && currentToken) {
+            loadPreferences();
+        }
+    }
+
+    function updateAuthUI() {
+        const badge = document.getElementById('auth-status-badge');
+        const loggedInfo = document.getElementById('auth-logged-info');
+        const loginForm = document.getElementById('auth-login-form');
+        
+        if (currentToken) {
+            badge.innerHTML = '<i data-lucide="shield-check"></i> <span>Autenticado</span>';
+            badge.className = "badge badge-auth";
+            loggedInfo.classList.remove('hidden');
+            loginForm.classList.add('hidden');
+            document.getElementById('current-token').value = currentToken;
+            document.getElementById('logged-user-email').textContent = localStorage.getItem('ep_email') || 'Usuário Teste';
+        } else {
+            badge.innerHTML = '<i data-lucide="shield-off"></i> <span>Desconectado</span>';
+            badge.className = "badge badge-no-auth";
+            loggedInfo.classList.add('hidden');
+            loginForm.classList.remove('hidden');
+        }
+        lucide.createIcons();
+    }
+
+    // API Helpers
+    async function apiCall(endpoint, method = 'GET', body = null) {
+        const options = {
+            method,
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        };
+
+        if (currentToken) {
+            options.headers['Authorization'] = `Bearer ${currentToken}`;
+        }
+
+        if (body) {
+            options.body = JSON.stringify(body);
+        }
+
+        const start = Date.now();
+        try {
+            const response = await fetch(endpoint, options);
+            const data = await response.json();
+            const duration = Date.now() - start;
+            return { data, status: response.status, duration };
+        } catch (error) {
+            console.error('API Error:', error);
+            return { data: { error: 'Falha na conexão com o servidor' }, status: 500, duration: 0 };
+        }
+    }
+
+    // Auth Handlers
+    async function handleLogin() {
+        const email = document.getElementById('auth-email').value;
+        const password = document.getElementById('auth-password').value;
+        
+        const btn = event.currentTarget;
+        const originalHtml = btn.innerHTML;
+        btn.innerHTML = '<div class="loader"></div>';
+        btn.disabled = true;
+
+        const { data, status, duration } = await apiCall('/auth/login', 'POST', { email, password });
+        
+        btn.innerHTML = originalHtml;
+        btn.disabled = false;
+
+        document.getElementById('auth-output').textContent = JSON.stringify(data, null, 2);
+        document.getElementById('auth-timer').textContent = `${duration}ms`;
+
+        if (status === 200 && data.token) {
+            currentToken = data.token;
+            localStorage.setItem('ep_token', currentToken);
+            localStorage.setItem('ep_email', email);
+            updateAuthUI();
+        }
+    }
+
+    async function handleRegister() {
+        const email = document.getElementById('auth-email').value;
+        const password = document.getElementById('auth-password').value;
+        const name = prompt("Qual seu nome?", "Usuário Teste");
+        
+        if (!name) return;
+
+        const { data, status } = await apiCall('/auth/register', 'POST', { name, email, password });
+        document.getElementById('auth-output').textContent = JSON.stringify(data, null, 2);
+        
+        if (status === 201) alert("Conta criada! Agora faça o login.");
+    }
+
+    async function handleForgotPassword() {
+        const email = document.getElementById('auth-email').value;
+        const { data } = await apiCall('/auth/forgot-password', 'POST', { email });
+        document.getElementById('auth-output').textContent = JSON.stringify(data, null, 2);
+        alert(data.message);
+    }
+
+    function handleLogout() {
+        currentToken = '';
+        localStorage.removeItem('ep_token');
+        localStorage.removeItem('ep_email');
+        updateAuthUI();
+    }
+
+    // Catalog Handlers
+    async function searchCatalog() {
+        const query = document.getElementById('catalog-query').value;
+        const type = document.getElementById('catalog-type').value;
+        const category = document.getElementById('catalog-category').value;
+        
+        const btn = event.currentTarget;
+        const originalHtml = btn.innerHTML;
+        btn.innerHTML = '<div class="loader"></div> Buscando...';
+        btn.disabled = true;
+
+        let url = `/books?search=${encodeURIComponent(query)}`;
+        if (type) url += `&type=${type}`;
+        if (category) url += `&category=${category}`;
+
+        const { data } = await apiCall(url);
+        
+        btn.innerHTML = originalHtml;
+        btn.disabled = false;
+
+        document.getElementById('catalog-output').textContent = JSON.stringify(data, null, 2);
+
+        const visual = document.getElementById('catalog-visual-output');
+        visual.innerHTML = '';
+        
+        if (data.items) {
+            data.items.forEach(book => {
+                visual.appendChild(createBookCard(book));
+            });
+        }
+        lucide.createIcons();
+    }
+
+    function createBookCard(book) {
+        const div = document.createElement('div');
+        div.className = 'book-card';
+        div.innerHTML = `
+            ${book.sensitiveContent ? '<span class="sensitive-badge">Conteúdo Sensível</span>' : ''}
+            <div class="book-cover-container">
+                <img class="book-cover" src="${book.coverUrl || 'https://via.placeholder.com/300x450?text=Sem+Capa'}" alt="Capa">
+            </div>
+            <div class="book-info">
+                <div class="book-title">${book.title}</div>
+                <div class="book-author">${book.author || 'Autor desconhecido'}</div>
+            </div>
+        `;
+        return div;
+    }
+
+    // Chat Handlers
+    async function sendChatMessage() {
+        const input = document.getElementById('chat-input');
+        const text = input.value.trim();
+        if (!text) return;
+
+        addChatMessage('user', text);
+        input.value = '';
+
+        const { data } = await apiCall('/chat/message', 'POST', { message: text });
+        addChatMessage('ai', data.reply || 'Ops, tive um problema ao processar sua mensagem.');
+
+        const recsOutput = document.getElementById('chat-recs-output');
+        recsOutput.innerHTML = '';
+        if (data.recommendations) {
+            data.recommendations.forEach(rec => recsOutput.appendChild(createBookCard(rec)));
+        }
+    }
+
+    function addChatMessage(role, text) {
+        const win = document.getElementById('chat-window');
+        const div = document.createElement('div');
+        div.className = `msg msg-${role}`;
+        div.textContent = text;
+        win.appendChild(div);
+        win.scrollTop = win.scrollHeight;
+    }
+
+    async function getChatHistory() {
+        const { data } = await apiCall('/chat/history');
+        const win = document.getElementById('chat-window');
+        win.innerHTML = '';
+        if (data.messages) {
+            data.messages.forEach(m => addChatMessage(m.role === 'user' ? 'user' : 'ai', m.content));
+        }
+    }
+
+    async function clearChat() {
+        if (!confirm('Deseja limpar todo o histórico do chat?')) return;
+        await apiCall('/chat/history', 'DELETE');
+        document.getElementById('chat-window').innerHTML = '<div class="msg msg-ai">Histórico limpo. Como posso ajudar você hoje?</div>';
+        document.getElementById('chat-recs-output').innerHTML = '';
+    }
+
+    async function closeConversation() {
+        const { data } = await apiCall('/chat/close', 'POST');
+        alert(`Conversa encerrada! Preferências atualizadas: ${data.preferencesUpdated ? 'Sim' : 'Não'}`);
+    }
+
+    // Quiz Handlers
+    async function startQuiz() {
+        document.getElementById('quiz-intro').classList.add('hidden');
+        document.getElementById('quiz-results').classList.add('hidden');
+        document.getElementById('quiz-active').classList.remove('hidden');
+        
+        const { data } = await apiCall('/quiz/start', 'POST');
+        currentQuizSession = data.sessionId;
+        renderQuizStep(data);
+        document.getElementById('quiz-output').textContent = JSON.stringify(data, null, 2);
+    }
+
+    function renderQuizStep(stepData) {
+        const question = stepData.question || (stepData.questions ? stepData.questions[0] : null);
+        if (!question) return;
+
+        const currentCount = stepData.questionNumber || (stepData.answeredCount + 1);
+        const total = 8;
+        const progress = (currentCount / total) * 100;
+
+        document.getElementById('quiz-progress-fill').style.width = `${progress}%`;
+        document.getElementById('quiz-progress-text').textContent = `Pergunta ${currentCount} de ${total}`;
+        document.getElementById('quiz-question-text').textContent = question.text;
+        
+        const optionsDiv = document.getElementById('quiz-options');
+        optionsDiv.innerHTML = '';
+        
+        question.options.forEach(opt => {
+            const btn = document.createElement('div');
+            btn.className = 'option-btn';
+            btn.textContent = opt;
+            btn.onclick = () => answerQuiz(question.id, opt);
+            optionsDiv.appendChild(btn);
+        });
+
+        if (stepData.canFinish) {
+            document.getElementById('btn-finish-quiz').classList.remove('hidden');
+            document.getElementById('btn-save-finish-quiz').classList.remove('hidden');
+        }
+        lucide.createIcons();
+    }
+
+    async function answerQuiz(questionId, answer) {
+        const { data } = await apiCall('/quiz/answer', 'POST', {
+            sessionId: currentQuizSession,
+            questionId,
+            answer
+        });
+        
+        document.getElementById('quiz-output').textContent = JSON.stringify(data, null, 2);
+        
+        if (data.isComplete) {
+            finishQuiz(true);
+        } else {
+            renderQuizStep(data);
+        }
+    }
+
+    async function finishQuiz(savePreferences) {
+        const { data } = await apiCall('/quiz/finish', 'POST', {
+            sessionId: currentQuizSession,
+            savePreferences
+        });
+
+        document.getElementById('quiz-output').textContent = JSON.stringify(data, null, 2);
+        document.getElementById('quiz-active').classList.add('hidden');
+        document.getElementById('quiz-results').classList.remove('hidden');
+        
+        document.getElementById('quiz-message').textContent = data.message;
+        const recsOutput = document.getElementById('quiz-recs-output');
+        recsOutput.innerHTML = '';
+        if (data.recommendations) {
+            data.recommendations.forEach(rec => recsOutput.appendChild(createBookCard(rec)));
+        }
+        lucide.createIcons();
+    }
+
+    // Profile Handlers
+    async function loadPreferences() {
+        const { data } = await apiCall('/chat/preferences');
+        document.getElementById('pref-genres').value = (data.genres || []).join(', ');
+        document.getElementById('pref-types').value = (data.types || []).join(', ');
+        document.getElementById('pref-authors').value = (data.favoriteAuthors || []).join(', ');
+        document.getElementById('profile-output').textContent = JSON.stringify(data, null, 2);
+        
+        const suggOutput = document.getElementById('profile-suggestions');
+        suggOutput.innerHTML = '';
+        if (data.savedSuggestions) {
+            data.savedSuggestions.forEach(s => suggOutput.appendChild(createBookCard(s)));
+        }
+        lucide.createIcons();
+    }
+
+    async function savePreferences() {
+        const genres = document.getElementById('pref-genres').value.split(',').map(s => s.trim()).filter(Boolean);
+        const types = document.getElementById('pref-types').value.split(',').map(s => s.trim()).filter(Boolean);
+        const favoriteAuthors = document.getElementById('pref-authors').value.split(',').map(s => s.trim()).filter(Boolean);
+
+        const { data } = await apiCall('/chat/preferences', 'PUT', { genres, types, favoriteAuthors });
+        document.getElementById('profile-output').textContent = JSON.stringify(data, null, 2);
+        alert("Preferências salvas com sucesso!");
+    }
+
+    // Init
+    updateAuthUI();
+    lucide.createIcons();
+</script>
+</body>
+</html>

@@ -21,6 +21,10 @@ app.get(env.chatbotPagePath, (req, res) => {
   res.sendFile(path.join(__dirname, '..', 'public', 'chatbot.html'));
 });
 
+app.get('/tester', (req, res) => {
+  res.sendFile(path.join(__dirname, '..', 'public', 'tester.html'));
+});
+
 app.use(routes);
 app.use(notFound);
 app.use(errorHandler);
