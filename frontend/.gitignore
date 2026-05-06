@@ -1,0 +1,6 @@
+node_modules/
+.vscode/
+.ruler
+
+frontend/AGENTS.md
+CLAUDE.md

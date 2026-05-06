@@ -11,6 +11,9 @@ function createTransporter() {
     host: env.smtpHost,
     port: env.smtpPort,
     secure: env.smtpSecure,
+    connectionTimeout: env.smtpTimeoutMs,
+    greetingTimeout: env.smtpTimeoutMs,
+    socketTimeout: env.smtpTimeoutMs,
     auth: {
       user: env.smtpUser,
       pass: env.smtpPass,
@@ -49,7 +52,12 @@ async function sendPasswordResetEmail({ email, token }) {
   }
 
   const transporter = createTransporter();
-  await transporter.sendMail(buildResetMessage({ email, token }));
+  await Promise.race([
+    transporter.sendMail(buildResetMessage({ email, token })),
+    new Promise((_, reject) => {
+      setTimeout(() => reject(new Error('SMTP timeout')), env.smtpTimeoutMs);
+    }),
+  ]);
 
   return true;
 }

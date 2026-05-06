@@ -33,6 +33,7 @@ module.exports = {
   smtpUser: process.env.SMTP_USER,
   smtpPass: process.env.SMTP_PASS,
   mailFrom: process.env.MAIL_FROM || process.env.SMTP_USER,
+  smtpTimeoutMs: Number(process.env.SMTP_TIMEOUT_MS || 5000),
   passwordResetFrontendUrl: process.env.PASSWORD_RESET_FRONTEND_URL,
   passwordResetTokenMinutes: Number(process.env.PASSWORD_RESET_TOKEN_MINUTES || 30),
 };
