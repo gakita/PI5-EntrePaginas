@@ -8,6 +8,8 @@ Os mesmos campos aparecem em dois lugares:
 
 - `POST /chat/message`: dentro de cada item de `recommendations`
 - `GET /books/search?title=...&author=...`: endpoint simples para testar uma obra manualmente
+- `GET /books?search=...&author=...&category=...&theme=...&type=...&page=...&limit=...`: catalogo geral com filtros
+- `GET /books/categories`: categorias curadas para o carrossel da home
 
 O frontend não precisa chamar a Google Books API diretamente. Use o backend.
 
@@ -26,6 +28,56 @@ async function buscarLivro(title, author) {
   }
 
   return book;
+}
+```
+
+## Exemplo de catalogo com filtros
+
+```js
+async function buscarCatalogo(filters = {}) {
+  const params = new URLSearchParams();
+
+  for (const [key, value] of Object.entries(filters)) {
+    if (value !== undefined && value !== null && value !== '') {
+      params.set(key, String(value));
+    }
+  }
+
+  const response = await fetch(`/books?${params.toString()}`);
+  const payload = await response.json();
+
+  if (!response.ok) {
+    throw new Error(payload.message || 'Erro ao buscar catalogo.');
+  }
+
+  return payload;
+}
+```
+
+Exemplo de uso:
+
+```js
+const data = await buscarCatalogo({
+  category: 'fantasy',
+  theme: 'magic',
+  type: 'livro',
+  page: 1,
+  limit: 10,
+});
+```
+
+## Exemplo de categorias da home
+
+```js
+async function buscarCategorias() {
+  const response = await fetch('/books/categories');
+  const payload = await response.json();
+
+  if (!response.ok) {
+    throw new Error(payload.message || 'Erro ao buscar categorias.');
+  }
+
+  return payload;
 }
 ```
 

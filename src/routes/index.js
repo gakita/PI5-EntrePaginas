@@ -4,6 +4,7 @@ const authRoutes = require('./authRoutes');
 const chatRoutes = require('./chatRoutes');
 const quizRoutes = require('./quizRoutes');
 const bookRoutes = require('./bookRoutes');
+const avaliacaoRoutes = require('./avaliacaoRoutes');
 const usersRoutes = require('./usersRoutes');
 
 const router = express.Router();
@@ -28,4 +29,7 @@ router.use('/quiz', quizRoutes);
 
 // Rotas simples de consulta ao catálogo Google Books
 router.use('/books', bookRoutes);
+
+// Rotas de avaliacoes autenticadas
+router.use('/avaliacoes', avaliacaoRoutes);
 module.exports = router;

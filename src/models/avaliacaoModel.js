@@ -1,30 +1,20 @@
 /**
- * avaliacaoModel.js — Model de avaliações do usuário (Histórico de leitura).
+ * avaliacaoModel.js — Avaliações de usuários para itens do Google Books.
  *
- * Utiliza a tabela AVALIACOES para buscar os livros que o usuário já leu
- * e avaliou, enviando esse contexto para o assistente de IA.
+ * Mantém compatibilidade com os consumidores existentes do chat/quiz ao
+ * continuar retornando title/rating/comment em `findReadBooksByUserEmail`.
  */
 
-const { getConnection } = require('../config/oracle');
+const oracle = require('../config/oracle');
 
-/**
- * Busca os livros avaliados por um usuário específico (via email).
- *
- * Faz um JOIN entre AVALIACOES, USUARIOS_TESTE e LIVROS para
- * retornar os títulos lidos, a nota dada e os comentários.
- *
- * @param {string} email - O e-mail do usuário logado no chat.
- * @returns {Array} Array de livros lidos com nota e comentário.
- */
-async function findReadBooksByUserEmail(email) {
-  const connection = await getConnection();
+async function listByUserEmail(email) {
+  const connection = await oracle.getConnection();
 
   try {
     const result = await connection.execute(
       `
-        SELECT L.TITULO, A.NOTA, A.COMENTARIO
+        SELECT A.GOOGLE_BOOKS_ID, A.TITULO, A.NOTA, A.COMENTARIO
         FROM AVALIACOES A
-        JOIN FERNANDO.LIVROS L ON A.COD_LIVRO = L.CODIGO
         JOIN FERNANDO.USUARIOS_TESTE U ON A.COD_USUARIO = U.CODIGO
         WHERE LOWER(U.EMAIL) = LOWER(:email)
         ORDER BY A.DT_AVALIACAO DESC
@@ -33,6 +23,7 @@ async function findReadBooksByUserEmail(email) {
     );
 
     return (result.rows || []).map((row) => ({
+      googleBooksId: row.GOOGLE_BOOKS_ID,
       title: row.TITULO,
       rating: row.NOTA,
       comment: row.COMENTARIO,
@@ -42,6 +33,94 @@ async function findReadBooksByUserEmail(email) {
   }
 }
 
+async function upsertByUserEmail(email, { googleBooksId, title, rating, comment }) {
+  const connection = await oracle.getConnection();
+
+  try {
+    const existing = await connection.execute(
+      `
+        SELECT A.CODIGO
+        FROM AVALIACOES A
+        JOIN FERNANDO.USUARIOS_TESTE U ON A.COD_USUARIO = U.CODIGO
+        WHERE LOWER(U.EMAIL) = LOWER(:email)
+          AND A.GOOGLE_BOOKS_ID = :googleBooksId
+        FETCH FIRST 1 ROWS ONLY
+      `,
+      { email, googleBooksId }
+    );
+
+    if (existing.rows && existing.rows.length > 0) {
+      const id = existing.rows[0].CODIGO;
+
+      await connection.execute(
+        `
+          UPDATE AVALIACOES
+          SET
+            TITULO = :title,
+            NOTA = :rating,
+            COMENTARIO = :comment,
+            DT_AVALIACAO = CURRENT_TIMESTAMP
+          WHERE CODIGO = :id
+        `,
+        {
+          id,
+          title,
+          rating,
+          comment: comment || null,
+        }
+      );
+    } else {
+      await connection.execute(
+        `
+          INSERT INTO AVALIACOES (GOOGLE_BOOKS_ID, TITULO, NOTA, COMENTARIO, COD_USUARIO)
+          VALUES (
+            :googleBooksId,
+            :title,
+            :rating,
+            :comment,
+            (
+              SELECT CODIGO
+              FROM FERNANDO.USUARIOS_TESTE
+              WHERE LOWER(EMAIL) = LOWER(:email)
+              FETCH FIRST 1 ROWS ONLY
+            )
+          )
+        `,
+        {
+          googleBooksId,
+          title,
+          rating,
+          comment: comment || null,
+          email,
+        }
+      );
+    }
+
+    await connection.commit();
+
+    return {
+      googleBooksId,
+      title,
+      rating,
+      comment: comment || null,
+    };
+  } finally {
+    await connection.close();
+  }
+}
+
+async function findReadBooksByUserEmail(email) {
+  const evaluations = await listByUserEmail(email);
+
+  return evaluations.map((item) => ({
+    title: item.title,
+    rating: item.rating,
+    comment: item.comment,
+  }));
+}
+
 module.exports = {
+  listByUserEmail,
+  upsertByUserEmail,
   findReadBooksByUserEmail,
 };

@@ -20,6 +20,53 @@ const logger = require('../utils/logger');
 
 // Tempo máximo para esperar resposta da API (ms)
 const TIMEOUT_MS = 5000;
+const DEFAULT_CATALOG_LIMIT = 10;
+const MAX_CATALOG_LIMIT = 20;
+
+const HOME_CATEGORIES = [
+  {
+    slug: 'fantasia',
+    label: 'Fantasia',
+    imageUrl: '/images/categories/fantasia.png',
+    googleBooksQuery: 'subject:fantasy',
+  },
+  {
+    slug: 'ficcao-cientifica',
+    label: 'Ficcao Cientifica',
+    imageUrl: '/images/categories/ficcao-cientifica.png',
+    googleBooksQuery: 'subject:science fiction',
+  },
+  {
+    slug: 'romance',
+    label: 'Romance',
+    imageUrl: '/images/categories/romance.png',
+    googleBooksQuery: 'subject:romance',
+  },
+  {
+    slug: 'terror',
+    label: 'Terror',
+    imageUrl: '/images/categories/terror.png',
+    googleBooksQuery: 'subject:horror',
+  },
+  {
+    slug: 'misterio',
+    label: 'Misterio',
+    imageUrl: '/images/categories/misterio.png',
+    googleBooksQuery: 'subject:mystery',
+  },
+  {
+    slug: 'hq',
+    label: 'HQ',
+    imageUrl: '/images/categories/hq.png',
+    googleBooksQuery: 'subject:comics',
+  },
+  {
+    slug: 'manga',
+    label: 'Manga',
+    imageUrl: '/images/categories/manga.png',
+    googleBooksQuery: 'subject:manga',
+  },
+];
 
 /**
  * Busca dados de enriquecimento para uma obra na Google Books API.
@@ -98,6 +145,122 @@ async function enrichOne(rec) {
   }
 }
 
+function getHomeCategories() {
+  return HOME_CATEGORIES.map((category) => ({ ...category }));
+}
+
+function normalizeCatalogFilters(filters = {}) {
+  const page = Number.isFinite(Number(filters.page)) && Number(filters.page) > 0
+    ? Number(filters.page)
+    : 1;
+  const rawLimit = Number.isFinite(Number(filters.limit)) && Number(filters.limit) > 0
+    ? Number(filters.limit)
+    : DEFAULT_CATALOG_LIMIT;
+  const limit = Math.min(rawLimit, MAX_CATALOG_LIMIT);
+
+  return {
+    search: normalizeText(filters.search),
+    author: normalizeText(filters.author),
+    category: normalizeText(filters.category),
+    theme: normalizeText(filters.theme),
+    type: normalizeType(filters.type),
+    page,
+    limit,
+  };
+}
+
+function normalizeText(value) {
+  return typeof value === 'string' ? value.trim() : '';
+}
+
+function normalizeType(value) {
+  const normalized = normalizeText(value).toLowerCase();
+
+  if (normalized === 'hq') return 'hq';
+  if (normalized === 'manga' || normalized === 'mangá') return 'manga';
+  if (normalized === 'livro') return 'livro';
+  return '';
+}
+
+function buildCatalogQuery(filters) {
+  const parts = [];
+
+  if (filters.search) {
+    parts.push(filters.search);
+  }
+
+  if (filters.author) {
+    parts.push(`inauthor:"${filters.author}"`);
+  }
+
+  if (filters.category) {
+    parts.push(`subject:${filters.category}`);
+  }
+
+  if (filters.theme) {
+    parts.push(`subject:${filters.theme}`);
+  }
+
+  if (filters.type === 'hq') {
+    parts.push('subject:comics');
+  } else if (filters.type === 'manga') {
+    parts.push('subject:manga');
+  }
+
+  return parts.join(' ').trim() || 'books';
+}
+
+async function searchCatalog(filters = {}) {
+  const normalizedFilters = normalizeCatalogFilters(filters);
+  const startIndex = (normalizedFilters.page - 1) * normalizedFilters.limit;
+  const encodedQuery = encodeURIComponent(buildCatalogQuery(normalizedFilters));
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), TIMEOUT_MS);
+
+  try {
+    let response = await fetch(
+      buildListUrl(encodedQuery, normalizedFilters.limit, startIndex, true),
+      { signal: controller.signal }
+    );
+
+    if (shouldRetryWithoutKey(response) && env.googleBooksApiKey) {
+      logger.warn('Google Books catalog search with key failed; retrying public search', {
+        status: response.status,
+        query: buildCatalogQuery(normalizedFilters),
+      });
+      response = await fetch(
+        buildListUrl(encodedQuery, normalizedFilters.limit, startIndex, false),
+        { signal: controller.signal }
+      );
+    }
+
+    if (!response.ok) {
+      const error = new Error('Falha ao consultar catalogo Google Books.');
+      error.statusCode = 502;
+      throw error;
+    }
+
+    const data = await response.json();
+
+    return {
+      items: (data.items || []).map((item) => normalizeCatalogItem(item)),
+      page: normalizedFilters.page,
+      limit: normalizedFilters.limit,
+      totalItems: Number.isFinite(data.totalItems) ? data.totalItems : 0,
+    };
+  } catch (error) {
+    if (error.name === 'AbortError') {
+      const timeoutError = new Error('Tempo esgotado ao consultar catalogo Google Books.');
+      timeoutError.statusCode = 504;
+      throw timeoutError;
+    }
+
+    throw error;
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
 function buildBookQuery(rec) {
   const parts = [];
 
@@ -138,6 +301,11 @@ function buildSearchUrl(encodedQuery, includeKey) {
   return `https://www.googleapis.com/books/v1/volumes?q=${encodedQuery}&maxResults=1${keyParam}`;
 }
 
+function buildListUrl(encodedQuery, limit, startIndex, includeKey) {
+  const keyParam = includeKey && env.googleBooksApiKey ? `&key=${env.googleBooksApiKey}` : '';
+  return `https://www.googleapis.com/books/v1/volumes?q=${encodedQuery}&startIndex=${startIndex}&maxResults=${limit}${keyParam}`;
+}
+
 function shouldRetryWithoutKey(response) {
   return response.status === 403 || response.status === 429 || response.status >= 500;
 }
@@ -160,6 +328,54 @@ function withEmptyCatalogFields(rec) {
     webReaderLink: null,
     embeddable:    false,
     viewability:   null,
+  };
+}
+
+function inferCatalogType({ categories, title }) {
+  const text = [...(Array.isArray(categories) ? categories : []), title]
+    .filter(Boolean)
+    .join(' ')
+    .toLowerCase();
+
+  if (text.includes('manga') || text.includes('mangá')) {
+    return 'manga';
+  }
+
+  if (
+    text.includes('comic') ||
+    text.includes('comics') ||
+    text.includes('graphic novel') ||
+    text.includes('quadrinho') ||
+    text.includes('hq')
+  ) {
+    return 'hq';
+  }
+
+  return 'livro';
+}
+
+function normalizeCatalogItem(item) {
+  const volume = item || {};
+  const info = volume.volumeInfo || {};
+  const access = volume.accessInfo || {};
+  const authors = Array.isArray(info.authors) ? info.authors : [];
+  const categoryInfo = normalizeCategories(info.categories);
+
+  return {
+    googleBooksId: volume.id || null,
+    title: info.title || null,
+    author: authors.length > 0 ? authors.join(', ') : null,
+    authors,
+    type: inferCatalogType({ categories: info.categories, title: info.title }),
+    categories: categoryInfo.categories,
+    genres: categoryInfo.genres,
+    coverUrl: toHttps(info.imageLinks?.thumbnail),
+    synopsis: info.description ? info.description.substring(0, 500) : null,
+    publishedDate: info.publishedDate || null,
+    previewLink: toHttps(info.previewLink),
+    webReaderLink: toHttps(access.webReaderLink),
+    embeddable: Boolean(access.embeddable),
+    viewability: access.viewability || null,
   };
 }
 
@@ -204,6 +420,8 @@ async function findBookMetadata({ title, author }) {
 }
 
 module.exports = {
+  getHomeCategories,
+  searchCatalog,
   enrichRecommendations,
   findBookMetadata,
 };

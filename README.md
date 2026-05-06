@@ -249,6 +249,89 @@ Guias detalhados:
 - `README_GOOGLE_BOOKS.md`: funcionamento da integração no backend
 - `README_GOOGLE_BOOKS_FRONTEND.md`: como consumir esses campos no frontend
 
+#### Categorias da home
+
+```http
+GET /books/categories
+```
+
+Retorna a lista curada usada no carrossel da home:
+
+```json
+[
+  {
+    "slug": "fantasia",
+    "label": "Fantasia",
+    "imageUrl": "/images/categories/fantasia.png",
+    "googleBooksQuery": "subject:fantasy"
+  }
+]
+```
+
+#### Catalogo geral com filtros
+
+```http
+GET /books?search=harry%20potter&author=Rowling&category=fantasy&theme=magic&type=livro&page=1&limit=10
+```
+
+Essa rota consulta o Google Books, pagina os resultados e normaliza o payload para o frontend:
+
+```json
+{
+  "items": [
+    {
+      "googleBooksId": "abc123",
+      "title": "Harry Potter e a Pedra Filosofal",
+      "author": "J.K. Rowling",
+      "authors": ["J.K. Rowling"],
+      "type": "livro",
+      "categories": ["Fantasy / Wizards"],
+      "genres": ["Fantasy"],
+      "coverUrl": "https://books.google.com/books/content?id=abc123",
+      "synopsis": "Um jovem bruxo descobre seu destino.",
+      "publishedDate": "1997",
+      "previewLink": "https://books.google.com/books?id=abc123",
+      "webReaderLink": "https://play.google.com/books/reader?id=abc123",
+      "embeddable": true,
+      "viewability": "PARTIAL"
+    }
+  ],
+  "page": 1,
+  "limit": 10,
+  "totalItems": 42
+}
+```
+
+O campo `type` e inferido pelo backend:
+
+- `manga` quando houver indicios de manga
+- `hq` quando houver indicios de comics / graphic novel / quadrinhos
+- `livro` nos demais casos
+
+#### Avaliacoes do usuario
+
+As avaliacoes ficam no Oracle e sao vinculadas ao `googleBooksId` do item retornado pelo catalogo.
+
+```http
+GET /avaliacoes
+Authorization: Bearer SEU_TOKEN
+```
+
+```http
+POST /avaliacoes
+Authorization: Bearer SEU_TOKEN
+Content-Type: application/json
+
+{
+  "googleBooksId": "abc123",
+  "title": "Duna",
+  "rating": 5,
+  "comment": "Excelente."
+}
+```
+
+O `POST /avaliacoes` faz upsert: atualiza a avaliacao se o usuario ja avaliou aquele `googleBooksId`, ou cria uma nova caso contrario.
+
 #### Buscar histórico da conversa
 
 ```http
