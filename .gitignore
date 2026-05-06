@@ -17,3 +17,6 @@ ewallet.pem
 Claude.MD
 secrets/oracle-wallet/Wallet_ProjetoIntegradorV.zip
 docs/
+/.postman
+/postman
+iniciar.bat
