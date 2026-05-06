@@ -200,6 +200,8 @@
             <dd id="authors"></dd>
             <dt>Generos</dt>
             <dd id="genres"></dd>
+            <dt>Categorias</dt>
+            <dd id="categories"></dd>
             <dt>Publicado em</dt>
             <dd id="publishedDate"></dd>
             <dt>Google Books ID</dt>
@@ -211,6 +213,7 @@
           <div class="actions">
             <a id="previewLink" class="button" href="#" target="_blank" rel="noreferrer">Abrir preview</a>
             <a id="readerLink" class="button" href="#" target="_blank" rel="noreferrer">Abrir leitor</a>
+            <button id="viewerButton" type="button">Carregar viewer</button>
           </div>
           <div id="viewerMessage" class="status"></div>
         </div>
@@ -219,7 +222,6 @@
       <div id="viewerCanvas" class="viewer"></div>
     </main>
 
-    <script src="https://www.google.com/books/jsapi.js"></script>
     <script>
       const form = document.getElementById('searchForm');
       const submitButton = document.getElementById('submitButton');
@@ -227,14 +229,20 @@
       const resultEl = document.getElementById('result');
       const viewerEl = document.getElementById('viewerCanvas');
       const viewerMessage = document.getElementById('viewerMessage');
+      const viewerButton = document.getElementById('viewerButton');
 
-      if (window.google && google.books) {
-        google.books.load({ language: 'pt-BR' });
-      }
+      let currentBook = null;
+      let googleBooksApiPromise = null;
 
       form.addEventListener('submit', async (event) => {
         event.preventDefault();
         await searchBook();
+      });
+
+      viewerButton.addEventListener('click', async () => {
+        if (currentBook) {
+          await loadViewer(currentBook);
+        }
       });
 
       async function searchBook() {
@@ -256,7 +264,6 @@
           }
 
           renderBook(book);
-          loadViewer(book);
           statusEl.textContent = book.googleBooksId
             ? 'Livro encontrado no Google Books.'
             : 'Nenhum volume encontrado para essa busca.';
@@ -269,11 +276,13 @@
       }
 
       function renderBook(book) {
+        currentBook = book;
         resultEl.classList.add('visible');
 
         document.getElementById('bookTitle').textContent = book.title || 'Titulo nao encontrado';
         document.getElementById('authors').textContent = formatList(book.authors) || book.author || 'Nao informado';
         document.getElementById('genres').textContent = formatList(book.genres) || 'Nao informado';
+        document.getElementById('categories').textContent = formatList(book.categories) || 'Nao informado';
         document.getElementById('publishedDate').textContent = book.publishedDate || 'Nao informado';
         document.getElementById('googleBooksId').textContent = book.googleBooksId || 'Nao encontrado';
         document.getElementById('viewability').textContent = [
@@ -288,14 +297,19 @@
 
         setLink('previewLink', book.previewLink);
         setLink('readerLink', book.webReaderLink);
+        viewerButton.style.display = book.embeddable && book.googleBooksId ? 'inline-flex' : 'none';
+        viewerMessage.textContent = book.embeddable && book.googleBooksId
+          ? 'Viewer embutido disponivel. Clique em "Carregar viewer" se quiser testar.'
+          : 'Embedded Viewer indisponivel para este resultado.';
       }
 
-      function loadViewer(book) {
-        if (!book.embeddable || !book.googleBooksId || !window.google || !google.books) {
+      async function loadViewer(book) {
+        if (!book.embeddable || !book.googleBooksId) {
           viewerMessage.textContent = 'Embedded Viewer indisponivel para este resultado.';
           return;
         }
 
+        clearViewer();
         viewerMessage.textContent = 'Carregando Embedded Viewer...';
         let loaded = false;
 
@@ -305,6 +319,13 @@
             viewerMessage.textContent = 'Embedded Viewer nao carregou. Use o botao "Abrir preview".';
           }
         }, 5000);
+
+        try {
+          await loadGoogleBooksApi();
+        } catch (error) {
+          viewerMessage.textContent = 'Nao foi possivel carregar a biblioteca do Google Books.';
+          return;
+        }
 
         google.books.setOnLoadCallback(() => {
           const viewer = new google.books.DefaultViewer(viewerEl);
@@ -323,6 +344,29 @@
             }
           );
         });
+      }
+
+      function loadGoogleBooksApi() {
+        if (window.google && google.books) {
+          google.books.load({ language: 'pt-BR' });
+          return Promise.resolve();
+        }
+
+        if (googleBooksApiPromise) return googleBooksApiPromise;
+
+        googleBooksApiPromise = new Promise((resolve, reject) => {
+          const script = document.createElement('script');
+          script.src = 'https://www.google.com/books/jsapi.js';
+          script.async = true;
+          script.onload = () => {
+            google.books.load({ language: 'pt-BR' });
+            resolve();
+          };
+          script.onerror = reject;
+          document.head.appendChild(script);
+        });
+
+        return googleBooksApiPromise;
       }
 
       function clearViewer() {

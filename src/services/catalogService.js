@@ -66,7 +66,7 @@ async function enrichOne(rec) {
     const info = volume.volumeInfo || {};
     const access = volume.accessInfo || {};
     const authors = Array.isArray(info.authors) ? info.authors : [];
-    const genres = Array.isArray(info.categories) ? info.categories : [];
+    const categoryInfo = normalizeCategories(info.categories);
 
     // Adiciona os campos de enriquecimento à recomendação original
     return {
@@ -74,7 +74,8 @@ async function enrichOne(rec) {
       googleBooksId: volume.id || null,
       title:         info.title || rec.title || null,
       authors,
-      genres,
+      categories:    categoryInfo.categories,
+      genres:        categoryInfo.genres,
       author:        authors.length > 0 ? authors.join(', ') : rec.author || null,
       // Thumbnail em HTTPS (a API retorna HTTP por padrão)
       coverUrl:      toHttps(info.imageLinks?.thumbnail),
@@ -111,6 +112,27 @@ function buildBookQuery(rec) {
   return parts.join(' ') || [rec.title, rec.author].filter(Boolean).join(' ');
 }
 
+function normalizeCategories(categories) {
+  const rawCategories = Array.isArray(categories) ? categories.filter(Boolean) : [];
+  const genres = new Set();
+
+  for (const category of rawCategories) {
+    const parts = String(category)
+      .split('/')
+      .map((part) => part.trim())
+      .filter(Boolean);
+
+    if (parts[0]) {
+      genres.add(parts[0]);
+    }
+  }
+
+  return {
+    categories: rawCategories,
+    genres: Array.from(genres),
+  };
+}
+
 function buildSearchUrl(encodedQuery, includeKey) {
   const keyParam = includeKey && env.googleBooksApiKey ? `&key=${env.googleBooksApiKey}` : '';
   return `https://www.googleapis.com/books/v1/volumes?q=${encodedQuery}&maxResults=1${keyParam}`;
@@ -128,6 +150,7 @@ function withEmptyCatalogFields(rec) {
   return {
     ...rec,
     googleBooksId: null,
+    categories:    [],
     authors:       [],
     genres:        [],
     coverUrl:      null,

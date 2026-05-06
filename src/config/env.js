@@ -7,6 +7,7 @@ module.exports = {
   jwtSecret: process.env.JWT_SECRET || 'default_jwt_secret_change_me',
   jwtExpiresIn: process.env.JWT_EXPIRES_IN || '1h',
   corsOrigin: process.env.CORS_ORIGIN || '*',
+  chatbotPagePath: process.env.CHATBOT_PAGE_PATH || '/chatbot',
   oracleUser: process.env.ORACLE_USER,
   oraclePassword: process.env.ORACLE_PASSWORD,
   oracleConnectString: process.env.ORACLE_CONNECT_STRING,

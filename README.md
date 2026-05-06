@@ -162,6 +162,7 @@ Content-Type: application/json
       "type": "mangá",
       "author": "Hiromu Arakawa",
       "authors": ["Hiromu Arakawa"],
+      "categories": ["Comics & Graphic Novels"],
       "genres": ["Comics & Graphic Novels"],
       "justification": "Uma história épica com alquimia, aventura e profundidade emocional.",
       "sensitiveContent": true,
@@ -179,6 +180,7 @@ Content-Type: application/json
       "type": "mangá",
       "author": "Kanehito Yamada",
       "authors": [],
+      "categories": [],
       "genres": [],
       "justification": "Uma fantasia reflexiva e emocionante sobre o tempo e memória.",
       "sensitiveContent": false,
@@ -197,7 +199,7 @@ Content-Type: application/json
 ```
 
 > O campo `sensitiveContent: true` indica que o item tem temas sensíveis (violência, saúde mental, etc.) — use isso no frontend para exibir um aviso de confirmação (RF11).
-> Os campos `authors`, `genres`, `coverUrl`, `synopsis`, `publishedDate`, `googleBooksId`, `previewLink`, `webReaderLink`, `embeddable` e `viewability` vêm do Google Books quando o volume é encontrado.
+> Os campos `authors`, `categories`, `genres`, `coverUrl`, `synopsis`, `publishedDate`, `googleBooksId`, `previewLink`, `webReaderLink`, `embeddable` e `viewability` vêm do Google Books quando o volume é encontrado.
 
 #### Testar metadados do Google Books
 
@@ -210,6 +212,11 @@ Essa rota simples consulta o Google Books pelo backend e retorna os mesmos campo
 ```text
 http://localhost:3000/google-books-test.html
 ```
+
+Guias detalhados:
+
+- `README_GOOGLE_BOOKS.md`: funcionamento da integração no backend
+- `README_GOOGLE_BOOKS_FRONTEND.md`: como consumir esses campos no frontend
 
 #### Buscar histórico da conversa
 

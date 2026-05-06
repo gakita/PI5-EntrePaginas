@@ -17,6 +17,10 @@ app.use(
 app.use(express.json());
 app.use(express.static(path.join(__dirname, '..', 'public')));
 
+app.get(env.chatbotPagePath, (req, res) => {
+  res.sendFile(path.join(__dirname, '..', 'public', 'chatbot.html'));
+});
+
 app.use(routes);
 app.use(notFound);
 app.use(errorHandler);

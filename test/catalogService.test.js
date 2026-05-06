@@ -21,7 +21,7 @@ test('enriches recommendations with Google Books metadata and viewer fields', as
               volumeInfo: {
                 title: 'Duna',
                 authors: ['Frank Herbert'],
-                categories: ['Fiction', 'Science Fiction'],
+                categories: ['Fiction / Science Fiction / Space Opera', 'Literary Criticism'],
                 description: 'Uma obra classica de ficcao cientifica.',
                 publishedDate: '1965',
                 previewLink: 'http://books.google.com/books?id=abc123',
@@ -55,7 +55,9 @@ test('enriches recommendations with Google Books metadata and viewer fields', as
     assert.equal(recommendation.title, 'Duna');
     assert.deepEqual(recommendation.authors, ['Frank Herbert']);
     assert.equal(recommendation.author, 'Frank Herbert');
-    assert.deepEqual(recommendation.genres, ['Fiction', 'Science Fiction']);
+    assert.deepEqual(recommendation.categories, ['Fiction / Science Fiction / Space Opera', 'Literary Criticism']);
+    assert.deepEqual(recommendation.genres, ['Fiction', 'Literary Criticism']);
+    assert.equal(Object.prototype.hasOwnProperty.call(recommendation, 'subgenres'), false);
     assert.equal(recommendation.synopsis, 'Uma obra classica de ficcao cientifica.');
     assert.equal(
       recommendation.coverUrl,
