@@ -703,3 +703,19 @@ Em produção, troque pelo endereço real do backend.
 | `MAIL_FROM` | Remetente exibido nos e-mails |
 | `PASSWORD_RESET_FRONTEND_URL` | URL do frontend de redefinicao; o backend adiciona `?token=...` |
 | `PASSWORD_RESET_TOKEN_MINUTES` | Tempo de validade do token (padrao: `30`) |
+
+---
+
+## Pendências para Fechamento do MVP (Trabalhos Futuros)
+
+Apesar de a base principal do backend (Autenticação, Recuperação de Senha, Chat com IA, Quiz Adaptativo e Preferências) estar implementada, os seguintes itens identificados nos requisitos funcionais (`Time_13_pdf.pdf`) ainda precisam de endpoints dedicados:
+
+1. **Carrossel de Banners/Categorias (RF05)**
+   - Falta uma rota (ex: `GET /categories` ou `GET /banners`) para consultar e retornar os dados (nome, imagens, ícones) das categorias a serem exibidas na página inicial.
+
+2. **Sistema de Filtros Gerais e Busca Local (RF06)**
+   - Falta uma rota de busca de livros (`GET /books`) que permita aplicar filtros como `categoria`, `gênero` e `tipo` fora do modo chat, consultando diretamente o banco local (`FERNANDO.LIVROS`) ou fazendo o *merge* com resultados do Google Books.
+   - Atualmente, existe apenas a rota `/books/search` configurada para buscas pontuais de um único título/autor para enriquecimento visual do chat.
+
+3. **Gerenciamento do Histórico de Leitura (Avaliações)**
+   - A Inteligência Artificial já lê a tabela local `AVALIACOES` para montar o contexto de recomendação de forma altamente personalizada. Contudo, não existe uma rota no backend (ex: `POST /avaliacoes`) para o usuário adicionar livros que já leu a partir do próprio aplicativo.
