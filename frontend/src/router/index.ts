@@ -27,6 +27,17 @@ const router = createRouter({
       component: () => import('@/pages/Catalogo.vue'),
       meta: { requiresAuth: true },
     },
+    {
+      path: '/favoritos',
+      component: () => import('@/pages/Favorites.vue'),
+      meta: { requiresAuth: true },
+    },
+    {
+      path: '/recomendacoes',
+      component: () => import('@/pages/Recommendations.vue'),
+      meta: { requiresAuth: true },
+    },
+
 
     // // Protected routes
     // {

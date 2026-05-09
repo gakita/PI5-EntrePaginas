@@ -53,6 +53,8 @@ const userMenuItems = [
               icon
               class="action-btn"
               :to="'/favoritos'"
+              :ripple="false"
+              variant="plain"
             >
               <v-img :src="bookmarkIcon" class="bookmark-icon" width="66" />
             </v-btn>
@@ -196,6 +198,12 @@ const userMenuItems = [
   border-radius: 0 !important;
   padding: 0 !important;
   overflow: visible !important;
+  opacity: 1 !important;
+}
+
+.action-btn :deep(.v-btn__overlay),
+.action-btn :deep(.v-ripple__container) {
+  display: none !important;
 }
 
 .action-btn :deep(.v-btn__content) {
@@ -206,6 +214,12 @@ const userMenuItems = [
 .bookmark-icon {
   transform: translateY(-32px) scale(1.14);
   transform-origin: top center;
+  transition: filter 0.2s ease;
+}
+
+.action-btn:hover .bookmark-icon,
+.action-btn.v-btn--active .bookmark-icon {
+  filter: brightness(1.30);
 }
 
 .user-btn-container {

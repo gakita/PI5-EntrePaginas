@@ -2,17 +2,17 @@
 import BookSearchLayout from '@/components/BookSearchPage.vue'
 import fundoImg from '@/assets/Fundo_Catalogo.jpg'
 
-const filterGroups = [
+const recommendationsFilters = [
   'Ordenar por', 'Gênero', 'Tipo', 'Editora', 'Autor', 'Ano'
 ]
 </script>
 
 <template>
-  <!-- book-count é temporário -->
+    <!-- book-count é temporário -->
   <BookSearchLayout
-    title="Catálogo"
-    :filter-groups="filterGroups"
+    title="Recomendações"
+    :filter-groups="recommendationsFilters"
     :background-image-url="fundoImg"
-    :book-count="15"
+    :book-count="100" 
   />
 </template>
