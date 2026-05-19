@@ -22,7 +22,9 @@ function generateToken(user) {
       email: user.email,
     },
     env.jwtSecret,
-    { expiresIn: env.jwtExpiresIn }
+    { expiresIn: env.jwtExpiresIn,
+      algorithm: 'HS256'
+     }
   );
 }
 

@@ -14,7 +14,17 @@ function authMiddleware(req, res, next) {
   const token = authHeader.split(' ')[1];
 
   try {
-    const decoded = jwt.verify(token, env.jwtSecret);
+    if (!token) {
+      return res.status(401).json({ message: 'Token ausente.' });
+    }
+
+    const decoded = jwt.verify(token, env.jwtSecret, {
+      algorithms: ['HS256']
+    });
+
+    if (!decoded.sub) {
+      return res.status(401).json({ message: 'Token invalido.' });
+    }
 
     req.user = {
       id: decoded.sub,
@@ -23,8 +33,11 @@ function authMiddleware(req, res, next) {
 
     return next();
   } catch (error) {
+    if (error.name === 'TokenExpiredError') {
+      return res.status(401).json({ message: 'Token expirado.' });
+    }
     return res.status(401).json({
-      message: 'Token invalido ou expirado.',
+      message: 'Token invalido.',
     });
   }
 }

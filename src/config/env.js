@@ -5,8 +5,10 @@ dotenv.config();
 module.exports = {
   port: process.env.PORT || 3000,
   nodeEnv: process.env.NODE_ENV || 'development',
-  jwtSecret: process.env.JWT_SECRET || 'default_jwt_secret_change_me',
-  jwtExpiresIn: process.env.JWT_EXPIRES_IN || '1h',
+  jwtSecret: process.env.JWT_SECRET,
+  jwtExpiresIn: process.env.JWT_EXPIRES_IN || '15m',
+  jwtRefreshSecret: process.env.JWT_REFRESH_SECRET,
+  jwtRefreshExpiresIn: process.env.JWT_REFRESH_EXPIRES_IN || '7d',
   corsOrigin: process.env.CORS_ORIGIN || '*',
   chatbotPagePath: process.env.CHATBOT_PAGE_PATH || '/chatbot',
   oracleUser: process.env.ORACLE_USER,
