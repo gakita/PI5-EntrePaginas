@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
+import { authService } from '@/services'
 import fundoImg from '@/assets/FUNDO.png'
 
 const router = useRouter()
@@ -73,7 +74,7 @@ async function handleStep1() {
     errorMessage.value = 'Preencha todos os campos.'
     return
   }
-  if (!/\.+@.+\..+/.test(email) && /.+@.+\..+/.test(email) === false) {
+  if (!/.+@.+\..+/.test(email)) {
     errorMessage.value = 'E-mail inválido.'
     return
   }
@@ -109,10 +110,15 @@ function handleStep3() {
 async function handleStep4() {
   clearError()
   loading.value = true
-  // TODO: substituir pelo authService.register(formData.value) quando o backend estiver pronto
-  await new Promise(r => setTimeout(r, 800))
-  loading.value = false
-  router.push('/login')
+  try {
+    const { name, email, password } = formData.value
+    await authService.register(name, email, password)
+    router.push('/login')
+  } catch (error) {
+    errorMessage.value = error instanceof Error ? error.message : 'Erro ao cadastrar usuário.'
+  } finally {
+    loading.value = false
+  }
 }
 
 async function resendCode() {
