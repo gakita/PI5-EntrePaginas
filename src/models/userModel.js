@@ -6,7 +6,7 @@ async function findByEmail(email) {
   try {
     const result = await connection.execute(
       `
-        SELECT NOME, EMAIL, SENHA
+        SELECT CODIGO, NOME, EMAIL, SENHA
         FROM FERNANDO.USUARIOS_TESTE
         WHERE LOWER(EMAIL) = LOWER(:email)
         FETCH FIRST 1 ROWS ONLY
@@ -21,6 +21,7 @@ async function findByEmail(email) {
     const user = result.rows[0];
 
     return {
+      id: user.CODIGO,
       name: user.NOME,
       email: user.EMAIL,
       passwordHash: user.SENHA,
@@ -53,11 +54,8 @@ async function createUser({ name, email, passwordHash }) {
 
     await connection.commit();
 
-    return {
-      email,
-      name,
-      passwordHash,
-    };
+    // Buscar o usuário criado para obter o ID
+    return findByEmail(email);
   } finally {
     await connection.close();
   }

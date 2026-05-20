@@ -18,13 +18,27 @@ function sanitizeUser(user) {
 function generateToken(user) {
   return jwt.sign(
     {
-      sub: user.email,
+      sub: user.id,
       email: user.email,
     },
     env.jwtSecret,
-    { expiresIn: env.jwtExpiresIn,
-      algorithm: 'HS256'
-     }
+    {
+      expiresIn: env.jwtExpiresIn,
+      algorithm: 'HS256',
+    }
+  );
+}
+
+function generateRefreshToken(user) {
+  return jwt.sign(
+    {
+      sub: user.id,
+    },
+    env.jwtRefreshSecret,
+    {
+      expiresIn: env.jwtRefreshExpiresIn,
+      algorithm: 'HS256',
+    }
   );
 }
 
