@@ -1,26 +1,58 @@
 <script setup lang="ts">
   import { computed } from 'vue'
+  import type { CatalogBook } from '@/services'
+
+  type CatalogBookWithId = CatalogBook & { googleBooksId: string }
 
   const props = withDefaults(defineProps<{
+    books?: CatalogBook[]
+    loading?: boolean
     total?: number
   }>(), {
+    books: () => [],
+    loading: false,
     total: 15,
   })
 
   const bookCards = computed(() =>
+    props.books.filter((book): book is CatalogBookWithId => Boolean(book.googleBooksId)),
+  )
+
+  const skeletonCards = computed(() =>
     Array.from({ length: props.total }, (_, index) => ({ id: index + 1 })),
   )
 </script>
 
 <template>
   <section class="cards-panel">
-    <router-link
-      v-for="card in bookCards"
-      :key="card.id"
-      :aria-label="`Abrir livro ${card.id}`"
-      class="book-card"
-      :to="`/livros/${card.id}`"
+    <div
+      v-if="loading"
+      v-for="card in skeletonCards"
+      :key="`loading-${card.id}`"
+      class="book-card book-card--loading"
     />
+
+    <router-link
+      v-else
+      v-for="card in bookCards"
+      :key="card.googleBooksId"
+      :aria-label="`Abrir livro ${card.title || card.googleBooksId}`"
+      class="book-card"
+      :to="`/livros/${card.googleBooksId}`"
+    >
+      <img
+        v-if="card.coverUrl"
+        class="book-card__cover"
+        :src="card.coverUrl"
+        :alt="card.title ? `Capa de ${card.title}` : 'Capa do livro'"
+        loading="lazy"
+      >
+      <div class="book-card__shade" />
+      <div class="book-card__info">
+        <strong>{{ card.title || 'Titulo indisponivel' }}</strong>
+        <span>{{ card.author || 'Autor desconhecido' }}</span>
+      </div>
+    </router-link>
   </section>
 </template>
 
@@ -64,6 +96,7 @@
 }
 
 .book-card {
+  position: relative;
   display: block;
   width: 100%;
   aspect-ratio: 200 / 275;
@@ -72,6 +105,7 @@
   transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
   border: 1px solid transparent;
   text-decoration: none;
+  overflow: hidden;
 }
 
 .book-card:hover {
@@ -83,6 +117,68 @@
 .book-card:focus-visible {
   outline: 2px solid #c9a227;
   outline-offset: 3px;
+}
+
+.book-card__cover {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.book-card__shade {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, transparent 36%, rgba(8, 6, 4, 0.82) 100%);
+  pointer-events: none;
+}
+
+.book-card__info {
+  position: absolute;
+  left: 10px;
+  right: 10px;
+  bottom: 10px;
+  display: grid;
+  gap: 2px;
+  color: #f0dfbd;
+  font-family: 'Playfair Display', serif;
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.75);
+}
+
+.book-card__info strong,
+.book-card__info span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.book-card__info strong {
+  font-size: 14px;
+  line-height: 1.1;
+}
+
+.book-card__info span {
+  font-size: 12px;
+  line-height: 1.1;
+  opacity: 0.9;
+}
+
+.book-card--loading {
+  background:
+    linear-gradient(90deg, rgba(232, 213, 183, 0.05), rgba(232, 213, 183, 0.12), rgba(232, 213, 183, 0.05)),
+    #120d07;
+  background-size: 220% 100%;
+  animation: loadingPulse 1.2s ease-in-out infinite;
+}
+
+@keyframes loadingPulse {
+  from {
+    background-position: 100% 0;
+  }
+
+  to {
+    background-position: -100% 0;
+  }
 }
 
 @media (max-width: 1400px) {

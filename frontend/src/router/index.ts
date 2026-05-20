@@ -32,6 +32,11 @@ const router = createRouter({
       meta: { requiresAuth: true },
     },
     {
+      path: '/livros/:id',
+      component: () => import('@/pages/BookDescPage.vue'),
+      meta: { requiresAuth: true },
+    },
+    {
       path: import.meta.env.VITE_CHATBOT_ROUTE || '/chatbot',
       component: () => import('@/pages/Chatbot.vue'),
       meta: { requiresAuth: true },

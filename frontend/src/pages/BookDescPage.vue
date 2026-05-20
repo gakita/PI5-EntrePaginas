@@ -1,19 +1,65 @@
 <script setup lang="ts">
-  import { computed, ref } from 'vue'
+  import { computed, onMounted, ref, watch } from 'vue'
   import { useRoute, useRouter } from 'vue-router'
   import fundoImg from '@/assets/Fundo_Catalogo.jpg'
   import Navbar from '@/components/Navbar.vue'
+  import { catalogService, type CatalogBook } from '@/services'
 
   const route = useRoute()
   const router = useRouter()
   const isFavorite = ref(false)
+  const book = ref<CatalogBook | null>(null)
+  const isLoading = ref(false)
+  const errorMessage = ref('')
 
-  const bookId = computed(() => route.params.id)
+  const bookId = computed(() => String(route.params.id || ''))
   const backgroundImage = `url(${fundoImg})`
-  const coverImage = `url(${fundoImg})`
+  const coverImage = computed(() => `url(${book.value?.coverUrl || fundoImg})`)
+  const title = computed(() => book.value?.title || 'Livro nao encontrado')
+  const author = computed(() => book.value?.author || 'Autor desconhecido')
+  const synopsis = computed(() => book.value?.synopsis || 'Sinopse indisponivel para este livro.')
+  const externalLinkLabel = computed(() => (/^OL\d+W$/i.test(bookId.value) ? 'Open Library' : 'Google Books'))
+  const primaryTags = computed(() => {
+    const tags = [
+      ...(book.value?.genres || []),
+      ...(book.value?.categories || []),
+    ]
 
-  const primaryTags = ['Comedia', 'Terror', 'Romance', 'ETC']
-  const suggestedTags = ['Comedia', 'Terror', 'Romance']
+    return Array.from(new Set(tags)).slice(0, 6)
+  })
+  const detailItems = computed(() => [
+    { label: 'Autor', value: author.value },
+    { label: 'Publicado', value: book.value?.publishedDate || 'Nao informado' },
+    { label: 'Tipo', value: book.value?.type || 'Livro' },
+    { label: 'ID', value: bookId.value },
+  ])
+
+  async function loadBook() {
+    if (!bookId.value) return
+
+    isLoading.value = true
+    errorMessage.value = ''
+
+    try {
+      book.value = await catalogService.getBookById(bookId.value)
+    } catch (error) {
+      errorMessage.value = error instanceof Error
+        ? error.message
+        : 'Nao foi possivel carregar os dados do livro.'
+      book.value = null
+    } finally {
+      isLoading.value = false
+    }
+  }
+
+  function openExternalLink(url?: string | null) {
+    if (url) {
+      window.open(url, '_blank', 'noopener,noreferrer')
+    }
+  }
+
+  onMounted(loadBook)
+  watch(bookId, loadBook)
 </script>
 
 <template>
@@ -36,7 +82,8 @@
             <div class="book-card__cover-overlay" />
           </div>
           <div class="book-card__footer">
-            <h1 class="book-card__title">Nome do livro {{ bookId }}</h1>
+            <p class="book-card__author">{{ author }}</p>
+            <h1 class="book-card__title">{{ title }}</h1>
             <button class="book-card__favorite" type="button" @click="isFavorite = !isFavorite">
               <v-icon
                 :icon="isFavorite ? 'mdi-bookmark-remove' : 'mdi-bookmark-plus-outline'"
@@ -48,44 +95,58 @@
         </aside>
 
         <section class="book-panel">
-          <h2 class="book-panel__title">Descricao</h2>
-          <p class="book-panel__text">
-            Lorem ipsum dolor sit amet consectetur. Habitant a ultrices tortor egestas.
-            Cursus risus id egestas tincidunt pellentesque id est quam. Dui elit vitae
-            fusce sit elit nec arcu. Tempus viverra at diam quis adipiscing arcu. Mi
-            rutrum laoreet integer quis sed ultrices aliquet. Auctor erat gravida neque
-            pellentesque iaculis proin lectus tempor. Sapien arcu mauris quis tortor
-            nulla quis. In senectus posuere non nunc ut. Pulvinar vitae adipiscing diam
-            mauris sit.
-          </p>
+          <div v-if="isLoading" class="book-panel__state">Carregando livro...</div>
+          <div v-else-if="errorMessage" class="book-panel__state">{{ errorMessage }}</div>
+          <template v-else>
+            <h2 class="book-panel__title">Descricao</h2>
+            <p class="book-panel__text">{{ synopsis }}</p>
 
-          <div class="book-panel__meta">
-            <div class="tag-group">
-              <h3 class="tag-group__title">Tags:</h3>
-              <div class="tag-group__list">
-                <span
-                  v-for="tag in primaryTags"
-                  :key="tag"
-                  class="tag-chip"
-                >
-                  <span class="tag-chip__label">{{ tag }}</span>
-                </span>
+            <dl class="book-panel__details">
+              <div v-for="item in detailItems" :key="item.label">
+                <dt>{{ item.label }}</dt>
+                <dd>{{ item.value }}</dd>
               </div>
+            </dl>
+
+            <div class="book-panel__actions">
+              <button
+                v-if="book?.previewLink"
+                class="book-panel__action"
+                type="button"
+                @click="openExternalLink(book.previewLink)"
+              >
+                <v-icon icon="mdi-book-open-page-variant-outline" size="18" />
+                Preview
+              </button>
+              <button
+                v-if="book?.webReaderLink"
+                class="book-panel__action"
+                type="button"
+                @click="openExternalLink(book.webReaderLink)"
+              >
+                <v-icon icon="mdi-open-in-new" size="18" />
+                {{ externalLinkLabel }}
+              </button>
             </div>
 
-            <div class="tag-group">
-              <h3 class="tag-group__title">Tags recomendadas:</h3>
-              <div class="tag-group__list">
-                <span
-                  v-for="tag in suggestedTags"
-                  :key="`suggested-${tag}`"
-                  class="tag-chip"
-                >
-                  <span class="tag-chip__label">{{ tag }}</span>
-                </span>
+            <div class="book-panel__meta">
+              <div class="tag-group">
+                <h3 class="tag-group__title">Tags:</h3>
+                <div class="tag-group__list">
+                  <span
+                    v-for="tag in primaryTags"
+                    :key="tag"
+                    class="tag-chip"
+                  >
+                    <span class="tag-chip__label">{{ tag }}</span>
+                  </span>
+                  <span v-if="primaryTags.length === 0" class="tag-chip">
+                    <span class="tag-chip__label">Sem tags</span>
+                  </span>
+                </div>
               </div>
             </div>
-          </div>
+          </template>
         </section>
       </div>
     </section>
@@ -247,6 +308,15 @@
   text-wrap: balance;
 }
 
+.book-card__author {
+  margin: 0 0 6px;
+  color: #c9a227;
+  font-family: 'Playfair Display', serif;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.15;
+}
+
 .book-card__favorite {
   display: inline-flex;
   align-items: center;
@@ -297,6 +367,77 @@
   font-size: 17px;
   line-height: 1.5;
   text-wrap: pretty;
+}
+
+.book-panel__state {
+  min-height: 180px;
+  display: grid;
+  place-items: center;
+  color: #e8d5b7;
+  font-family: 'Playfair Display', serif;
+  font-size: 20px;
+  text-align: center;
+}
+
+.book-panel__details {
+  max-width: 900px;
+  margin: 22px 0 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px 18px;
+}
+
+.book-panel__details div {
+  min-width: 0;
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(232, 213, 183, 0.18);
+}
+
+.book-panel__details dt {
+  margin: 0 0 4px;
+  color: #c9a227;
+  font-family: 'Playfair Display', serif;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.book-panel__details dd {
+  margin: 0;
+  color: #e8d5b7;
+  font-family: 'Playfair Display', serif;
+  font-size: 16px;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+
+.book-panel__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 22px;
+}
+
+.book-panel__action {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 38px;
+  padding: 0 16px;
+  border: 1px solid rgba(201, 162, 39, 0.5);
+  border-radius: 999px;
+  background: rgba(18, 13, 7, 0.36);
+  color: #f0dfbd;
+  font-family: 'Playfair Display', serif;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: border-color 0.18s ease, color 0.18s ease, transform 0.18s ease;
+}
+
+.book-panel__action:hover {
+  border-color: rgba(227, 190, 70, 0.8);
+  color: #e3be46;
+  transform: translateY(-1px);
 }
 
 .book-panel__meta {
@@ -511,6 +652,10 @@
 
   .book-panel__text {
     font-size: 16px;
+  }
+
+  .book-panel__details {
+    grid-template-columns: 1fr;
   }
 
   .book-panel__meta {
