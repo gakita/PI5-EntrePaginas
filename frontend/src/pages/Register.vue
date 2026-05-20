@@ -1,9 +1,12 @@
 <script setup lang="ts">
 import { ref, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
+import { useAuthStore } from '@/stores/authStore'
+import { authService } from '@/services'
 import fundoImg from '@/assets/FUNDO.png'
 
 const router = useRouter()
+const auth = useAuthStore()
 
 const currentStep = ref(1)
 const loading = ref(false)
@@ -109,10 +112,19 @@ function handleStep3() {
 async function handleStep4() {
   clearError()
   loading.value = true
-  // TODO: substituir pelo authService.register(formData.value) quando o backend estiver pronto
-  await new Promise(r => setTimeout(r, 800))
-  loading.value = false
-  router.push('/login')
+  const { name, email, password } = formData.value
+
+  try {
+    const { token } = await authService.register(name, email, password)
+    auth.setToken(token)
+    router.push('/')
+  } catch (error) {
+    errorMessage.value = error instanceof Error
+      ? error.message
+      : 'Não foi possível criar sua conta.'
+  } finally {
+    loading.value = false
+  }
 }
 
 async function resendCode() {

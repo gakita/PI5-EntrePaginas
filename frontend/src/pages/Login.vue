@@ -2,6 +2,7 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/authStore'
+import { authService } from '@/services'
 
 const router = useRouter()
 const auth = useAuthStore()
@@ -12,7 +13,7 @@ const showPassword = ref(false)
 const loading = ref(false)
 const errorMessage = ref('')
 
-const user = {password:"1234", email:"joao@jogao.com"}
+
 
 const rules = {
   required: (v: string) => !!v || 'Campo obrigatório',
@@ -30,9 +31,8 @@ async function handleSubmit() {
   loading.value = true
 
   try {
-    // TODO: substituir pelo authService.login() quando o backend estiver pronto
-    await new Promise(resolve => setTimeout(resolve, 800))
-    auth.setToken('mock-token-placeholder')
+    const { token } = await authService.login(email.value, password.value)
+    auth.setToken(token)
     router.push('/')
   } catch {
     errorMessage.value = 'E-mail ou senha inválidos.'
