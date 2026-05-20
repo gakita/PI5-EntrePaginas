@@ -37,7 +37,11 @@ const router = createRouter({
       component: () => import('@/pages/Recommendations.vue'),
       meta: { requiresAuth: true },
     },
-
+    {
+      path: import.meta.env.VITE_CHATBOT_ROUTE || '/chatbot',
+      component: () => import('@/pages/Chatbot.vue'),
+      meta: { requiresAuth: true },
+    },
 
     // // Protected routes
     // {
