@@ -1,9 +1,11 @@
 <script setup lang="ts">
+import { onMounted, ref } from 'vue'
 import Navbar from '@/components/Navbar.vue'
 import FiltersPanel from '@/components/FiltersPanel.vue'
 import BookCoversGrid from '@/components/BookCoversGrid.vue'
 import CatalogGlow from '@/components/BackgroundGlow.vue'
 import fundoImg from '@/assets/Fundo_Catalogo.jpg'
+import { catalogService, type CatalogBook } from '@/services'
 
 const filterGroups = [
   'Ordenar por',
@@ -15,7 +17,27 @@ const filterGroups = [
 ]
 
 const backgroundImage = `url(${fundoImg})`
+const books = ref<CatalogBook[]>([])
+const isLoading = ref(true)
+const errorMessage = ref('')
 
+async function loadBooks() {
+  isLoading.value = true
+  errorMessage.value = ''
+
+  try {
+    const result = await catalogService.listBooks({ limit: 15 })
+    books.value = result.items
+  } catch (error) {
+    errorMessage.value = error instanceof Error
+      ? error.message
+      : 'Nao foi possivel carregar o catalogo.'
+  } finally {
+    isLoading.value = false
+  }
+}
+
+onMounted(loadBooks)
 </script>
 
 <template>
@@ -37,7 +59,14 @@ const backgroundImage = `url(${fundoImg})`
             height="777px"
             :opacity="0.8"
           />
-          <BookCoversGrid class="books-area__grid" :total="15" />
+          <p v-if="errorMessage" class="books-area__status">{{ errorMessage }}</p>
+          <BookCoversGrid
+            v-else
+            class="books-area__grid"
+            :books="books"
+            :loading="isLoading"
+            :total="15"
+          />
         </div>
       </div>
     </section>
@@ -108,6 +137,20 @@ const backgroundImage = `url(${fundoImg})`
   position: relative;
   z-index: 1;
   height: 100%;
+}
+
+.books-area__status {
+  position: relative;
+  z-index: 1;
+  min-height: 160px;
+  margin: 0;
+  padding: 30px 26px;
+  border: 1px solid rgba(232, 213, 183, 0.25);
+  border-radius: 15px;
+  background: rgba(42, 31, 20, 0.75);
+  color: #e8d5b7;
+  font-family: 'Playfair Display', serif;
+  font-size: 18px;
 }
 
 @media (max-width: 1400px) {
