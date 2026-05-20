@@ -45,7 +45,29 @@ export interface LoginResponse {
   token: string
 }
 
+export interface AuthUser {
+  name: string
+  email: string
+}
+
+export interface RegisterResponse {
+  message: string
+  token: string
+  user: AuthUser
+}
+
 export const authService = {
+  /**
+   * POST /auth/register
+   * Cria uma conta e retorna { token, user }.
+   */
+  register(name: string, email: string, password: string): Promise<RegisterResponse> {
+    return request<RegisterResponse>('/auth/register', {
+      method: 'POST',
+      body: JSON.stringify({ name, email, password }),
+    })
+  },
+
   /**
    * POST /auth/login
    * Retorna { token } que deve ser armazenado no authStore.
