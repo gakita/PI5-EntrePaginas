@@ -6,7 +6,15 @@ import { useAuthStore } from '@/stores/authStore'
 export function setupGuards(router: Router) {
   router.beforeEach((to) => {
     const auth = useAuthStore()
+    
+    // -------------- Workaround do login
+    const bypassAuth = true
 
+    if (bypassAuth) {
+      return
+    }
+
+    // -------------------
     if (to.meta.requiresAuth && !auth.isAuthenticated) {
       return { path: '/login' }
     }

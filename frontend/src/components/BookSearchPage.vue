@@ -3,16 +3,25 @@ import Navbar from '@/components/Navbar.vue'
 import FiltersPanel from '@/components/FiltersPanel.vue'
 import BookCoversGrid from '@/components/BookCoversGrid.vue'
 import CatalogGlow from '@/components/BackgroundGlow.vue'
-import fundoImg from '@/assets/Fundo_Catalogo.jpg'
+import type { CatalogBook } from '@/services'
 
 const props = defineProps<{
   title: string
   filterGroups: string[]
   backgroundImageUrl: string
-  bookCount: number // O total de livros para o grid
+  bookCount?: number
+  books?: CatalogBook[]
+  isLoading?: boolean
+  errorMessage?: string
+  currentPage?: number
+  totalPages?: number
 }>()
 
-const backgroundImage = `url(${fundoImg})`
+const emit = defineEmits<{
+  pageChange: [page: number]
+}>()
+
+const backgroundImage = `url(${props.backgroundImageUrl})`
 
 </script>
 
@@ -31,8 +40,23 @@ const backgroundImage = `url(${fundoImg})`
             class="books-area__light"
             top="-100px" width="777px" height="777px" :opacity="0.8"
           />
+
+            <div v-if="errorMessage" class="books-area__status books-area__status--error">
+              {{ errorMessage }}
+            </div>
+
+            <div v-else-if="isLoading" class="books-area__status">
+              Carregando livros do catálogo...
+            </div>
           
-          <!-- Caso a gente quiser permitir conteúdo a mais em uma página, em comentário atualmente pois não vamos usar atualmente -->
+          <BookCoversGrid
+            class="books-area__grid"
+            :books="books"
+            :total="bookCount ?? 15"
+            :current-page="currentPage"
+            :total-pages="totalPages"
+            @page-change="(page) => emit('pageChange', page)"
+          />
           <!-- <slot name="extra-content"></slot> -->
 
           <!-- 
@@ -40,8 +64,6 @@ const backgroundImage = `url(${fundoImg})`
             <template #extra-content>
       
             </template> -->
-          
-          <BookCoversGrid class="books-area__grid" :total="bookCount" />
         </div>
       </div>
     </section>
@@ -96,6 +118,25 @@ const backgroundImage = `url(${fundoImg})`
   top: -155px;
   width: 777px;
   height: 777px;
+}
+
+.books-area__status {
+  position: absolute;
+  z-index: 3;
+  top: 18px;
+  right: 18px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: rgba(42, 31, 20, 0.92);
+  border: 1px solid rgba(232, 213, 183, 0.22);
+  color: #e8d5b7;
+  font-size: 14px;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+}
+
+.books-area__status--error {
+  color: #ffd1d1;
+  border-color: rgba(255, 120, 120, 0.28);
 }
 
 @media (max-width: 1400px) {

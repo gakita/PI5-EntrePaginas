@@ -69,6 +69,30 @@ export interface BookRecommendation {
   genre?: string
 }
 
+export interface CatalogBook {
+  googleBooksId: string | null
+  title: string | null
+  author: string | null
+  authors: string[]
+  type: string
+  categories: string[]
+  genres: string[]
+  coverUrl: string | null
+  synopsis: string | null
+  publishedDate: string | null
+  previewLink: string | null
+  webReaderLink: string | null
+  embeddable: boolean
+  viewability: string | null
+}
+
+export interface CatalogResponse {
+  items: CatalogBook[]
+  page: number
+  limit: number
+  totalItems: number
+}
+
 export interface SendMessageResponse {
   reply: string
   recommendations: BookRecommendation[]
@@ -121,5 +145,38 @@ export const chatService = {
    */
   closeConversation(): Promise<void> {
     return request<void>('/chat/close', { method: 'POST' })
+  },
+}
+
+// ─── Books / Catálogo ────────────────────────────────────────────────────────
+
+export interface ListBooksParams {
+  search?: string
+  author?: string
+  category?: string
+  theme?: string
+  type?: string
+  page?: number
+  limit?: number
+}
+
+export const booksService = {
+  /**
+   * GET /books
+   * Lista livros do catálogo do Google Books via backend.
+   */
+  listBooks(params: ListBooksParams = {}): Promise<CatalogResponse> {
+    const query = new URLSearchParams()
+
+    if (params.search) query.set('search', params.search)
+    if (params.author) query.set('author', params.author)
+    if (params.category) query.set('category', params.category)
+    if (params.theme) query.set('theme', params.theme)
+    if (params.type) query.set('type', params.type)
+    if (typeof params.page === 'number') query.set('page', String(params.page))
+    if (typeof params.limit === 'number') query.set('limit', String(params.limit))
+
+    const suffix = query.toString() ? `?${query.toString()}` : ''
+    return request<CatalogResponse>(`/books${suffix}`)
   },
 }
