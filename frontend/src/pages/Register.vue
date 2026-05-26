@@ -73,7 +73,7 @@ async function handleStep1() {
     errorMessage.value = 'Preencha todos os campos.'
     return
   }
-  if (!/\.+@.+\..+/.test(email) && /.+@.+\..+/.test(email) === false) {
+  if (!/.+@.+\..+/.test(email)) {
     errorMessage.value = 'E-mail inválido.'
     return
   }

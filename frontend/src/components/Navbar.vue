@@ -1,37 +1,46 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import logo from "../assets/Logo_EntrePaginas.svg"
-import bookmarkIcon from "../assets/Bookmark-favorites_2.svg"
-import profileIcon from "../assets/Icone_perfil.svg"
+  import { computed } from 'vue'
+  import { useRouter } from 'vue-router'
+  import { useAuthStore } from '@/stores/authStore'
+  import bookmarkIcon from '../assets/Bookmark-favorites_2.svg'
+  import profileIcon from '../assets/Icone_perfil.svg'
+  import logo from '../assets/Logo_EntrePaginas.svg'
 
-const navLinks = [
-  { label: 'ÍNICIO',        to: '/' },
-  { label: 'CATEGORIAS',    to: '/categorias' },
-  { label: 'RECOMENDAÇÕES', to: '/recomendacoes' },
-  { label: 'CATÁLOGO',      to: '/catalogo' },
-]
+  const router = useRouter()
+  const auth = useAuthStore()
 
-// TODO: substituir por authStore.isLoggedIn quando o store existir
-const isLoggedIn = ref(true)
+  const navLinks = [
+    { label: 'ÍNICIO', to: '/' },
+    { label: 'CATEGORIAS', to: '/categorias' },
+    { label: 'RECOMENDAÇÕES', to: '/recomendacoes' },
+    { label: 'CATÁLOGO', to: '/catalogo' },
+  ]
 
-const userMenuItems = [
-  { label: 'Perfil',  to: '/perfil',  icon: 'mdi-account-outline' },
-  { label: 'Sair',    to: '/logout',  icon: 'mdi-logout'           },
-]
+  const isLoggedIn = computed(() => Boolean(auth.token))
+
+  const userMenuItems = [
+    { label: 'Perfil', to: '/perfil', icon: 'mdi-account-outline' },
+    { label: 'Sair', action: handleLogout, icon: 'mdi-logout' },
+  ]
+
+  function handleLogout () {
+    auth.clearToken()
+    void router.push('/login')
+  }
 </script>
 
 <template>
   <v-app-bar flat>
     <v-app-bar-title>
       <router-link to="/">
-        <v-img :src="logo" alt="Entre Páginas" />
+        <v-img alt="Entre Páginas" :src="logo" />
       </router-link>
     </v-app-bar-title>
 
     <template #append>
       <div class="nav-links">
-        <template v-for="(link, index) in navLinks" :key="link.to">
-          <router-link :to="link.to" :exact="link.to === '/'">{{ link.label }}</router-link>
+        <template v-for="link in navLinks" :key="link.to">
+          <router-link :exact="link.to === '/'" :to="link.to">{{ link.label }}</router-link>
           <span class="nav-separator" />
         </template>
       </div>
@@ -39,9 +48,9 @@ const userMenuItems = [
       <div class="actions">
         <template v-if="!isLoggedIn">
           <v-btn
-            variant="outlined"
             class="login-btn"
             :to="'/login'"
+            variant="outlined"
           >
             Entrar
           </v-btn>
@@ -50,13 +59,13 @@ const userMenuItems = [
         <template v-else>
           <div class="bookmark-container">
             <v-btn
-              icon
               class="action-btn"
+              icon
               :to="'/favoritos'"
               :ripple="false"
               variant="plain"
             >
-              <v-img :src="bookmarkIcon" class="bookmark-icon" width="66" />
+              <v-img class="bookmark-icon" :src="bookmarkIcon" width="66" />
             </v-btn>
           </div>
 
@@ -70,7 +79,7 @@ const userMenuItems = [
                 icon
               >
                 <v-avatar size="40">
-                  <v-img :src="profileIcon" alt="Profile" />
+                  <v-img alt="Profile" :src="profileIcon" />
                 </v-avatar>
               </v-btn>
             </template>
@@ -78,10 +87,11 @@ const userMenuItems = [
             <v-list class="user-menu">
               <v-list-item
                 v-for="item in userMenuItems"
-                :key="item.to"
-                :to="item.to"
+                :key="item.label"
                 :prepend-icon="item.icon"
                 :title="item.label"
+                :to="item.to"
+                @click="item.action?.()"
               />
             </v-list>
           </v-menu>

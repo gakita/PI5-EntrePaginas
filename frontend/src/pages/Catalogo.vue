@@ -2,10 +2,10 @@
 import { onMounted, ref } from 'vue'
 import BookSearchLayout from '@/components/BookSearchPage.vue'
 import fundoImg from '@/assets/Fundo_Catalogo.jpg'
-import { booksService, type CatalogBook, type CatalogResponse } from '@/services'
+import { catalogService, type CatalogBook, type CatalogResponse } from '@/services'
 
 const filterGroups = [
-  'Ordenar por', 'Gênero', 'Tipo', 'Editora', 'Autor', 'Ano'
+  'Ordenar por', 'Gênero', 'Tipo', 'Editora', 'Autor', 'Ano',
 ]
 
 const books = ref<CatalogBook[]>([])
@@ -36,7 +36,7 @@ function fetchCatalogPage(page: number) {
     return existingRequest
   }
 
-  const request = booksService.listBooks({ limit: ITEMS_PER_PAGE, page })
+  const request = catalogService.listBooks({ limit: ITEMS_PER_PAGE, page })
     .then((response) => {
       pageCache.set(page, response)
       return response
@@ -55,27 +55,29 @@ function prefetchCatalogPage(page: number) {
   }
 
   void fetchCatalogPage(page).catch(() => {
-    // Prefetch failures are ignored so they do not affect the visible page.
+    // Falhas de prefetch não devem afetar a página visível.
   })
 }
 
 async function loadPage(page: number) {
+  const safePage = Math.max(1, Math.min(page, totalPages.value || page))
   const currentRequest = ++requestSerial
+
   isLoading.value = true
   errorMessage.value = ''
 
   try {
-    const response = await fetchCatalogPage(page)
+    const response = await fetchCatalogPage(safePage)
 
     if (currentRequest !== requestSerial) {
       return
     }
 
     books.value = response.items
-    currentPage.value = page
+    currentPage.value = safePage
     totalPages.value = getTotalPages(response.totalItems)
 
-    prefetchCatalogPage(page + 1)
+    prefetchCatalogPage(safePage + 1)
   } catch (error) {
     if (currentRequest !== requestSerial) {
       return
@@ -85,16 +87,14 @@ async function loadPage(page: number) {
       ? error.message
       : 'Não foi possível carregar o catálogo agora.'
   } finally {
-    if (currentRequest !== requestSerial) {
-      return
+    if (currentRequest === requestSerial) {
+      isLoading.value = false
     }
-
-    isLoading.value = false
   }
 }
 
 onMounted(() => {
-  loadPage(1)
+  void loadPage(1)
 })
 </script>
 

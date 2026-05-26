@@ -21,19 +21,21 @@ const emit = defineEmits<{
 const bookCards = computed(() => {
   if (props.books.length > 0) {
     return props.books.map((book, index) => ({
-      id: book.googleBooksId || `${index + 1}`,
+      id: book.googleBooksId || `book-${index + 1}`,
       title: book.title || 'Título indisponível',
-      author: book.author || '',
+      author: book.author || 'Autor desconhecido',
       coverUrl: book.coverUrl || '',
+      to: book.googleBooksId ? `/livros/${book.googleBooksId}` : '',
       isPlaceholder: false,
     }))
   }
 
   return Array.from({ length: props.total }, (_, index) => ({
-    id: index + 1,
+    id: `placeholder-${index + 1}`,
     title: '',
     author: '',
     coverUrl: '',
+    to: '',
     isPlaceholder: true,
   }))
 })
@@ -42,27 +44,37 @@ const bookCards = computed(() => {
 <template>
   <section class="cards-panel">
     <div class="cards-panel__scroll">
-      <article
+      <component
+        :is="card.to ? 'router-link' : 'article'"
         v-for="card in bookCards"
         :key="card.id"
         class="book-card"
         :class="{ 'book-card--placeholder': card.isPlaceholder }"
+        :to="card.to || undefined"
+        :aria-label="card.to ? `Abrir livro ${card.title}` : undefined"
       >
         <div v-if="!card.isPlaceholder" class="book-card__cover">
           <img
             v-if="card.coverUrl"
             :src="card.coverUrl"
-            :alt="card.title"
+            :alt="`Capa de ${card.title}`"
             class="book-card__image"
-          />
+            loading="lazy"
+          >
+          <div class="book-card__shade" />
+          <div class="book-card__info">
+            <strong>{{ card.title }}</strong>
+            <span>{{ card.author }}</span>
+          </div>
         </div>
-      </article>
+      </component>
     </div>
 
     <div v-if="totalPages > 1" class="pagination">
       <button
         class="pagination__btn pagination__btn--prev"
         :disabled="currentPage === 1"
+        type="button"
         @click="emit('pageChange', currentPage - 1)"
       >
         <v-icon size="18">mdi-chevron-left</v-icon>
@@ -75,6 +87,7 @@ const bookCards = computed(() => {
       <button
         class="pagination__btn pagination__btn--next"
         :disabled="currentPage === totalPages"
+        type="button"
         @click="emit('pageChange', currentPage + 1)"
       >
         <v-icon size="18">mdi-chevron-right</v-icon>
@@ -102,8 +115,8 @@ const bookCards = computed(() => {
   min-height: 0;
   display: grid;
   grid-template-columns: repeat(5, minmax(90px, 1fr));
-  column-gap: 10px;
-  row-gap: 190px;
+  column-gap: 18px;
+  row-gap: 210px;
   justify-content: stretch;
   overflow-y: auto;
   overscroll-behavior: contain;
@@ -133,12 +146,28 @@ const bookCards = computed(() => {
 
 .book-card {
   position: relative;
+  display: block;
   width: 100%;
   aspect-ratio: 200 / 250;
   border-radius: 15px;
   overflow: hidden;
   background-color: #120d07;
   box-shadow: inset 0 0 0 1px rgba(232, 213, 183, 0.08);
+  color: inherit;
+  text-decoration: none;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  border: 1px solid transparent;
+}
+
+.book-card:not(.book-card--placeholder):hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.25);
+  border-color: rgba(201, 162, 39, 0.45);
+}
+
+.book-card:focus-visible {
+  outline: 2px solid #c9a227;
+  outline-offset: 3px;
 }
 
 .book-card__cover {
@@ -155,6 +184,61 @@ const bookCards = computed(() => {
   display: block;
   object-fit: cover;
   object-position: center;
+}
+
+.book-card__shade {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(17, 12, 7, 0) 34%, rgba(8, 6, 4, 0.86) 100%);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+}
+
+.book-card__info {
+  position: absolute;
+  left: 10px;
+  right: 10px;
+  bottom: 10px;
+  display: grid;
+  gap: 2px;
+  color: #f0dfbd;
+  font-family: 'Playfair Display', serif;
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.75);
+  opacity: 0;
+  transform: translateY(6px);
+  pointer-events: none;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.book-card:hover .book-card__shade,
+.book-card:focus-visible .book-card__shade,
+.book-card:hover .book-card__info,
+.book-card:focus-visible .book-card__info {
+  opacity: 1;
+}
+
+.book-card:hover .book-card__info,
+.book-card:focus-visible .book-card__info {
+  transform: translateY(0);
+}
+
+.book-card__info strong,
+.book-card__info span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.book-card__info strong {
+  font-size: 14px;
+  line-height: 1.1;
+}
+
+.book-card__info span {
+  font-size: 12px;
+  line-height: 1.1;
+  opacity: 0.9;
 }
 
 .book-card::before {
@@ -232,8 +316,8 @@ const bookCards = computed(() => {
 @media (max-width: 1400px) {
   .cards-panel__scroll {
     grid-template-columns: repeat(5, minmax(78px, 1fr));
-    column-gap: 10px;
-    row-gap: 190px;
+    column-gap: 16px;
+    row-gap: 210px;
   }
 }
 
@@ -251,8 +335,8 @@ const bookCards = computed(() => {
 
   .cards-panel__scroll {
     grid-template-columns: repeat(2, minmax(120px, 1fr));
-    column-gap: 12px;
-    row-gap: 190px;
+    column-gap: 16px;
+    row-gap: 210px;
   }
 }
 </style>

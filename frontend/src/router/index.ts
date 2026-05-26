@@ -23,8 +23,17 @@ const router = createRouter({
       meta: { guest: true },
     },
     {
+      path: '/health',
+      component: () => import('@/pages/Health.vue'),
+    },
+    {
       path: '/catalogo',
       component: () => import('@/pages/Catalogo.vue'),
+      meta: { requiresAuth: true },
+    },
+    {
+      path: '/livros/:id',
+      component: () => import('@/pages/BookDescPage.vue'),
       meta: { requiresAuth: true },
     },
     {
