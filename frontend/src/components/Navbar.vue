@@ -1,46 +1,46 @@
 <script setup lang="ts">
-  import { computed } from 'vue'
-  import { useRouter } from 'vue-router'
-  import { useAuthStore } from '@/stores/authStore'
-  import bookmarkIcon from '../assets/Bookmark-favorites_2.svg'
-  import profileIcon from '../assets/Icone_perfil.svg'
-  import logo from '../assets/Logo_EntrePaginas.svg'
+import { computed } from 'vue'
+import { useRouter } from 'vue-router'
+import { useAuthStore } from '@/stores/authStore'
+import logo from "../assets/Logo_EntrePaginas.svg"
+import bookmarkIcon from "../assets/Bookmark-favorites_2.svg"
+import profileIcon from "../assets/Icone_perfil.svg"
 
-  const router = useRouter()
-  const auth = useAuthStore()
+const router = useRouter()
+const auth = useAuthStore()
 
-  const navLinks = [
-    { label: 'ÍNICIO', to: '/' },
-    { label: 'CATEGORIAS', to: '/categorias' },
-    { label: 'RECOMENDAÇÕES', to: '/recomendacoes' },
-    { label: 'CATÁLOGO', to: '/catalogo' },
-  ]
+const navLinks = [
+  { label: 'ÍNICIO',        to: '/' },
+  { label: 'CATEGORIAS',    to: '/categorias' },
+  { label: 'RECOMENDAÇÕES', to: '/recomendacoes' },
+  { label: 'CATÁLOGO',      to: '/catalogo' },
+]
 
-  const isLoggedIn = computed(() => Boolean(auth.token))
+const isLoggedIn = computed(() => Boolean(auth.token))
 
-  const userMenuItems = [
-    { label: 'Perfil', to: '/perfil', icon: 'mdi-account-outline' },
-    { label: 'Sair', action: handleLogout, icon: 'mdi-logout' },
-  ]
+const userMenuItems = [
+  { label: 'Perfil',  to: '/perfil',  icon: 'mdi-account-outline' },
+  { label: 'Sair',    action: handleLogout,  icon: 'mdi-logout' },
+]
 
-  function handleLogout () {
-    auth.clearToken()
-    void router.push('/login')
-  }
+function handleLogout () {
+  auth.clearToken()
+  void router.push('/login')
+}
 </script>
 
 <template>
   <v-app-bar flat>
     <v-app-bar-title>
       <router-link to="/">
-        <v-img alt="Entre Páginas" :src="logo" />
+        <v-img :src="logo" alt="Entre Páginas" />
       </router-link>
     </v-app-bar-title>
 
     <template #append>
       <div class="nav-links">
-        <template v-for="link in navLinks" :key="link.to">
-          <router-link :exact="link.to === '/'" :to="link.to">{{ link.label }}</router-link>
+        <template v-for="(link, index) in navLinks" :key="link.to">
+          <router-link :to="link.to" :exact="link.to === '/'">{{ link.label }}</router-link>
           <span class="nav-separator" />
         </template>
       </div>
@@ -48,9 +48,9 @@
       <div class="actions">
         <template v-if="!isLoggedIn">
           <v-btn
+            variant="outlined"
             class="login-btn"
             :to="'/login'"
-            variant="outlined"
           >
             Entrar
           </v-btn>
@@ -59,13 +59,13 @@
         <template v-else>
           <div class="bookmark-container">
             <v-btn
-              class="action-btn"
               icon
+              class="action-btn"
               :to="'/favoritos'"
               :ripple="false"
               variant="plain"
             >
-              <v-img class="bookmark-icon" :src="bookmarkIcon" width="66" />
+              <v-img :src="bookmarkIcon" class="bookmark-icon" width="66" />
             </v-btn>
           </div>
 
@@ -79,7 +79,7 @@
                 icon
               >
                 <v-avatar size="40">
-                  <v-img alt="Profile" :src="profileIcon" />
+                  <v-img :src="profileIcon" alt="Profile" />
                 </v-avatar>
               </v-btn>
             </template>
@@ -88,9 +88,9 @@
               <v-list-item
                 v-for="item in userMenuItems"
                 :key="item.label"
+                :to="item.to"
                 :prepend-icon="item.icon"
                 :title="item.label"
-                :to="item.to"
                 @click="item.action?.()"
               />
             </v-list>

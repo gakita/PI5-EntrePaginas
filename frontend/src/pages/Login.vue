@@ -34,8 +34,8 @@ async function handleSubmit() {
     const { token } = await authService.login(email.value, password.value)
     auth.setToken(token)
     router.push('/')
-  } catch (error) {
-    errorMessage.value = error instanceof Error ? error.message : 'E-mail ou senha inválidos.'
+  } catch {
+    errorMessage.value = 'E-mail ou senha inválidos.'
   } finally {
     loading.value = false
   }

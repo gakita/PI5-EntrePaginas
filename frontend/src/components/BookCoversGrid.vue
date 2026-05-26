@@ -21,9 +21,9 @@ const emit = defineEmits<{
 const bookCards = computed(() => {
   if (props.books.length > 0) {
     return props.books.map((book, index) => ({
-      id: book.googleBooksId || `book-${index + 1}`,
+      id: book.googleBooksId || `${index + 1}`,
       title: book.title || 'Título indisponível',
-      author: book.author || 'Autor desconhecido',
+      author: book.author || '',
       coverUrl: book.coverUrl || '',
       to: book.googleBooksId ? `/livros/${book.googleBooksId}` : '',
       isPlaceholder: false,
@@ -31,7 +31,7 @@ const bookCards = computed(() => {
   }
 
   return Array.from({ length: props.total }, (_, index) => ({
-    id: `placeholder-${index + 1}`,
+    id: index + 1,
     title: '',
     author: '',
     coverUrl: '',
@@ -57,14 +57,16 @@ const bookCards = computed(() => {
           <img
             v-if="card.coverUrl"
             :src="card.coverUrl"
-            :alt="`Capa de ${card.title}`"
+            :alt="card.title"
             class="book-card__image"
-            loading="lazy"
-          >
+          />
+          <div v-else class="book-card__fallback">
+            <span>{{ card.title }}</span>
+          </div>
           <div class="book-card__shade" />
           <div class="book-card__info">
             <strong>{{ card.title }}</strong>
-            <span>{{ card.author }}</span>
+            <span v-if="card.author">{{ card.author }}</span>
           </div>
         </div>
       </component>
@@ -74,7 +76,6 @@ const bookCards = computed(() => {
       <button
         class="pagination__btn pagination__btn--prev"
         :disabled="currentPage === 1"
-        type="button"
         @click="emit('pageChange', currentPage - 1)"
       >
         <v-icon size="18">mdi-chevron-left</v-icon>
@@ -87,7 +88,6 @@ const bookCards = computed(() => {
       <button
         class="pagination__btn pagination__btn--next"
         :disabled="currentPage === totalPages"
-        type="button"
         @click="emit('pageChange', currentPage + 1)"
       >
         <v-icon size="18">mdi-chevron-right</v-icon>
@@ -184,6 +184,33 @@ const bookCards = computed(() => {
   display: block;
   object-fit: cover;
   object-position: center;
+}
+
+.book-card__fallback {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 18px;
+  background:
+    radial-gradient(circle at 50% 18%, rgba(201, 162, 39, 0.2), transparent 44%),
+    linear-gradient(145deg, #2a1f14 0%, #120d07 100%);
+  color: #f5ead7;
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(14px, 1.2vw, 20px);
+  font-weight: 700;
+  line-height: 1.15;
+  text-align: center;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.65);
+}
+
+.book-card__fallback span {
+  display: -webkit-box;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 6;
 }
 
 .book-card__shade {

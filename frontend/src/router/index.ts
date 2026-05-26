@@ -23,10 +23,6 @@ const router = createRouter({
       meta: { guest: true },
     },
     {
-      path: '/health',
-      component: () => import('@/pages/Health.vue'),
-    },
-    {
       path: '/catalogo',
       component: () => import('@/pages/Catalogo.vue'),
       meta: { requiresAuth: true },
