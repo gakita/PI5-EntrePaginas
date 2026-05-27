@@ -5,6 +5,8 @@ export interface BookFilters {
   search?: string
   author?: string
   publisher?: string
+  category?: string
+  type?: string
   orderBy?: 'newest' | 'oldest' | 'relevance'
   yearFrom?: number
   yearTo?: number
@@ -60,20 +62,17 @@ const yearRangeOptions: FilterOption[] = [
 
 const filterOptions: Record<string, FilterOption[]> = {
   'Gênero': [
-    { key: 'comedia', label: 'Comédia' },
+    { key: 'comedy', label: 'Comédia' },
     { key: 'terror', label: 'Terror' },
     { key: 'romance', label: 'Romance' },
-    { key: 'etc-1', label: 'ETC' },
-    { key: 'etc-2', label: 'ETC' },
-    { key: 'etc-3', label: 'ETC' },
+    { key: 'fantasy', label: 'Fantasia' },
+    { key: 'science fiction', label: 'Ficção científica' },
+    { key: 'adventure', label: 'Aventura' },
   ],
   'Tipo': [
-    { key: 'etc-1', label: 'ETC' },
-    { key: 'etc-2', label: 'ETC' },
-    { key: 'etc-3', label: 'ETC' },
-    { key: 'etc-4', label: 'ETC' },
-    { key: 'etc-5', label: 'ETC' },
-    { key: 'etc-6', label: 'ETC' },
+    { key: 'livro', label: 'Livro' },
+    { key: 'hq', label: 'HQ' },
+    { key: 'manga', label: 'Manga' },
   ],
   'Editora': [
     { key: 'etc-1', label: 'ETC' },
@@ -217,6 +216,8 @@ function normalizeText(value: string) {
 
 function buildFilters(): BookFilters {
   const selectedYear = selectedFilters.value['Ano']?.[0]
+  const selectedGenre = selectedFilters.value['Gênero']?.[0]
+  const selectedType = selectedFilters.value['Tipo']?.[0]
   const chipYearRange = getYearRangeFromChip(selectedYear)
   const customYearFrom = yearFrom.value ? Number(yearFrom.value) : undefined
   const customYearTo = yearTo.value ? Number(yearTo.value) : undefined
@@ -226,6 +227,8 @@ function buildFilters(): BookFilters {
     search: normalizeText(searchFilters.value),
     author: normalizeText(authorSearch.value),
     publisher: normalizeText(publisherSearch.value),
+    category: selectedGenre,
+    type: selectedType,
     orderBy: selectedOrder.value ? orderMap[selectedOrder.value] : undefined,
     yearFrom: hasValidCustomYear ? customYearFrom : chipYearRange.yearFrom,
     yearTo: hasValidCustomYear ? customYearTo : chipYearRange.yearTo,

@@ -3,11 +3,12 @@
   import { useRoute, useRouter } from 'vue-router'
   import fundoImg from '@/assets/Fundo_Catalogo.jpg'
   import Navbar from '@/components/Navbar.vue'
-  import { catalogService, type CatalogBook } from '@/services'
+  import { catalogService, favoritesService, type CatalogBook } from '@/services'
 
   const route = useRoute()
   const router = useRouter()
   const isFavorite = ref(false)
+  const isFavoriteLoading = ref(false)
   const book = ref<CatalogBook | null>(null)
   const isLoading = ref(false)
   const errorMessage = ref('')
@@ -42,6 +43,7 @@
 
     try {
       book.value = await catalogService.getBookById(bookId.value)
+      await loadFavoriteState()
     } catch (error) {
       errorMessage.value = error instanceof Error
         ? error.message
@@ -49,6 +51,39 @@
       book.value = null
     } finally {
       isLoading.value = false
+    }
+  }
+
+  async function loadFavoriteState() {
+    if (!bookId.value) return
+
+    try {
+      const favorites = await favoritesService.listFavorites()
+      isFavorite.value = favorites.some((favorite) => favorite.googleBooksId === bookId.value)
+    } catch {
+      isFavorite.value = false
+    }
+  }
+
+  async function toggleFavorite() {
+    if (!book.value?.googleBooksId || !book.value.title || isFavoriteLoading.value) return
+
+    isFavoriteLoading.value = true
+
+    try {
+      if (isFavorite.value) {
+        await favoritesService.removeFavorite(book.value.googleBooksId)
+        isFavorite.value = false
+      } else {
+        await favoritesService.addFavorite(book.value)
+        isFavorite.value = true
+      }
+    } catch (error) {
+      errorMessage.value = error instanceof Error
+        ? error.message
+        : 'Nao foi possivel atualizar seus favoritos.'
+    } finally {
+      isFavoriteLoading.value = false
     }
   }
 
@@ -84,7 +119,7 @@
           <div class="book-card__footer">
             <p class="book-card__author">{{ author }}</p>
             <h1 class="book-card__title">{{ title }}</h1>
-            <button class="book-card__favorite" type="button" @click="isFavorite = !isFavorite">
+            <button class="book-card__favorite" type="button" :disabled="isFavoriteLoading" @click="toggleFavorite">
               <v-icon
                 :icon="isFavorite ? 'mdi-bookmark-remove' : 'mdi-bookmark-plus-outline'"
                 size="18"
@@ -336,6 +371,11 @@
 .book-card__favorite:hover {
   color: #e3be46;
   opacity: 0.9;
+}
+
+.book-card__favorite:disabled {
+  cursor: progress;
+  opacity: 0.65;
 }
 
 .book-panel {

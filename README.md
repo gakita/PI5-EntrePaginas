@@ -63,11 +63,13 @@ cd secrets/oracle-wallet
 unzip Wallet_ProjetoIntegradorV.zip -d Wallet_ProjetoIntegradorV
 ```
 
-### 4. Crie a tabela do chat no banco
+### 4. Crie as tabelas do banco
 
 ```bash
-npm run db:chat
+npm run db:setup
 ```
+
+Esse comando prepara as tabelas usadas pelo backend, incluindo chat, preferencias, sugestoes, favoritos, quiz e recuperacao de senha.
 
 ### 5. Inicie a API
 
@@ -84,8 +86,9 @@ npm run dev
 | `npm run dev` | Inicia o servidor em modo desenvolvimento |
 | `npm start` | Inicia o servidor em modo produção |
 | `npm run seed:user` | Cria/atualiza um usuário de teste no banco |
+| `npm run db:setup` | Cria/verifica todas as tabelas principais do projeto |
 | `npm run db:chat` | Cria a tabela `CONVERSAS` no Oracle |
-| `npm run db:preferences` | Cria as tabelas `PREFERENCIAS_USUARIO` e `SUGESTOES_CONVERSA` |
+| `npm run db:preferences` | Cria as tabelas `PREFERENCIAS_USUARIO`, `SUGESTOES_CONVERSA` e `FAVORITOS` |
 | `npm run db:quiz` | Cria a tabela `QUIZ_SESSOES` no Oracle |
 | `npm test` | Roda testes unitários com o runner nativo do Node.js |
 | `npm run test:chat` | Roda todos os testes do chat (requer servidor no ar) |

@@ -46,7 +46,29 @@ export interface LoginResponse {
   token: string
 }
 
+export interface AuthUser {
+  name: string
+  email: string
+}
+
+export interface RegisterResponse {
+  message: string
+  token: string
+  user: AuthUser
+}
+
 export const authService = {
+  /**
+   * POST /auth/register
+   * Cria uma conta e retorna { token, user }.
+   */
+  register(name: string, email: string, password: string): Promise<RegisterResponse> {
+    return request<RegisterResponse>('/auth/register', {
+      method: 'POST',
+      body: JSON.stringify({ name, email, password }),
+    })
+  },
+
   /**
    * POST /auth/login
    * Retorna { token } que deve ser armazenado no authStore.
@@ -92,6 +114,36 @@ export interface CatalogResponse {
   page: number
   limit: number
   totalItems: number
+}
+
+interface FavoriteBook {
+  googleBooksId: string
+  title: string
+  author?: string | null
+  coverUrl?: string | null
+  publishedDate?: string | null
+  type?: string | null
+  categories?: string[]
+  genres?: string[]
+}
+
+function normalizeFavoriteBook(book: FavoriteBook): CatalogBook {
+  return {
+    googleBooksId: book.googleBooksId,
+    title: book.title,
+    author: book.author || null,
+    authors: book.author ? [book.author] : [],
+    type: book.type || 'livro',
+    categories: Array.isArray(book.categories) ? book.categories : [],
+    genres: Array.isArray(book.genres) ? book.genres : [],
+    coverUrl: book.coverUrl || null,
+    synopsis: null,
+    publishedDate: book.publishedDate || null,
+    previewLink: null,
+    webReaderLink: null,
+    embeddable: false,
+    viewability: null,
+  }
 }
 
 export interface SendMessageResponse {
@@ -150,6 +202,35 @@ export const chatService = {
 }
 
 // ─── Books / Catálogo ────────────────────────────────────────────────────────
+
+export const favoritesService = {
+  async listFavorites(): Promise<CatalogBook[]> {
+    const favorites = await request<FavoriteBook[]>('/favorites')
+    return favorites.map(normalizeFavoriteBook)
+  },
+
+  addFavorite(book: CatalogBook): Promise<FavoriteBook> {
+    return request<FavoriteBook>('/favorites', {
+      method: 'POST',
+      body: JSON.stringify({
+        googleBooksId: book.googleBooksId,
+        title: book.title,
+        author: book.author,
+        coverUrl: book.coverUrl,
+        publishedDate: book.publishedDate,
+        type: book.type,
+        categories: book.categories,
+        genres: book.genres,
+      }),
+    })
+  },
+
+  removeFavorite(googleBooksId: string): Promise<void> {
+    return request<void>(`/favorites/${encodeURIComponent(googleBooksId)}`, {
+      method: 'DELETE',
+    })
+  },
+}
 
 export interface ListBooksParams {
   search?: string
@@ -236,6 +317,37 @@ function normalizeGenres(categories: string[] = []) {
   return categories
     .map((category) => category.split('/')[0]?.trim())
     .filter((genre): genre is string => Boolean(genre))
+}
+
+function uniqueValues(values: Array<string | null | undefined>) {
+  return Array.from(new Set(values.filter((value): value is string => Boolean(value?.trim()))))
+}
+
+export function mergeCatalogBookData(base: CatalogBook, enriched?: CatalogBook | null): CatalogBook {
+  if (!enriched) {
+    return base
+  }
+
+  const authors = uniqueValues([...(enriched.authors || []), ...(base.authors || [])])
+  const categories = uniqueValues([...(enriched.categories || []), ...(base.categories || [])])
+  const genres = uniqueValues([...(enriched.genres || []), ...(base.genres || [])])
+
+  return {
+    googleBooksId: enriched.googleBooksId || base.googleBooksId,
+    title: enriched.title || base.title,
+    author: enriched.author || base.author,
+    authors,
+    type: enriched.type || base.type,
+    categories,
+    genres,
+    coverUrl: enriched.coverUrl || base.coverUrl,
+    synopsis: enriched.synopsis || base.synopsis,
+    publishedDate: enriched.publishedDate || base.publishedDate,
+    previewLink: enriched.previewLink || base.previewLink,
+    webReaderLink: enriched.webReaderLink || base.webReaderLink,
+    embeddable: enriched.embeddable || base.embeddable,
+    viewability: enriched.viewability || base.viewability,
+  }
 }
 
 function normalizeGoogleBook(volume: GoogleBookVolume): CatalogBook {
@@ -390,6 +502,53 @@ async function requestOpenLibraryWork(id: string): Promise<CatalogBook> {
   } finally {
     window.clearTimeout(timeoutId)
   }
+}
+
+async function requestOpenLibrarySearchFallback(book: CatalogBook): Promise<CatalogBook | null> {
+  const query = book.title?.trim() || book.googleBooksId || ''
+  if (!query) {
+    return null
+  }
+
+  const controller = new AbortController()
+  const timeoutId = window.setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS)
+  const search = new URLSearchParams({
+    q: query,
+    limit: '5',
+    fields: 'key,title,author_name,first_publish_year,subject,cover_i',
+  })
+
+  try {
+    const response = await fetch(
+      `https://openlibrary.org/search.json?${search.toString()}`,
+      { signal: controller.signal },
+    )
+
+    if (!response.ok) {
+      return null
+    }
+
+    const data = await response.json() as OpenLibrarySearchResponse
+    const docs = data.docs || []
+    const matchingDoc = docs.find((doc) => doc.key?.replace('/works/', '') === book.googleBooksId)
+
+    return matchingDoc ? normalizeOpenLibraryDoc(matchingDoc) : null
+  } catch {
+    return null
+  } finally {
+    window.clearTimeout(timeoutId)
+  }
+}
+
+async function requestOpenLibraryBook(id: string): Promise<CatalogBook> {
+  const work = await requestOpenLibraryWork(id)
+
+  if (work.publishedDate) {
+    return work
+  }
+
+  const fallback = await requestOpenLibrarySearchFallback(work)
+  return mergeCatalogBookData(work, fallback)
 }
 
 function buildGoogleBooksQuery(params: ListBooksParams) {
@@ -657,10 +816,10 @@ export const booksService = {
 
   getBookById(id: string): Promise<CatalogBook> {
     if (/^OL\d+W$/i.test(id)) {
-      return requestOpenLibraryWork(id)
+      return requestOpenLibraryBook(id)
     }
 
-    return requestGoogleVolume(id).catch(() => requestOpenLibraryWork(id))
+    return requestGoogleVolume(id).catch(() => requestOpenLibraryBook(id))
   },
 }
 

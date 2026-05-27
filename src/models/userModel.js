@@ -148,6 +148,12 @@ async function deleteUserByEmail(email) {
       { userCode }
     );
 
+    await deleteOptionalUserData(
+      connection,
+      'DELETE FROM FAVORITOS WHERE LOWER(USUARIO_EMAIL) = LOWER(:email)',
+      { email }
+    );
+
     const deleteResult = await connection.execute(
       `
         DELETE FROM FERNANDO.USUARIOS_TESTE
