@@ -1,6 +1,15 @@
 <script setup lang="ts">
 import { ref, nextTick, watch } from 'vue'
 
+export interface BookFilters {
+  search?: string
+  author?: string
+  publisher?: string
+  orderBy?: 'newest' | 'oldest' | 'relevance'
+  yearFrom?: number
+  yearTo?: number
+}
+
 const props = withDefaults(defineProps<{
   groups?: string[]
   title?: string
@@ -8,6 +17,10 @@ const props = withDefaults(defineProps<{
   groups: () => [],
   title: 'Filtros',
 })
+
+const emit = defineEmits<{
+  filtersChange: [filters: BookFilters]
+}>()
 
 const searchFilters = ref('')
 const authorSearch = ref('')
@@ -29,6 +42,13 @@ const orderOptions = [
   'Popularidade',
   'Mais recomendados',
 ]
+
+const orderMap: Record<string, BookFilters['orderBy']> = {
+  'Mais antigos': 'oldest',
+  'Mais novos': 'newest',
+  Popularidade: 'relevance',
+  'Mais recomendados': 'relevance',
+}
 
 const yearRangeOptions: FilterOption[] = [
   { key: 'ate-1950', label: 'Até 1950' },
@@ -102,7 +122,7 @@ function toggleGroup(label: string) {
 }
 
 function selectOrder(label: string) {
-  selectedOrder.value = label
+  selectedOrder.value = selectedOrder.value === label ? '' : label
 }
 
 function clearFilters() {
@@ -128,9 +148,11 @@ function clearFilters() {
 
 function toggleFilterOption(groupLabel: string, optionKey: string) {
   const currentValues = selectedFilters.value[groupLabel] ?? []
-  const nextValues = currentValues.includes(optionKey)
-    ? currentValues.filter(value => value !== optionKey)
-    : [...currentValues, optionKey]
+  const nextValues = groupLabel === 'Ano'
+    ? (currentValues.includes(optionKey) ? [] : [optionKey])
+    : (currentValues.includes(optionKey)
+        ? currentValues.filter(value => value !== optionKey)
+        : [...currentValues, optionKey])
 
   selectedFilters.value = {
     ...selectedFilters.value,
@@ -171,6 +193,57 @@ function isYearRangeInvalid() {
 
   return Number(yearFrom.value) > Number(yearTo.value)
 }
+
+function getYearRangeFromChip(optionKey?: string) {
+  switch (optionKey) {
+    case 'ate-1950':
+      return { yearTo: 1950 }
+    case '1951-1980':
+      return { yearFrom: 1951, yearTo: 1980 }
+    case '1981-2000':
+      return { yearFrom: 1981, yearTo: 2000 }
+    case '2001-2015':
+      return { yearFrom: 2001, yearTo: 2015 }
+    case '2016+':
+      return { yearFrom: 2016 }
+    default:
+      return {}
+  }
+}
+
+function normalizeText(value: string) {
+  return value.trim() || undefined
+}
+
+function buildFilters(): BookFilters {
+  const selectedYear = selectedFilters.value['Ano']?.[0]
+  const chipYearRange = getYearRangeFromChip(selectedYear)
+  const customYearFrom = yearFrom.value ? Number(yearFrom.value) : undefined
+  const customYearTo = yearTo.value ? Number(yearTo.value) : undefined
+  const hasValidCustomYear = !isYearRangeInvalid() && (customYearFrom || customYearTo)
+
+  return {
+    search: normalizeText(searchFilters.value),
+    author: normalizeText(authorSearch.value),
+    publisher: normalizeText(publisherSearch.value),
+    orderBy: selectedOrder.value ? orderMap[selectedOrder.value] : undefined,
+    yearFrom: hasValidCustomYear ? customYearFrom : chipYearRange.yearFrom,
+    yearTo: hasValidCustomYear ? customYearTo : chipYearRange.yearTo,
+  }
+}
+
+let filtersEmitTimer: ReturnType<typeof window.setTimeout> | undefined
+
+watch(
+  [searchFilters, authorSearch, publisherSearch, yearFrom, yearTo, selectedOrder, selectedFilters],
+  () => {
+    window.clearTimeout(filtersEmitTimer)
+    filtersEmitTimer = window.setTimeout(() => {
+      emit('filtersChange', buildFilters())
+    }, 350)
+  },
+  { deep: true },
+)
 </script>
 
 <template>

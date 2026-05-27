@@ -154,9 +154,13 @@ export const chatService = {
 export interface ListBooksParams {
   search?: string
   author?: string
+  publisher?: string
   category?: string
   theme?: string
   type?: string
+  orderBy?: 'newest' | 'oldest' | 'relevance'
+  yearFrom?: number
+  yearTo?: number
   page?: number
   limit?: number
 }
@@ -399,6 +403,10 @@ function buildGoogleBooksQuery(params: ListBooksParams) {
     parts.push(`inauthor:"${params.author.trim()}"`)
   }
 
+  if (params.publisher?.trim()) {
+    parts.push(`inpublisher:"${params.publisher.trim()}"`)
+  }
+
   if (params.category?.trim()) {
     parts.push(`subject:${params.category.trim()}`)
   }
@@ -416,6 +424,89 @@ function buildGoogleBooksQuery(params: ListBooksParams) {
   return parts.join(' ').trim() || 'subject:fiction'
 }
 
+function getPublishedYear(book: CatalogBook) {
+  const match = book.publishedDate?.match(/\d{4}/)
+  return match ? Number(match[0]) : null
+}
+
+function hasYearFilter(params: ListBooksParams) {
+  return typeof params.yearFrom === 'number' || typeof params.yearTo === 'number'
+}
+
+function buildOpenLibraryQuery(params: ListBooksParams) {
+  const parts = [
+    params.search?.trim() ||
+      params.category?.trim() ||
+      params.theme?.trim() ||
+      'fiction',
+  ]
+
+  if (hasYearFilter(params)) {
+    const from = params.yearFrom ?? '*'
+    const to = params.yearTo ?? '*'
+    parts.push(`first_publish_year:[${from} TO ${to}]`)
+  }
+
+  return parts.filter(Boolean).join(' ')
+}
+
+function isWithinYearFilter(book: CatalogBook, params: ListBooksParams) {
+  if (!hasYearFilter(params)) {
+    return true
+  }
+
+  const year = getPublishedYear(book)
+  if (!year) {
+    return false
+  }
+
+  if (typeof params.yearFrom === 'number' && year < params.yearFrom) {
+    return false
+  }
+
+  if (typeof params.yearTo === 'number' && year > params.yearTo) {
+    return false
+  }
+
+  return true
+}
+
+function sortBooks(books: CatalogBook[], orderBy?: ListBooksParams['orderBy']) {
+  if (orderBy !== 'newest' && orderBy !== 'oldest') {
+    return books
+  }
+
+  return [...books].sort((firstBook, secondBook) => {
+    const firstYear = getPublishedYear(firstBook) || 0
+    const secondYear = getPublishedYear(secondBook) || 0
+    return orderBy === 'newest'
+      ? secondYear - firstYear
+      : firstYear - secondYear
+  })
+}
+
+async function fetchGoogleCatalogBatch(params: ListBooksParams, startIndex: number, maxResults: number, signal: AbortSignal) {
+  const query = new URLSearchParams({
+    q: buildGoogleBooksQuery(params),
+    startIndex: String(startIndex),
+    maxResults: String(maxResults),
+    langRestrict: 'pt',
+    printType: 'books',
+    orderBy: params.orderBy === 'newest' ? 'newest' : 'relevance',
+  })
+
+  const response = await fetch(
+    `https://www.googleapis.com/books/v1/volumes?${query.toString()}`,
+    { signal },
+  )
+
+  if (!response.ok) {
+    throw new Error('Erro ao carregar catálogo.')
+  }
+
+  return response.json() as Promise<GoogleBooksListResponse>
+}
+
 async function requestGoogleCatalog(params: ListBooksParams = {}): Promise<CatalogResponse> {
   const controller = new AbortController()
   const timeoutId = window.setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS)
@@ -425,31 +516,54 @@ async function requestGoogleCatalog(params: ListBooksParams = {}): Promise<Catal
     40,
   )
   const startIndex = (page - 1) * limit
-  const query = new URLSearchParams({
-    q: buildGoogleBooksQuery(params),
-    startIndex: String(startIndex),
-    maxResults: String(limit),
-    langRestrict: 'pt',
-    printType: 'books',
-  })
+  const shouldScanCatalog = hasYearFilter(params) || params.orderBy === 'oldest'
 
   try {
-    const response = await fetch(
-      `https://www.googleapis.com/books/v1/volumes?${query.toString()}`,
-      { signal: controller.signal },
-    )
+    if (!shouldScanCatalog) {
+      const data = await fetchGoogleCatalogBatch(params, startIndex, limit, controller.signal)
 
-    if (!response.ok) {
-      throw new Error('Erro ao carregar catálogo.')
+      return {
+        items: (data.items || []).map(normalizeGoogleBook),
+        page,
+        limit,
+        totalItems: Number.isFinite(data.totalItems) ? Number(data.totalItems) : 0,
+      }
     }
 
-    const data = await response.json() as GoogleBooksListResponse
+    const targetItemCount = page * limit
+    const batchSize = 40
+    const maxScannedItems = 360
+    let scannedItems = 0
+    let sourceTotalItems = 0
+    let exhausted = false
+    const matchingBooks: CatalogBook[] = []
+
+    while (matchingBooks.length < targetItemCount && scannedItems < maxScannedItems && !exhausted) {
+      const data = await fetchGoogleCatalogBatch(params, scannedItems, batchSize, controller.signal)
+      const volumes = data.items || []
+      sourceTotalItems = Number.isFinite(data.totalItems) ? Number(data.totalItems) : sourceTotalItems
+
+      matchingBooks.push(
+        ...volumes
+          .map(normalizeGoogleBook)
+          .filter((book) => isWithinYearFilter(book, params)),
+      )
+
+      scannedItems += batchSize
+      exhausted = volumes.length < batchSize || scannedItems >= sourceTotalItems
+    }
+
+    const sortedBooks = sortBooks(matchingBooks, params.orderBy)
+    const items = sortedBooks.slice((page - 1) * limit, page * limit)
+    const totalItems = exhausted
+      ? sortedBooks.length
+      : Math.max(sortedBooks.length, page * limit + 1)
 
     return {
-      items: (data.items || []).map(normalizeGoogleBook),
+      items,
       page,
       limit,
-      totalItems: Number.isFinite(data.totalItems) ? Number(data.totalItems) : 0,
+      totalItems,
     }
   } catch (error) {
     if (error instanceof DOMException && error.name === 'AbortError') {
@@ -470,7 +584,7 @@ async function requestOpenLibraryCatalog(params: ListBooksParams = {}): Promise<
     Number.isFinite(params.limit) && Number(params.limit) > 0 ? Number(params.limit) : 15,
     100,
   )
-  const query = params.search?.trim() || params.category?.trim() || params.theme?.trim() || 'ficcao'
+  const query = buildOpenLibraryQuery(params)
   const search = new URLSearchParams({
     q: query,
     page: String(page),
@@ -480,6 +594,16 @@ async function requestOpenLibraryCatalog(params: ListBooksParams = {}): Promise<
 
   if (params.author?.trim()) {
     search.set('author', params.author.trim())
+  }
+
+  if (params.publisher?.trim()) {
+    search.set('publisher', params.publisher.trim())
+  }
+
+  if (params.orderBy === 'newest') {
+    search.set('sort', 'new')
+  } else if (params.orderBy === 'oldest') {
+    search.set('sort', 'old')
   }
 
   try {
@@ -494,8 +618,16 @@ async function requestOpenLibraryCatalog(params: ListBooksParams = {}): Promise<
 
     const data = await response.json() as OpenLibrarySearchResponse
 
+    const items = sortBooks(
+      (data.docs || [])
+        .map(normalizeOpenLibraryDoc)
+        .filter((book) => book.googleBooksId)
+        .filter((book) => isWithinYearFilter(book, params)),
+      params.orderBy,
+    )
+
     return {
-      items: (data.docs || []).map(normalizeOpenLibraryDoc).filter((book) => book.googleBooksId),
+      items,
       page,
       limit,
       totalItems: Number.isFinite(data.numFound) ? Number(data.numFound) : 0,
@@ -516,6 +648,10 @@ export const booksService = {
    * Lista livros do catálogo usando Google Books e Open Library como fallback.
    */
   listBooks(params: ListBooksParams = {}): Promise<CatalogResponse> {
+    if (hasYearFilter(params)) {
+      return requestOpenLibraryCatalog(params).catch(() => requestGoogleCatalog(params))
+    }
+
     return requestGoogleCatalog(params).catch(() => requestOpenLibraryCatalog(params))
   },
 

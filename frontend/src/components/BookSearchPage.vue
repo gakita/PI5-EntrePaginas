@@ -4,6 +4,7 @@ import FiltersPanel from '@/components/FiltersPanel.vue'
 import BookCoversGrid from '@/components/BookCoversGrid.vue'
 import CatalogGlow from '@/components/BackgroundGlow.vue'
 import type { CatalogBook } from '@/services'
+import type { BookFilters } from '@/components/FiltersPanel.vue'
 
 const props = defineProps<{
   title: string
@@ -19,6 +20,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   pageChange: [page: number]
+  filtersChange: [filters: BookFilters]
 }>()
 
 const backgroundImage = `url(${props.backgroundImageUrl})`
@@ -33,7 +35,11 @@ const backgroundImage = `url(${props.backgroundImageUrl})`
     <section class="catalog-page__content">
       <div class="catalog-layout">
         <!-- O painel de filtros recebe os dados dinamicamente -->
-        <FiltersPanel :groups="filterGroups" :title="title" />
+        <FiltersPanel
+          :groups="filterGroups"
+          :title="title"
+          @filters-change="(filters) => emit('filtersChange', filters)"
+        />
         
         <div class="books-area">
           <CatalogGlow

@@ -236,9 +236,10 @@
   display: grid;
   grid-template-columns: 420px minmax(0, 1fr);
   gap: 32px;
-  align-items: start;
+  align-items: stretch;
   flex: 1;
   min-height: 0;
+  overflow: hidden;
 }
 
 .book-card {
@@ -348,6 +349,29 @@
   backdrop-filter: blur(4px);
   display: flex;
   flex-direction: column;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(201, 162, 39, 0.72) transparent;
+}
+
+.book-panel::-webkit-scrollbar {
+  width: 10px;
+}
+
+.book-panel::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.book-panel::-webkit-scrollbar-thumb {
+  background-color: rgba(201, 162, 39, 0.72);
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+.book-panel::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(216, 182, 74, 0.9);
 }
 
 .book-panel__title {
@@ -608,6 +632,7 @@
   .book-layout {
     grid-template-columns: 1fr;
     gap: 22px;
+    overflow: visible;
   }
 
   .book-card {
@@ -617,6 +642,11 @@
   .book-panel__meta {
     margin-top: 0;
     padding-top: 32px;
+  }
+
+  .book-panel {
+    height: auto;
+    overflow: visible;
   }
 }
 

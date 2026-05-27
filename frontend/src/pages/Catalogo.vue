@@ -2,7 +2,8 @@
 import { onMounted, ref } from 'vue'
 import BookSearchLayout from '@/components/BookSearchPage.vue'
 import fundoImg from '@/assets/Fundo_Catalogo.jpg'
-import { booksService, type CatalogBook, type CatalogResponse } from '@/services'
+import { booksService, type CatalogBook, type CatalogResponse, type ListBooksParams } from '@/services'
+import type { BookFilters } from '@/components/FiltersPanel.vue'
 
 const filterGroups = [
   'Ordenar por', 'Gênero', 'Tipo', 'Editora', 'Autor', 'Ano'
@@ -13,10 +14,11 @@ const isLoading = ref(true)
 const errorMessage = ref('')
 const currentPage = ref(1)
 const totalPages = ref(1)
+const activeFilters = ref<ListBooksParams>({})
 
 const ITEMS_PER_PAGE = 20
-const pageCache = new Map<number, CatalogResponse>()
-const inFlightRequests = new Map<number, Promise<CatalogResponse>>()
+const pageCache = new Map<string, CatalogResponse>()
+const inFlightRequests = new Map<string, Promise<CatalogResponse>>()
 
 let requestSerial = 0
 
@@ -24,33 +26,43 @@ function getTotalPages(totalItems: number) {
   return Math.max(1, Math.ceil(totalItems / ITEMS_PER_PAGE))
 }
 
+function getRequestKey(page: number) {
+  return JSON.stringify({ page, filters: activeFilters.value })
+}
+
 function fetchCatalogPage(page: number) {
-  const cachedResponse = pageCache.get(page)
+  const requestKey = getRequestKey(page)
+  const cachedResponse = pageCache.get(requestKey)
 
   if (cachedResponse) {
     return Promise.resolve(cachedResponse)
   }
 
-  const existingRequest = inFlightRequests.get(page)
+  const existingRequest = inFlightRequests.get(requestKey)
   if (existingRequest) {
     return existingRequest
   }
 
-  const request = booksService.listBooks({ limit: ITEMS_PER_PAGE, page })
+  const request = booksService.listBooks({
+    ...activeFilters.value,
+    limit: ITEMS_PER_PAGE,
+    page,
+  })
     .then((response) => {
-      pageCache.set(page, response)
+      pageCache.set(requestKey, response)
       return response
     })
     .finally(() => {
-      inFlightRequests.delete(page)
+      inFlightRequests.delete(requestKey)
     })
 
-  inFlightRequests.set(page, request)
+  inFlightRequests.set(requestKey, request)
   return request
 }
 
 function prefetchCatalogPage(page: number) {
-  if (page <= 0 || pageCache.has(page) || inFlightRequests.has(page)) {
+  const requestKey = getRequestKey(page)
+  if (page <= 0 || pageCache.has(requestKey) || inFlightRequests.has(requestKey)) {
     return
   }
 
@@ -93,6 +105,13 @@ async function loadPage(page: number) {
   }
 }
 
+function applyFilters(filters: BookFilters) {
+  activeFilters.value = { ...filters }
+  pageCache.clear()
+  inFlightRequests.clear()
+  loadPage(1)
+}
+
 onMounted(() => {
   loadPage(1)
 })
@@ -110,5 +129,6 @@ onMounted(() => {
     :current-page="currentPage"
     :total-pages="totalPages"
     @page-change="loadPage"
+    @filters-change="applyFilters"
   />
 </template>

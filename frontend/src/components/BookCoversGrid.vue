@@ -113,11 +113,10 @@ const bookCards = computed(() => {
 .cards-panel__scroll {
   flex: 1;
   min-height: 0;
-  display: grid;
-  grid-template-columns: repeat(5, minmax(90px, 1fr));
+  display: flex;
+  flex-wrap: wrap;
   column-gap: 18px;
-  row-gap: 210px;
-  justify-content: stretch;
+  row-gap: 34px;
   overflow-y: auto;
   overscroll-behavior: contain;
   align-content: start;
@@ -147,7 +146,7 @@ const bookCards = computed(() => {
 .book-card {
   position: relative;
   display: block;
-  width: 100%;
+  flex: 0 0 calc((100% - (4 * 18px)) / 5);
   aspect-ratio: 200 / 250;
   border-radius: 15px;
   overflow: hidden;
@@ -342,16 +341,18 @@ const bookCards = computed(() => {
 
 @media (max-width: 1400px) {
   .cards-panel__scroll {
-    grid-template-columns: repeat(5, minmax(78px, 1fr));
     column-gap: 16px;
-    row-gap: 210px;
+    row-gap: 32px;
+  }
+
+  .book-card {
+    flex-basis: calc((100% - (4 * 16px)) / 5);
   }
 }
 
 @media (max-width: 1080px) {
-  .cards-panel__scroll {
-    grid-template-columns: repeat(3, minmax(120px, 1fr));
-    justify-content: initial;
+  .book-card {
+    flex-basis: calc((100% - (2 * 16px)) / 3);
   }
 }
 
@@ -361,9 +362,12 @@ const bookCards = computed(() => {
   }
 
   .cards-panel__scroll {
-    grid-template-columns: repeat(2, minmax(120px, 1fr));
-    column-gap: 16px;
-    row-gap: 210px;
+    column-gap: 14px;
+    row-gap: 28px;
+  }
+
+  .book-card {
+    flex-basis: calc((100% - 14px) / 2);
   }
 }
 </style>
