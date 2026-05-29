@@ -131,6 +131,28 @@ export const authService = {
       body: JSON.stringify({ email, code }),
     })
   },
+
+  /**
+   * POST /auth/forgot-password
+   * Envia as instruções de recuperação de senha por e-mail.
+   */
+  forgotPassword(email: string): Promise<{ message: string; resetToken?: string }> {
+    return request<{ message: string; resetToken?: string }>('/auth/forgot-password', {
+      method: 'POST',
+      body: JSON.stringify({ email }),
+    })
+  },
+
+  /**
+   * POST /auth/reset-password
+   * Redefine a senha de um usuário usando o token de segurança.
+   */
+  resetPassword(token: string, newPassword: string): Promise<{ message: string }> {
+    return request<{ message: string }>('/auth/reset-password', {
+      method: 'POST',
+      body: JSON.stringify({ token, newPassword }),
+    })
+  },
 }
 
 // ─── Chat ─────────────────────────────────────────────────────────────────────
