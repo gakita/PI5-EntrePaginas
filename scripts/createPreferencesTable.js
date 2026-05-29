@@ -1,5 +1,6 @@
 /**
  * createPreferencesTable.js — Cria as tabelas de preferências e sugestões.
+ *   - FAVORITOS: guarda livros favoritados por usuario
  *
  * Tabelas criadas:
  *   - PREFERENCIAS_USUARIO: guarda gêneros, tipos e autores favoritos por usuário
@@ -22,6 +23,25 @@ async function createTable(connection, sql, name) {
       throw err;
     }
   }
+}
+
+async function addColumnIfMissing(connection, tableName, columnName, definition) {
+  const result = await connection.execute(
+    `
+      SELECT COLUMN_NAME
+      FROM USER_TAB_COLUMNS
+      WHERE TABLE_NAME = :tableName
+        AND COLUMN_NAME = :columnName
+    `,
+    { tableName, columnName }
+  );
+
+  if (result.rows && result.rows.length > 0) {
+    return;
+  }
+
+  await connection.execute(`ALTER TABLE ${tableName} ADD (${definition})`);
+  console.log(`+ Coluna ${columnName} adicionada em ${tableName}.`);
 }
 
 async function main() {
@@ -82,6 +102,33 @@ async function main() {
       `CREATE INDEX IDX_SUG_USUARIO ON SUGESTOES_CONVERSA(USUARIO_EMAIL)`,
       'Índice SUGESTOES_CONVERSA'
     );
+
+    await createTable(
+      connection,
+      `
+        CREATE TABLE FAVORITOS (
+            CODIGO          NUMBER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+            USUARIO_EMAIL   VARCHAR2(255) NOT NULL,
+            GOOGLE_BOOKS_ID VARCHAR2(100) NOT NULL,
+            TITULO          VARCHAR2(500) NOT NULL,
+            AUTOR           VARCHAR2(500),
+            CAPA_URL        VARCHAR2(1000),
+            GENEROS         CLOB,
+            PUBLICADO_EM    VARCHAR2(50),
+            TIPO            VARCHAR2(50),
+            CRIADO_EM       TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
+        )
+      `,
+      'FAVORITOS'
+    );
+
+    await createTable(
+      connection,
+      `CREATE UNIQUE INDEX IDX_FAV_USUARIO_LIVRO ON FAVORITOS(USUARIO_EMAIL, GOOGLE_BOOKS_ID)`,
+      'Indice unico FAVORITOS por usuario/livro'
+    );
+
+    await addColumnIfMissing(connection, 'FAVORITOS', 'GENEROS', 'GENEROS CLOB');
 
     await connection.commit();
 

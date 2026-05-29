@@ -8,6 +8,7 @@
     "start": "node server.js",
     "test": "node --test",
     "seed:user": "node scripts/seedTestUser.js",
+    "db:setup": "npm run db:chat && npm run db:preferences && npm run db:quiz && npm run db:password-reset",
     "db:chat": "node scripts/createChatTable.js",
     "db:preferences": "node scripts/createPreferencesTable.js",
     "db:quiz": "node scripts/createQuizTable.js",

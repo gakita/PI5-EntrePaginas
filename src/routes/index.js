@@ -6,6 +6,7 @@ const quizRoutes = require('./quizRoutes');
 const bookRoutes = require('./bookRoutes');
 const avaliacaoRoutes = require('./avaliacaoRoutes');
 const usersRoutes = require('./usersRoutes');
+const favoriteRoutes = require('./favoriteRoutes');
 
 const router = express.Router();
 
@@ -32,4 +33,7 @@ router.use('/books', bookRoutes);
 
 // Rotas de avaliacoes autenticadas
 router.use('/avaliacoes', avaliacaoRoutes);
+
+// Rotas de favoritos autenticadas
+router.use('/favorites', favoriteRoutes);
 module.exports = router;

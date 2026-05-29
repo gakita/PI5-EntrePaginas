@@ -20,3 +20,4 @@ docs/
 /.postman
 /postman
 iniciar.bat
+/frontend/dist

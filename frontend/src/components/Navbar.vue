@@ -1,23 +1,32 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed } from 'vue'
+import { useRouter } from 'vue-router'
+import { useAuthStore } from '@/stores/authStore'
 import logo from "../assets/Logo_EntrePaginas.svg"
 import bookmarkIcon from "../assets/Bookmark-favorites_2.svg"
 import profileIcon from "../assets/Icone_perfil.svg"
 
+const router = useRouter()
+const auth = useAuthStore()
+
 const navLinks = [
-  { label: 'Início',        to: '/' },
-  { label: 'Categorias',    to: '/categorias' },
-  { label: 'Recomendações', to: '/recomendacoes' },
-  { label: 'Catálogo',      to: '/catalogo' },
+  { label: 'ÍNICIO',        to: '/' },
+  { label: 'CATEGORIAS',    to: '/categorias' },
+  { label: 'RECOMENDAÇÕES', to: '/recomendacoes' },
+  { label: 'CATÁLOGO',      to: '/catalogo' },
 ]
 
-// TODO: substituir por authStore.isLoggedIn quando o store existir
-const isLoggedIn = ref(true)
+const isLoggedIn = computed(() => Boolean(auth.token))
 
 const userMenuItems = [
   { label: 'Perfil',  to: '/perfil',  icon: 'mdi-account-outline' },
-  { label: 'Sair',    to: '/logout',  icon: 'mdi-logout'           },
+  { label: 'Sair',    action: handleLogout,  icon: 'mdi-logout' },
 ]
+
+function handleLogout () {
+  auth.clearToken()
+  void router.push('/login')
+}
 </script>
 
 <template>
@@ -53,6 +62,8 @@ const userMenuItems = [
               icon
               class="action-btn"
               :to="'/favoritos'"
+              :ripple="false"
+              variant="plain"
             >
               <v-img :src="bookmarkIcon" class="bookmark-icon" width="66" />
             </v-btn>
@@ -76,10 +87,11 @@ const userMenuItems = [
             <v-list class="user-menu">
               <v-list-item
                 v-for="item in userMenuItems"
-                :key="item.to"
+                :key="item.label"
                 :to="item.to"
                 :prepend-icon="item.icon"
                 :title="item.label"
+                @click="item.action?.()"
               />
             </v-list>
           </v-menu>
@@ -93,13 +105,13 @@ const userMenuItems = [
 .v-app-bar {
   background-color: rgb(var(--v-theme-background)) !important;
   border-bottom: 3px solid rgba(155, 138, 117, 0.25) !important;
-  height: 78px !important;
+  height: 65px !important;
   padding-inline: 38px;
   overflow: visible !important;
 }
 
 .v-app-bar :deep(.v-toolbar__content) {
-  height: 78px !important;
+  height: 65px !important;
   align-items: center;
   overflow: visible !important;
   position: relative;
@@ -110,8 +122,8 @@ const userMenuItems = [
 }
 
 .v-app-bar-title :deep(.v-img) {
-  width: 136px;
-  height: 43px;
+  width: 100px;
+  height: 35px;
   object-fit: contain;
 }
 
@@ -127,8 +139,8 @@ const userMenuItems = [
 }
 
 .nav-links a {
-  font-family: "Playfair Display", serif;
-  font-size: 17px;
+  font-family: "Neuton", serif;
+  font-size: 16px;
   font-weight: 400;
   line-height: 24px;
   letter-spacing: 0.5px;
@@ -190,10 +202,18 @@ const userMenuItems = [
   position: absolute;
   top: -18px;
   width: 58px !important;
-  height: 124px !important;
+  height: 110px !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
   border-radius: 0 !important;
   padding: 0 !important;
   overflow: visible !important;
+  opacity: 1 !important;
+}
+
+.action-btn :deep(.v-btn__overlay),
+.action-btn :deep(.v-ripple__container) {
+  display: none !important;
 }
 
 .action-btn :deep(.v-btn__content) {
@@ -204,6 +224,12 @@ const userMenuItems = [
 .bookmark-icon {
   transform: translateY(-32px) scale(1.14);
   transform-origin: top center;
+  transition: filter 0.2s ease;
+}
+
+.action-btn:hover .bookmark-icon,
+.action-btn.v-btn--active .bookmark-icon {
+  filter: brightness(1.30);
 }
 
 .user-btn-container {
