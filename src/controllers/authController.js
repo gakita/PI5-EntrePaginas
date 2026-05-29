@@ -142,6 +142,38 @@ async function deleteMe(req, res, next) {
   }
 }
 
+async function sendCode(req, res, next) {
+  try {
+    const { email } = req.body;
+    if (!email) {
+      return res.status(400).json({
+        message: 'O campo "email" e obrigatorio.',
+      });
+    }
+
+    const result = await authService.sendVerificationCode(email);
+    return res.status(200).json(result);
+  } catch (error) {
+    return next(error);
+  }
+}
+
+async function verifyCode(req, res, next) {
+  try {
+    const { email, code } = req.body;
+    if (!email || !code) {
+      return res.status(400).json({
+        message: 'Os campos "email" e "code" sao obrigatorios.',
+      });
+    }
+
+    const result = await authService.verifyCode(email, code);
+    return res.status(200).json(result);
+  } catch (error) {
+    return next(error);
+  }
+}
+
 module.exports = {
   register,
   login,
@@ -150,4 +182,6 @@ module.exports = {
   me,
   updateMe,
   deleteMe,
+  sendCode,
+  verifyCode,
 };

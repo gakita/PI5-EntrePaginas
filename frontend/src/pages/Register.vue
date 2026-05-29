@@ -76,7 +76,7 @@ async function handleStep1() {
     errorMessage.value = 'Preencha todos os campos.'
     return
   }
-  if (!/\.+@.+\..+/.test(email) && /.+@.+\..+/.test(email) === false) {
+  if (!/.+@.+\..+/.test(email)) {
     errorMessage.value = 'E-mail inválido.'
     return
   }
@@ -85,9 +85,14 @@ async function handleStep1() {
     return
   }
   loading.value = true
-  await new Promise(r => setTimeout(r, 600))
-  loading.value = false
-  currentStep.value = 2
+  try {
+    await authService.sendCode(email)
+    currentStep.value = 2
+  } catch (error) {
+    errorMessage.value = error instanceof Error ? error.message : 'Erro ao enviar código de verificação.'
+  } finally {
+    loading.value = false
+  }
 }
 
 async function handleStep2() {
@@ -99,9 +104,14 @@ async function handleStep2() {
   }
   formData.value.verificationCode = code
   loading.value = true
-  await new Promise(r => setTimeout(r, 600))
-  loading.value = false
-  currentStep.value = 3
+  try {
+    await authService.verifyCode(formData.value.email, code)
+    currentStep.value = 3
+  } catch (error) {
+    errorMessage.value = error instanceof Error ? error.message : 'Código incorreto ou expirado.'
+  } finally {
+    loading.value = false
+  }
 }
 
 function handleStep3() {
@@ -128,7 +138,16 @@ async function handleStep4() {
 }
 
 async function resendCode() {
-  // TODO: authService.resendVerificationCode(formData.value.email)
+  clearError()
+  loading.value = true
+  try {
+    await authService.sendCode(formData.value.email)
+    alert('Novo código de verificação enviado!')
+  } catch (error) {
+    errorMessage.value = error instanceof Error ? error.message : 'Erro ao re-enviar código.'
+  } finally {
+    loading.value = false
+  }
 }
 
 function onOtpInput(index: number, event: Event) {

@@ -77,6 +77,24 @@ Esse comando prepara as tabelas usadas pelo backend, incluindo chat, preferencia
 npm run dev
 ```
 
+### 6. Como rodar o Mailpit (SMTP de testes local)
+
+O Mailpit captura todos os e-mails enviados pelo backend (recuperação de senha e confirmação de cadastro) sem precisar enviá-los de fato para caixas reais.
+
+Você pode rodá-lo localmente de duas formas:
+
+**Opção A: Usando Docker (Recomendado)**
+```bash
+docker run -d --name mailpit -p 1025:1025 -p 8025:8025 axllent/mailpit
+```
+
+**Opção B: Instalação Manual (sem Docker)**
+* **Windows (via Scoop)**: `scoop install mailpit` e depois execute `mailpit`
+* **macOS (via Homebrew)**: `brew install mailpit` e depois execute `mailpit`
+* **Download direto**: Baixe a versão correspondente ao seu sistema em [GitHub Releases](https://github.com/axllent/mailpit/releases), descompacte e execute o executável `mailpit`.
+
+Após iniciar o Mailpit, acesse a interface web de leitura de e-mails em: [http://localhost:8025](http://localhost:8025).
+
 ---
 
 ## Scripts disponíveis
@@ -817,6 +835,9 @@ Em produção, troque pelo endereço real do backend.
 | `MAIL_FROM` | Remetente exibido nos e-mails |
 | `PASSWORD_RESET_FRONTEND_URL` | URL do frontend de redefinicao; o backend adiciona `?token=...` |
 | `PASSWORD_RESET_TOKEN_MINUTES` | Tempo de validade do token (padrao: `30`) |
+| `MAILPIT_HOST` | Endereço do Mailpit local (padrão: `127.0.0.1`) |
+| `MAILPIT_PORT` | Porta SMTP do Mailpit local (padrão: `1025`) |
+| `MAILPIT_ENABLED` | Ativa o envio duplicado para o Mailpit local (padrão: `true` no dev) |
 
 ---
 
@@ -833,4 +854,4 @@ Apesar de a base principal do backend (Autenticação, Recuperação de Senha, C
 
 3. **Gerenciamento do Histórico de Leitura (Avaliações)**
    - A Inteligência Artificial já lê a tabela local `AVALIACOES` para montar o contexto de recomendação de forma altamente personalizada. Contudo, não existe uma rota no backend (ex: `POST /avaliacoes`) para o usuário adicionar livros que já leu a partir do próprio aplicativo.
->>>>>>> backend
+

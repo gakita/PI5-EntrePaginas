@@ -109,6 +109,28 @@ export const authService = {
       body: JSON.stringify(data),
     })
   },
+
+  /**
+   * POST /auth/send-code
+   * Envia um código de verificação para o e-mail informado.
+   */
+  sendCode(email: string): Promise<{ message: string }> {
+    return request<{ message: string }>('/auth/send-code', {
+      method: 'POST',
+      body: JSON.stringify({ email }),
+    })
+  },
+
+  /**
+   * POST /auth/verify-code
+   * Verifica se o código de e-mail é válido.
+   */
+  verifyCode(email: string, code: string): Promise<{ message: string }> {
+    return request<{ message: string }>('/auth/verify-code', {
+      method: 'POST',
+      body: JSON.stringify({ email, code }),
+    })
+  },
 }
 
 // ─── Chat ─────────────────────────────────────────────────────────────────────

@@ -1,3 +1,5 @@
+const env = require('../config/env');
+
 function errorHandler(err, req, res, next) {
   console.error(err);
 
@@ -11,8 +13,11 @@ function errorHandler(err, req, res, next) {
     });
   }
 
+  const isProduction = env.nodeEnv === 'production';
+
   return res.status(500).json({
-    message: 'Erro interno do servidor.',
+    message: isProduction ? 'Erro interno do servidor.' : err.message,
+    error: isProduction ? undefined : err.stack,
   });
 }
 
