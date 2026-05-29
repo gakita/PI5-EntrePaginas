@@ -95,12 +95,26 @@ async function resetPassword(req, res, next) {
   }
 }
 
-function me(req, res) {
-  return res.status(200).json({
-    user: {
-      email: req.user.email,
-    },
-  });
+async function me(req, res, next) {
+  try {
+    const userModel = require('../models/userModel');
+    const user = await userModel.findByEmail(req.user.email);
+
+    if (!user) {
+      return res.status(404).json({
+        message: 'Usuario nao encontrado.',
+      });
+    }
+
+    return res.status(200).json({
+      user: {
+        name: user.name,
+        email: user.email,
+      },
+    });
+  } catch (error) {
+    return next(error);
+  }
 }
 
 async function updateMe(req, res, next) {

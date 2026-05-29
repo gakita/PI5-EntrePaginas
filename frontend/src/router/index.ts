@@ -48,12 +48,12 @@ const router = createRouter({
       meta: { requiresAuth: true },
     },
 
-    // // Protected routes
-    // {
-    //   path: '/perfil',
-    //   component: () => import('@/pages/Profile.vue'),
-    //   meta: { requiresAuth: true },
-    // },
+    // Protected routes
+    {
+      path: '/perfil',
+      component: () => import('@/pages/Profile.vue'),
+      meta: { requiresAuth: true },
+    },
     // {
     //   path: '/preferencias',
     //   component: () => import('@/pages/Preferences.vue'),
