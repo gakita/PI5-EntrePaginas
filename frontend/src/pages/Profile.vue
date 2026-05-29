@@ -510,8 +510,8 @@ function goToBook(id: string | null) {
 
             <div v-if="favorites.length > 0" class="favorites-grid">
               <div 
-                v-for="book in favorites" 
-                :key="book.googleBooksId || book.title" 
+                v-for="(book, index) in favorites" 
+                :key="book.googleBooksId || book.title || `favorite-${index}`" 
                 class="book-card"
                 @click="goToBook(book.googleBooksId)"
               >

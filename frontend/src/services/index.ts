@@ -158,12 +158,23 @@ export const authService = {
 // ─── Chat ─────────────────────────────────────────────────────────────────────
 
 export interface BookRecommendation {
+  googleBooksId?: string | null
   title: string
   author?: string
+  authors?: string[]
   synopsis?: string
   coverUrl?: string
   publishedDate?: string
   genre?: string
+  type?: string | null
+  categories?: string[]
+  genres?: string[]
+  previewLink?: string | null
+  webReaderLink?: string | null
+  embeddable?: boolean
+  viewability?: string | null
+  sensitiveContent?: boolean
+  suggestedAt?: string
 }
 
 export interface CatalogBook {

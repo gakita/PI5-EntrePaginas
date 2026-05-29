@@ -12,6 +12,7 @@ const selectedGenre = ref('')
 const genres       = ['Ficção', 'Terror', 'Romance', 'Aventura', 'Fantasia']
 const messages     = ref<ChatMessage[]>([])
 const isLoading    = ref(false)
+const isClosingConversation = ref(false)
 const errorMsg     = ref('')
 const chatContent  = ref<HTMLElement | null>(null)
 
@@ -94,12 +95,21 @@ async function sendMessage() {
 }
 
 async function newConversation() {
+  if (isClosingConversation.value) return
+
+  isClosingConversation.value = true
+  errorMsg.value = ''
+
   try {
+    await chatService.closeConversation()
     await chatService.clearHistory()
     messages.value = []
-    errorMsg.value = ''
-  } catch {
-    errorMsg.value = 'Erro ao limpar conversa.'
+  } catch (error) {
+    errorMsg.value = error instanceof Error
+      ? error.message
+      : 'Erro ao salvar e limpar conversa.'
+  } finally {
+    isClosingConversation.value = false
   }
 }
 
@@ -206,11 +216,19 @@ function handleKeydown(event: KeyboardEvent) {
         <button
           v-if="messages.length > 0"
           class="new-chat-btn"
+          :disabled="isClosingConversation"
           @click="newConversation"
           title="Iniciar nova conversa"
         >
-          <v-icon size="18">mdi-refresh</v-icon>
-          Nova conversa
+          <v-progress-circular
+            v-if="isClosingConversation"
+            indeterminate
+            size="16"
+            width="2"
+            color="#C9A227"
+          />
+          <v-icon v-else size="18">mdi-refresh</v-icon>
+          {{ isClosingConversation ? 'Salvando...' : 'Nova conversa' }}
         </button>
 
         <div class="chat-input-bar">
@@ -519,6 +537,11 @@ function handleKeydown(event: KeyboardEvent) {
 .new-chat-btn:hover {
   border-color: rgba(201, 162, 39, 0.4);
   color: #C9A227;
+}
+
+.new-chat-btn:disabled {
+  cursor: wait;
+  opacity: 0.7;
 }
 
 .chat-input-bar {

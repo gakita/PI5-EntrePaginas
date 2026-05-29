@@ -14,6 +14,8 @@ const props = defineProps<{
   books?: CatalogBook[]
   isLoading?: boolean
   errorMessage?: string
+  loadingMessage?: string
+  emptyMessage?: string
   currentPage?: number
   totalPages?: number
 }>()
@@ -52,7 +54,11 @@ const backgroundImage = `url(${props.backgroundImageUrl})`
             </div>
 
             <div v-else-if="isLoading" class="books-area__status">
-              Carregando livros do catálogo...
+              {{ loadingMessage || 'Carregando livros do catálogo...' }}
+            </div>
+
+            <div v-else-if="emptyMessage && books?.length === 0" class="books-area__status">
+              {{ emptyMessage }}
             </div>
           
           <BookCoversGrid
