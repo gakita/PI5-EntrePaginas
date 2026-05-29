@@ -21,6 +21,17 @@ function createTransporter() {
   });
 }
 
+function createMailpitTransporter() {
+  return nodemailer.createTransport({
+    host: env.mailpitHost,
+    port: env.mailpitPort,
+    secure: false,
+    connectionTimeout: 2000,
+    greetingTimeout: 2000,
+    socketTimeout: 2000,
+  });
+}
+
 function buildResetMessage({ email, token }) {
   const resetUrl = env.passwordResetFrontendUrl
     ? `${env.passwordResetFrontendUrl}?token=${encodeURIComponent(token)}`
@@ -46,23 +57,93 @@ function buildResetMessage({ email, token }) {
   };
 }
 
+function buildVerificationMessage({ email, code }) {
+  return {
+    from: env.mailFrom,
+    to: email,
+    subject: 'Confirmacao de cadastro - Entre Paginas',
+    text: [
+      'Seja bem-vindo ao Entre Paginas!',
+      '',
+      `Seu codigo de verificacao de e-mail e: ${code}`,
+      '',
+      'Insira esse codigo no sistema para ativar a sua conta.',
+      '',
+      'Se voce nao realizou este cadastro, por favor ignore este e-mail.',
+    ].join('\n'),
+  };
+}
+
 async function sendPasswordResetEmail({ email, token }) {
-  if (!isEmailConfigured()) {
-    return false;
+  let sentReal = false;
+  let sentMailpit = false;
+
+  // 1. Enviar e-mail real
+  if (isEmailConfigured()) {
+    try {
+      const transporter = createTransporter();
+      await Promise.race([
+        transporter.sendMail(buildResetMessage({ email, token })),
+        new Promise((_, reject) => {
+          setTimeout(() => reject(new Error('SMTP timeout')), env.smtpTimeoutMs);
+        }),
+      ]);
+      sentReal = true;
+    } catch (error) {
+      console.error('Erro ao enviar e-mail real de recuperacao de senha:', error.message);
+    }
   }
 
-  const transporter = createTransporter();
-  await Promise.race([
-    transporter.sendMail(buildResetMessage({ email, token })),
-    new Promise((_, reject) => {
-      setTimeout(() => reject(new Error('SMTP timeout')), env.smtpTimeoutMs);
-    }),
-  ]);
+  // 2. Enviar para o Mailpit (se habilitado)
+  if (env.mailpitEnabled) {
+    try {
+      const mailpitTransporter = createMailpitTransporter();
+      await mailpitTransporter.sendMail(buildResetMessage({ email, token }));
+      sentMailpit = true;
+    } catch (error) {
+      console.warn('Mailpit local offline ou falhou:', error.message);
+    }
+  }
 
-  return true;
+  return sentReal || sentMailpit;
+}
+
+async function sendVerificationEmail({ email, code }) {
+  let sentReal = false;
+  let sentMailpit = false;
+
+  // 1. Enviar e-mail real
+  if (isEmailConfigured()) {
+    try {
+      const transporter = createTransporter();
+      await Promise.race([
+        transporter.sendMail(buildVerificationMessage({ email, code })),
+        new Promise((_, reject) => {
+          setTimeout(() => reject(new Error('SMTP timeout')), env.smtpTimeoutMs);
+        }),
+      ]);
+      sentReal = true;
+    } catch (error) {
+      console.error('Erro ao enviar e-mail real de verificacao:', error.message);
+    }
+  }
+
+  // 2. Enviar para o Mailpit (se habilitado)
+  if (env.mailpitEnabled) {
+    try {
+      const mailpitTransporter = createMailpitTransporter();
+      await mailpitTransporter.sendMail(buildVerificationMessage({ email, code }));
+      sentMailpit = true;
+    } catch (error) {
+      console.warn('Mailpit local offline ou falhou:', error.message);
+    }
+  }
+
+  return sentReal || sentMailpit;
 }
 
 module.exports = {
   isEmailConfigured,
   sendPasswordResetEmail,
+  sendVerificationEmail,
 };

@@ -21,7 +21,7 @@ let observer: IntersectionObserver | null = null
 
 onMounted(() => {
   observer = new IntersectionObserver(
-    ([entry]) => { searchIsFixed.value = !entry.isIntersecting },
+    ([entry]) => { searchIsFixed.value = entry.isIntersecting },
     { threshold: 0 }
   )
   if (categoriesSection.value) observer.observe(categoriesSection.value)

@@ -95,12 +95,26 @@ async function resetPassword(req, res, next) {
   }
 }
 
-function me(req, res) {
-  return res.status(200).json({
-    user: {
-      email: req.user.email,
-    },
-  });
+async function me(req, res, next) {
+  try {
+    const userModel = require('../models/userModel');
+    const user = await userModel.findByEmail(req.user.email);
+
+    if (!user) {
+      return res.status(404).json({
+        message: 'Usuario nao encontrado.',
+      });
+    }
+
+    return res.status(200).json({
+      user: {
+        name: user.name,
+        email: user.email,
+      },
+    });
+  } catch (error) {
+    return next(error);
+  }
 }
 
 async function updateMe(req, res, next) {
@@ -128,6 +142,38 @@ async function deleteMe(req, res, next) {
   }
 }
 
+async function sendCode(req, res, next) {
+  try {
+    const { email } = req.body;
+    if (!email) {
+      return res.status(400).json({
+        message: 'O campo "email" e obrigatorio.',
+      });
+    }
+
+    const result = await authService.sendVerificationCode(email);
+    return res.status(200).json(result);
+  } catch (error) {
+    return next(error);
+  }
+}
+
+async function verifyCode(req, res, next) {
+  try {
+    const { email, code } = req.body;
+    if (!email || !code) {
+      return res.status(400).json({
+        message: 'Os campos "email" e "code" sao obrigatorios.',
+      });
+    }
+
+    const result = await authService.verifyCode(email, code);
+    return res.status(200).json(result);
+  } catch (error) {
+    return next(error);
+  }
+}
+
 module.exports = {
   register,
   login,
@@ -136,4 +182,6 @@ module.exports = {
   me,
   updateMe,
   deleteMe,
+  sendCode,
+  verifyCode,
 };

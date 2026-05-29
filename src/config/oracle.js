@@ -1,4 +1,5 @@
 const oracledb = require('oracledb');
+const path = require('path');
 
 const env = require('./env');
 
@@ -34,11 +35,11 @@ function buildPoolConfig() {
   };
 
   if (env.oracleConfigDir) {
-    poolConfig.configDir = env.oracleConfigDir;
+    poolConfig.configDir = path.resolve(env.oracleConfigDir);
   }
 
   if (env.oracleWalletLocation || env.oracleConfigDir) {
-    poolConfig.walletLocation = env.oracleWalletLocation || env.oracleConfigDir;
+    poolConfig.walletLocation = path.resolve(env.oracleWalletLocation || env.oracleConfigDir);
   }
 
   if (env.oracleWalletPassword) {

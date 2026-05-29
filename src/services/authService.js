@@ -8,6 +8,9 @@ const passwordResetTokenModel = require('../models/passwordResetTokenModel');
 const userModel = require('../models/userModel');
 const logger = require('../utils/logger');
 
+// Cache em memória para os códigos de verificação de cadastro (expira em 10 minutos)
+const verificationCodes = new Map();
+
 function sanitizeUser(user) {
   return {
     name: user.name,
@@ -37,6 +40,15 @@ function generateResetToken() {
 async function register(name, email, password) {
   const normalizedName = name.trim();
   const normalizedEmail = email.trim().toLowerCase();
+
+  // Verificar se o e-mail passou pela verificação do código
+  const verificationEntry = verificationCodes.get(normalizedEmail);
+  if (!verificationEntry || !verificationEntry.verified) {
+    const error = new Error('E-mail nao verificado. Por favor, confirme o codigo de verificacao primeiro.');
+    error.statusCode = 400;
+    throw error;
+  }
+
   const existingUser = await userModel.findByEmail(normalizedEmail);
 
   if (existingUser) {
@@ -51,12 +63,83 @@ async function register(name, email, password) {
     email: normalizedEmail,
     passwordHash,
   });
+
+  // Limpar a verificação da memória pós cadastro com sucesso
+  verificationCodes.delete(normalizedEmail);
+
   const safeUser = sanitizeUser(user);
   const token = generateToken(safeUser);
 
   return {
     user: safeUser,
     token,
+  };
+}
+
+async function sendVerificationCode(email) {
+  const normalizedEmail = email.trim().toLowerCase();
+
+  const existingUser = await userModel.findByEmail(normalizedEmail);
+  if (existingUser) {
+    const error = new Error('Email ja cadastrado.');
+    error.statusCode = 409;
+    throw error;
+  }
+
+  // Gerar código de 6 dígitos
+  const code = Math.floor(100000 + Math.random() * 900000).toString();
+  const expiresAt = Date.now() + 10 * 60 * 1000; // 10 minutos de expiração
+
+  verificationCodes.set(normalizedEmail, {
+    code,
+    expiresAt,
+    verified: false,
+  });
+
+  const sent = await emailService.sendVerificationEmail({ email: normalizedEmail, code });
+  if (!sent) {
+    console.warn(`[DEV ONLY] Falha ao enviar e-mail de verificação para ${normalizedEmail}. O código gerado é: ${code}`);
+    if (env.nodeEnv === 'production') {
+      const error = new Error('Falha ao enviar e-mail de verificacao.');
+      error.statusCode = 500;
+      throw error;
+    }
+  }
+
+  return {
+    message: 'Codigo de verificacao enviado com sucesso.',
+  };
+}
+
+async function verifyCode(email, code) {
+  const normalizedEmail = email.trim().toLowerCase();
+  const verificationEntry = verificationCodes.get(normalizedEmail);
+
+  if (!verificationEntry) {
+    const error = new Error('Nenhum codigo de verificacao solicitado para este e-mail.');
+    error.statusCode = 400;
+    throw error;
+  }
+
+  if (verificationEntry.expiresAt < Date.now()) {
+    verificationCodes.delete(normalizedEmail);
+    const error = new Error('O codigo de verificacao expirou. Solicite um novo.');
+    error.statusCode = 400;
+    throw error;
+  }
+
+  if (verificationEntry.code !== code.trim()) {
+    const error = new Error('Codigo de verificacao incorreto.');
+    error.statusCode = 400;
+    throw error;
+  }
+
+  // Marcar como verificado
+  verificationEntry.verified = true;
+  verificationCodes.set(normalizedEmail, verificationEntry);
+
+  return {
+    message: 'E-mail verificado com sucesso.',
   };
 }
 
@@ -255,4 +338,7 @@ module.exports = {
   resetPassword,
   updateMe,
   deleteMe,
+  sendVerificationCode,
+  verifyCode,
+  verificationCodes,
 };

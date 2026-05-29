@@ -79,6 +79,58 @@ export const authService = {
       body: JSON.stringify({ email, password }),
     })
   },
+
+  /**
+   * GET /auth/me
+   * Retorna os dados do usuário autenticado.
+   */
+  me(): Promise<{ user: AuthUser }> {
+    return request<{ user: AuthUser }>('/auth/me')
+  },
+
+  /**
+   * PATCH /auth/me
+   * Atualiza dados do usuário (nome ou senha).
+   */
+  updateMe(data: { name?: string; currentPassword?: string; newPassword?: string }): Promise<{ message: string; user: AuthUser }> {
+    return request<{ message: string; user: AuthUser }>('/auth/me', {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    })
+  },
+
+  /**
+   * DELETE /auth/me
+   * Deleta a conta do usuário.
+   */
+  deleteMe(data: { currentPassword?: string }): Promise<{ message: string }> {
+    return request<{ message: string }>('/auth/me', {
+      method: 'DELETE',
+      body: JSON.stringify(data),
+    })
+  },
+
+  /**
+   * POST /auth/send-code
+   * Envia um código de verificação para o e-mail informado.
+   */
+  sendCode(email: string): Promise<{ message: string }> {
+    return request<{ message: string }>('/auth/send-code', {
+      method: 'POST',
+      body: JSON.stringify({ email }),
+    })
+  },
+
+  /**
+   * POST /auth/verify-code
+   * Verifica se o código de e-mail é válido.
+   */
+  verifyCode(email: string, code: string): Promise<{ message: string }> {
+    return request<{ message: string }>('/auth/verify-code', {
+      method: 'POST',
+      body: JSON.stringify({ email, code }),
+    })
+  },
 }
 
 // ─── Chat ─────────────────────────────────────────────────────────────────────
@@ -198,6 +250,35 @@ export const chatService = {
    */
   closeConversation(): Promise<void> {
     return request<void>('/chat/close', { method: 'POST' })
+  },
+
+  /**
+   * GET /chat/preferences
+   * Retorna as preferências do usuário.
+   */
+  getPreferences(): Promise<{ genres: string[]; types: string[]; favoriteAuthors: string[] }> {
+    return request<{ genres: string[]; types: string[]; favoriteAuthors: string[] }>('/chat/preferences')
+  },
+
+  /**
+   * PUT /chat/preferences
+   * Atualiza as preferências do usuário.
+   */
+  updatePreferences(data: { genres?: string[]; types?: string[]; favoriteAuthors?: string[] }): Promise<{ message: string; preferences: { genres: string[]; types: string[]; favoriteAuthors: string[] } }> {
+    return request<{ message: string; preferences: { genres: string[]; types: string[]; favoriteAuthors: string[] } }>('/chat/preferences', {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    })
+  },
+
+  /**
+   * DELETE /chat/preferences
+   * Reseta as preferências do usuário.
+   */
+  clearPreferences(): Promise<{ message: string; preferences: { genres: string[]; types: string[]; favoriteAuthors: string[] } }> {
+    return request<{ message: string; preferences: { genres: string[]; types: string[]; favoriteAuthors: string[] } }>('/chat/preferences', {
+      method: 'DELETE',
+    })
   },
 }
 
@@ -824,3 +905,33 @@ export const booksService = {
 }
 
 export const catalogService = booksService
+
+export interface BookEvaluation {
+  id?: number
+  googleBooksId: string
+  title: string
+  rating: number
+  comment?: string | null
+  createdAt?: string
+}
+
+export const evaluationsService = {
+  /**
+   * GET /avaliacoes
+   * Retorna a lista de avaliações do usuário autenticado.
+   */
+  listEvaluations(): Promise<BookEvaluation[]> {
+    return request<BookEvaluation[]>('/avaliacoes')
+  },
+
+  /**
+   * POST /avaliacoes
+   * Cria ou atualiza uma avaliação do usuário.
+   */
+  upsertEvaluation(data: { googleBooksId: string; title: string; rating: number; comment?: string }): Promise<BookEvaluation> {
+    return request<BookEvaluation>('/avaliacoes', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    })
+  },
+}

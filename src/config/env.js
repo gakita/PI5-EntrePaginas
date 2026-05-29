@@ -36,4 +36,9 @@ module.exports = {
   smtpTimeoutMs: Number(process.env.SMTP_TIMEOUT_MS || 5000),
   passwordResetFrontendUrl: process.env.PASSWORD_RESET_FRONTEND_URL,
   passwordResetTokenMinutes: Number(process.env.PASSWORD_RESET_TOKEN_MINUTES || 30),
+
+  // ── Mailpit (SMTP de testes local) ──
+  mailpitHost: process.env.MAILPIT_HOST || '127.0.0.1',
+  mailpitPort: Number(process.env.MAILPIT_PORT || 1025),
+  mailpitEnabled: process.env.MAILPIT_ENABLED === 'true' || process.env.NODE_ENV !== 'production',
 };

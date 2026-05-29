@@ -120,6 +120,17 @@ async function handleSubmit() {
           >
             Continuar
           </v-btn>
+
+          <v-btn
+            variant="text"
+            class="login-page__back-btn"
+            block
+            height="44"
+            to="/"
+          >
+            <v-icon start class="mr-1">mdi-arrow-left</v-icon>
+            Voltar para a Página Principal
+          </v-btn>
         </v-form>
 
         <p class="login-page__register">
@@ -272,6 +283,15 @@ async function handleSubmit() {
   letter-spacing: 0.5px !important;
   border-radius: 12px !important;
   box-shadow: 0px 6px 4px rgba(0, 0, 0, 0.25) !important;
+  margin-bottom: 8px;
+}
+
+.login-page__back-btn {
+  font-family: "Playfair Display", serif !important;
+  color: #9b8a75 !important;
+  font-size: 16px !important;
+  text-transform: none !important;
+  letter-spacing: 0.5px !important;
   margin-bottom: 24px;
 }
 
