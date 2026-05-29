@@ -54,6 +54,13 @@ function handleLogout () {
           >
             Entrar
           </v-btn>
+          <v-btn
+            variant="outlined"
+            class="login-btn"
+            :to="'/registrar'"
+          >
+            Criar Conta
+          </v-btn>
         </template>
 
         <template v-else>
