@@ -90,11 +90,27 @@ async function sendVerificationCode(email) {
   const code = Math.floor(100000 + Math.random() * 900000).toString();
   const expiresAt = Date.now() + 10 * 60 * 1000; // 10 minutos de expiração
 
-  verificationCodes.set(normalizedEmail, {
-    code,
-    expiresAt,
-    verified: false,
-  });
+  let verificationEntry = verificationCodes.get(normalizedEmail);
+  if (!verificationEntry) {
+    verificationEntry = {
+      codes: [],
+      verified: false,
+    };
+  } else if (!verificationEntry.codes) {
+    verificationEntry.codes = [];
+  }
+
+  // Filtrar apenas códigos ativos
+  const now = Date.now();
+  verificationEntry.codes = verificationEntry.codes.filter(c => c.expiresAt > now);
+
+  // Adicionar novo código
+  verificationEntry.codes.push({ code, expiresAt });
+  verificationEntry.code = code;
+  verificationEntry.expiresAt = expiresAt;
+  verificationEntry.verified = false;
+
+  verificationCodes.set(normalizedEmail, verificationEntry);
 
   const sent = await emailService.sendVerificationEmail({ email: normalizedEmail, code });
   if (!sent) {
@@ -121,21 +137,31 @@ async function verifyCode(email, code) {
     throw error;
   }
 
-  if (verificationEntry.expiresAt < Date.now()) {
+  const now = Date.now();
+  // Se não houver array de códigos (caso antigo), inicializa para fins de robustez
+  const activeCodes = (verificationEntry.codes || [
+    { code: verificationEntry.code, expiresAt: verificationEntry.expiresAt }
+  ]).filter(c => c.expiresAt > now);
+
+  if (activeCodes.length === 0) {
     verificationCodes.delete(normalizedEmail);
     const error = new Error('O codigo de verificacao expirou. Solicite um novo.');
     error.statusCode = 400;
     throw error;
   }
 
-  if (verificationEntry.code !== code.trim()) {
+  const inputCode = code.trim();
+  const matched = activeCodes.some(c => c.code === inputCode);
+
+  if (!matched) {
     const error = new Error('Codigo de verificacao incorreto.');
     error.statusCode = 400;
     throw error;
   }
 
-  // Marcar como verificado
+  // Marcar como verificado e atualizar os códigos válidos
   verificationEntry.verified = true;
+  verificationEntry.codes = activeCodes;
   verificationCodes.set(normalizedEmail, verificationEntry);
 
   return {
