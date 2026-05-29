@@ -171,6 +171,23 @@ function onOtpKeydown(index: number, event: KeyboardEvent) {
   }
 }
 
+function onOtpPaste(event: ClipboardEvent) {
+  event.preventDefault()
+  const pastedData = event.clipboardData?.getData('text') || ''
+  const digits = pastedData.replace(/\D/g, '').slice(0, 6).split('')
+  
+  for (let i = 0; i < 6; i++) {
+    otpDigits.value[i] = digits[i] || ''
+  }
+
+  // Focar no último input preenchido ou no primeiro vazio
+  const nextFocusIndex = Math.min(digits.length, 5)
+  nextTick(() => {
+    const next = document.querySelector<HTMLInputElement>(`.otp-input-${nextFocusIndex}`)
+    next?.focus()
+  })
+}
+
 function toggleSensitiveTheme(theme: string) {
   const idx = formData.value.sensitiveThemes.indexOf(theme)
   if (idx >= 0) formData.value.sensitiveThemes.splice(idx, 1)
@@ -281,6 +298,7 @@ function toggleExpand(id: string) {
               maxlength="1"
               @input="onOtpInput(i, $event)"
               @keydown="onOtpKeydown(i, $event)"
+              @paste="onOtpPaste"
             />
           </div>
           <v-alert v-if="errorMessage" type="error" variant="tonal" density="compact" class="reg-error">

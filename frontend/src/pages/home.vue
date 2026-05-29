@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount } from 'vue'
+import { ref } from 'vue'
 import Navbar from '@/components/Navbar.vue'
 import fundoImg from '@/assets/FUNDO.png'
 
@@ -13,23 +13,6 @@ const categories = [
 
 const categorySearch = ref('')
 const activeCategory  = ref('Ficção')
-
-const categoriesSection = ref<HTMLElement | null>(null)
-const searchIsFixed     = ref(false)
-
-let observer: IntersectionObserver | null = null
-
-onMounted(() => {
-  observer = new IntersectionObserver(
-    ([entry]) => { searchIsFixed.value = entry.isIntersecting },
-    { threshold: 0 }
-  )
-  if (categoriesSection.value) observer.observe(categoriesSection.value)
-})
-
-onBeforeUnmount(() => {
-  observer?.disconnect()
-})
 </script>
 
 <template>
@@ -88,18 +71,7 @@ onBeforeUnmount(() => {
         Escolha categorias para te ajudar a procurar pelo livro perfeito!
       </p>
 
-      <div class="categories__cards">
-        <div
-          v-for="category in categories"
-          :key="category.label"
-          class="category-card"
-        >
-          <div class="category-card__image" />
-          <span class="category-card__label">{{ category.label }}</span>
-        </div>
-      </div>
-
-      <div class="categories__search-wrap" :class="{ 'is-fixed': searchIsFixed }">
+      <div class="categories__search-wrap">
         <v-icon class="categories__search-icon">mdi-creation</v-icon>
         <span class="categories__chip">
           <v-icon size="12">mdi-close</v-icon>
@@ -113,6 +85,17 @@ onBeforeUnmount(() => {
         <button class="categories__send">
           <v-icon>mdi-send</v-icon>
         </button>
+      </div>
+
+      <div class="categories__cards">
+        <div
+          v-for="category in categories"
+          :key="category.label"
+          class="category-card"
+        >
+          <div class="category-card__image" />
+          <span class="category-card__label">{{ category.label }}</span>
+        </div>
       </div>
     </div>
   </section>
@@ -431,7 +414,7 @@ onBeforeUnmount(() => {
 /* ─── Categories Search ─────────────────────────────── */
 
 .categories__search-wrap {
-  margin-top: 56px;
+  margin-bottom: 56px;
   display: flex;
   align-items: center;
   gap: 12px;
@@ -498,14 +481,5 @@ onBeforeUnmount(() => {
   opacity: 0.7;
 }
 
-/* ─── Search fixed state ────────────────────────────── */
 
-.categories__search-wrap.is-fixed {
-  position: fixed;
-  bottom: 15%;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 200;
-  margin-top: 0;
-}
 </style>
