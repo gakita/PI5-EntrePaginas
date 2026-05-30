@@ -136,6 +136,7 @@ Após iniciar o Mailpit, acesse a interface web de leitura de e-mails em: [http:
 | `npm run test:quiz` | Roda os cenários HTTP completos do quiz (requer servidor no ar) |
 | `npm run test:quiz:run` | Cria/verifica tabela, sobe a API se necessário e roda os cenários do quiz |
 | `npm run chat:play` | Inicia o chat interativo no terminal |
+| `npm run screenshots` | Executa o script de automação Puppeteer para tirar as 15 capturas de tela de todas as funcionalidades para os slides de apresentação |
 
 ### Scripts do frontend
 
@@ -919,6 +920,39 @@ npm run build
 ```
 
 Os testes do frontend usam Vitest. O teste atual cobre o guard de autenticação do Vue Router.
+
+---
+
+## 📸 Automação de Capturas de Tela (Fotos dos Slides do TCC)
+
+O sistema possui uma suíte de automação em **Puppeteer** desenvolvida especificamente para testar e capturar prints em alta definição de todas as páginas e fluxos do projeto. 
+
+As imagens geradas são ideais para a elaboração de slides de apresentação de TCC e demonstração das funcionalidades.
+
+### Como rodar a automação:
+1. Certifique-se de que o backend e o frontend estão rodando em background (ou use o comando `npm run dev:all` na raiz do projeto).
+2. Execute o comando de automação na raiz do projeto:
+   ```bash
+   npm run screenshots
+   ```
+3. O script irá:
+   - Popular automaticamente o banco OracleDB com dados de teste.
+   - Navegar programaticamente por todo o fluxo de cadastro passo-a-passo (RF09, RF11).
+   - Efetuar o login.
+   - Navegar pelas páginas de **Dashboard**, **Catálogo**, **Detalhes do Livro**, **Chatbot com IA** (enviando mensagem e revelando recomendações sensíveis!), **Quiz Adaptativo**, **Sugestões da IA** e **Favoritos**.
+   - Gerar 15 arquivos de imagem em alta definição na pasta `/presentation_screenshots/` da raiz do seu projeto.
+
+*(Nota: Esta pasta foi removida do `.gitignore` para que você possa commitar as capturas facilmente no seu Git e compartilhar com o grupo!).*
+
+---
+
+## 🛡️ Arquitetura de Catálogo Resiliente e Rota Proxy de Detalhes
+
+Devido aos limites severos de requisições (**HTTP 429 - Too Many Requests**) aplicados pela API pública do Google Books no lado do cliente (navegador), implementamos uma arquitetura de resiliência multicamadas para garantir o funcionamento 100% ininterrupto do sistema:
+
+1. **Catálogo Resiliente Local**: O backend possui uma lista curada de alta fidelidade de livros com múltiplos gêneros (Terror, Fantasia, Sci-Fi, Romance, HQs e Mangás). Se as chamadas externas falharem ou houver limitação de rede, o catálogo é servido a partir deste fallback estável de forma transparente.
+2. **Proxy de Detalhes de Livro (`GET /books/:id`)**: Anteriormente, o frontend fazia requisições diretas à API pública do Google Books por ID para carregar a página de detalhes, o que resultava em falhas 404 para livros do catálogo de fallback ou telas pretas. Agora, a busca passa obrigatoriamente pela nossa API `/books/:id` do backend, que busca no Google (usando a cota do servidor) ou serve o fallback local mapeado.
+3. **Imagens Resilientes via Unsplash**: Todas as capas de livros de fallback e favoritos usam URLs estéticas e estáveis hospedadas no Unsplash. Elas carregam instantaneamente no navegador do usuário, livre de rate limits ou erros de imagem quebrada (*"image not available"*).
 
 ---
 
