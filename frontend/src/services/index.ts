@@ -196,6 +196,7 @@ export interface BookRecommendation {
   embeddable?: boolean
   viewability?: string | null
   sensitiveContent?: boolean
+  isRevealed?: boolean
   suggestedAt?: string
 }
 
@@ -214,6 +215,7 @@ export interface CatalogBook {
   webReaderLink: string | null
   embeddable: boolean
   viewability: string | null
+  sensitiveContent?: boolean
 }
 
 export interface CatalogResponse {
@@ -250,6 +252,7 @@ function normalizeFavoriteBook(book: FavoriteBook): CatalogBook {
     webReaderLink: null,
     embeddable: false,
     viewability: null,
+    sensitiveContent: false,
   }
 }
 
@@ -495,6 +498,7 @@ export function mergeCatalogBookData(base: CatalogBook, enriched?: CatalogBook |
     webReaderLink: enriched.webReaderLink || base.webReaderLink,
     embeddable: enriched.embeddable || base.embeddable,
     viewability: enriched.viewability || base.viewability,
+    sensitiveContent: enriched.sensitiveContent ?? base.sensitiveContent,
   }
 }
 
@@ -599,28 +603,11 @@ async function fetchOpenLibraryAuthors(work: OpenLibraryWork) {
 }
 
 async function requestGoogleVolume(id: string): Promise<CatalogBook> {
-  const controller = new AbortController()
-  const timeoutId = window.setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS)
-
   try {
-    const response = await fetch(
-      `https://www.googleapis.com/books/v1/volumes/${encodeURIComponent(id)}`,
-      { signal: controller.signal },
-    )
-
-    if (!response.ok) {
-      throw new Error(response.status === 404 ? 'Livro não encontrado.' : 'Erro ao buscar livro.')
-    }
-
-    return normalizeGoogleBook(await response.json() as GoogleBookVolume)
+    return await request<CatalogBook>(`/books/${encodeURIComponent(id)}`)
   } catch (error) {
-    if (error instanceof DOMException && error.name === 'AbortError') {
-      throw new Error('Tempo de resposta excedido. Tente novamente em instantes.')
-    }
-
+    console.warn('[requestGoogleVolume] Erro ao buscar livro do backend, caindo no fallback:', error)
     throw error
-  } finally {
-    window.clearTimeout(timeoutId)
   }
 }
 

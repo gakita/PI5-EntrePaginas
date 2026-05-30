@@ -1,6 +1,8 @@
+require('dotenv').config();
 const fs = require('fs');
 const path = require('path');
 const puppeteer = require('puppeteer');
+const favoriteModel = require('../src/models/favoriteModel');
 
 // Configurações e Detecção Dinâmica de Portas
 const BACKEND_URL = 'http://localhost:3000';
@@ -57,6 +59,23 @@ async function waitForImagesToLoad(page) {
 
 async function run() {
   console.log('📸 === INICIANDO SCRIPT DE CAPTURAS DE TELA AUTOMATIZADAS ===\n');
+
+  // Popular favorito de segurança diretamente no OracleDB antes do Puppeteer abrir
+  try {
+    console.log('Populando favorito de segurança no banco de dados OracleDB...');
+    await favoriteModel.upsertByUserEmail(TEST_EMAIL, {
+      googleBooksId: "fallback_id_horror_1",
+      title: "O Iluminado",
+      author: "Stephen King",
+      coverUrl: "https://images.unsplash.com/photo-1509248961158-e54f6934749c?q=80&w=400&auto=format&fit=crop",
+      genres: ["Terror", "Horror", "Suspense"],
+      publishedDate: "1977-01-28",
+      type: "livro"
+    });
+    console.log('=> Favorito de segurança populado com sucesso no OracleDB!');
+  } catch (e) {
+    console.log('=> Aviso ao popular favorito diretamente no banco:', e.message);
+  }
 
   const FRONTEND_URL = await detectFrontendPort();
 
@@ -256,8 +275,15 @@ async function run() {
     // ==========================================
     console.log('\n--- 4. Acessando o Catálogo ---');
     await page.goto(`${FRONTEND_URL}/catalogo`, { waitUntil: 'networkidle2' });
+    
+    console.log('Aguardando os cards do catálogo renderizarem no DOM...');
+    await page.waitForSelector('.book-card', { timeout: 20000 }).catch(() => {
+      console.log('Aviso: Cards de livros demoraram para renderizar no catálogo.');
+    });
+    await delay(3000); // Dá um tempo extra para as tags de imagens aparecerem
     await waitForImagesToLoad(page);
-    await delay(1500);
+    console.log('Aguardando 10 segundos adicionais para o carregamento total das imagens...');
+    await delay(10000); // Delay robusto de 10s solicitado pelo usuário!
 
     const shotPath7 = path.join(OUTPUT_DIR, '07_catalogo.png');
     await page.screenshot({ path: shotPath7 });
@@ -268,11 +294,18 @@ async function run() {
     // ==========================================
     console.log('\n--- 5. Acessando Detalhes de um Livro ---');
     // Clicar no primeiro livro do catálogo
+    console.log('Aguardando seletor do card do livro...');
+    await page.waitForSelector('.book-card', { timeout: 10000 }).catch(() => null);
     const bookCards = await page.$$('.book-card');
     if (bookCards.length > 0) {
       console.log('Clicando no primeiro card de livro do catálogo...');
       await bookCards[0].click();
-      await delay(2500); // Aguarda a página do livro carregar os detalhes do Google Books/Banco
+      
+      console.log('Aguardando carregamento da tela de detalhes do livro...');
+      await page.waitForSelector('.book-card__favorite, .sensitive-warning', { timeout: 15000 }).catch(() => {
+        console.log('Aviso: Detalhes do livro demoraram para carregar.');
+      });
+      await delay(4000); // Aguarda a página do livro carregar os detalhes e imagens
 
       // Clicar em "Adicionar aos favoritos" para que a biblioteca de favoritos tenha itens!
       console.log('Verificando botão de Favoritos...');
@@ -374,8 +407,15 @@ async function run() {
     // ==========================================
     console.log('\n--- 8. Acessando as Recomendações do Perfil ---');
     await page.goto(`${FRONTEND_URL}/recomendacoes`, { waitUntil: 'networkidle2' });
+    
+    console.log('Aguardando cards de recomendações renderizarem no DOM...');
+    await page.waitForSelector('.book-card', { timeout: 20000 }).catch(() => {
+      console.log('Aviso: Cards de recomendação demoraram para renderizar.');
+    });
+    await delay(3000);
     await waitForImagesToLoad(page);
-    await delay(1500);
+    console.log('Aguardando 10 segundos adicionais para o carregamento total das imagens...');
+    await delay(10000); // Delay robusto de 10s solicitado pelo usuário!
 
     const shotPath13 = path.join(OUTPUT_DIR, '13_recomendacoes.png');
     await page.screenshot({ path: shotPath13 });
@@ -386,8 +426,15 @@ async function run() {
     // ==========================================
     console.log('\n--- 9. Acessando a Tela de Favoritos ---');
     await page.goto(`${FRONTEND_URL}/favoritos`, { waitUntil: 'networkidle2' });
+    
+    console.log('Aguardando cards de favoritos renderizarem no DOM...');
+    await page.waitForSelector('.book-card', { timeout: 15000 }).catch(() => {
+      console.log('Aviso: Cards de favoritos demoraram para renderizar.');
+    });
+    await delay(3000);
     await waitForImagesToLoad(page);
-    await delay(1500);
+    console.log('Aguardando 10 segundos adicionais para o carregamento total das imagens...');
+    await delay(10000); // Delay robusto de 10s solicitado pelo usuário!
 
     const shotPath14 = path.join(OUTPUT_DIR, '14_favoritos.png');
     await page.screenshot({ path: shotPath14 });

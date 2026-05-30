@@ -13,6 +13,7 @@
   const isLoading = ref(false)
   const errorMessage = ref('')
   const isRevealed = ref(false)
+  const bookId = computed(() => String(route.params.id || ''))
 
   const hasSensitiveContent = computed(() => !!book.value?.sensitiveContent)
 
@@ -20,7 +21,6 @@
     isRevealed.value = false
   })
 
-  const bookId = computed(() => String(route.params.id || ''))
   const bookDetailsCacheKey = 'entre-paginas:book-details'
   const backgroundImage = `url(${fundoImg})`
   const coverImage = computed(() => `url(${book.value?.coverUrl || fundoImg})`)

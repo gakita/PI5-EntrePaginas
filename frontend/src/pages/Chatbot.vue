@@ -2,7 +2,7 @@
 import { ref, onMounted, nextTick } from 'vue'
 import { onBeforeRouteLeave, useRoute, useRouter } from 'vue-router'
 import Navbar from '@/components/Navbar.vue'
-import { chatService, type BookRecommendation, type ChatMessage } from '@/services'
+import { chatService, type ChatMessage } from '@/services'
 
 const router = useRouter()
 const route = useRoute()

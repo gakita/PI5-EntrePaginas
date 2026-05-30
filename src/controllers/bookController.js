@@ -48,8 +48,22 @@ async function searchBook(req, res, next) {
   }
 }
 
+async function getBookById(req, res, next) {
+  try {
+    const id = req.params.id;
+    const book = await catalogService.getBookById(id);
+    if (!book) {
+      return res.status(404).json({ message: 'Livro nao encontrado.' });
+    }
+    return res.status(200).json(book);
+  } catch (error) {
+    return next(error);
+  }
+}
+
 module.exports = {
   getCategories,
   listBooks,
   searchBook,
+  getBookById,
 };

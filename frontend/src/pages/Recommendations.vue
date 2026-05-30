@@ -79,6 +79,7 @@ function recommendationToCatalogBook(book: BookRecommendation): CatalogBook {
     webReaderLink: book.webReaderLink || null,
     embeddable: Boolean(book.embeddable),
     viewability: book.viewability || null,
+    sensitiveContent: book.sensitiveContent,
   }
 }
 
