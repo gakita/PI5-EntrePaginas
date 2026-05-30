@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import { ref, onMounted, nextTick } from 'vue'
-import { onBeforeRouteLeave, useRouter } from 'vue-router'
+import { onBeforeRouteLeave, useRoute, useRouter } from 'vue-router'
 import Navbar from '@/components/Navbar.vue'
 import { chatService, type BookRecommendation, type ChatMessage } from '@/services'
 
 const router = useRouter()
+const route = useRoute()
 
 // ── Estado ──────────────────────────────────────────────────────────────────
 const question     = ref('')
@@ -43,6 +44,17 @@ async function closeActiveConversation() {
 
 // ── Ciclo de vida ────────────────────────────────────────────────────────────
 onMounted(async () => {
+  const initialPrompt = typeof route.query.prompt === 'string' ? route.query.prompt.trim() : ''
+  const initialGenre = typeof route.query.genre === 'string' ? route.query.genre.trim() : ''
+
+  if (initialPrompt) {
+    selectedGenre.value = genres.includes(initialGenre) ? initialGenre : ''
+
+    await router.replace({ path: route.path })
+    await startNewConversationWithPrompt(initialPrompt, selectedGenre.value)
+    return
+  }
+
   try {
     const { messages: history } = await chatService.getHistory()
     messages.value = history
@@ -69,16 +81,18 @@ const removeFilter = () => {
   selectedGenre.value = ''
 }
 
-async function sendMessage() {
-  const text = question.value.trim()
+async function sendMessage(messageOverride = '', genreOverride = selectedGenre.value) {
+  const text = (messageOverride || question.value).trim()
   if (!text || isLoading.value) return
 
   errorMsg.value = ''
-  question.value = ''
+  if (!messageOverride) {
+    question.value = ''
+  }
 
   // Adiciona prefixo de gênero se selecionado
-  const fullMessage = selectedGenre.value
-    ? `[Gênero: ${selectedGenre.value}] ${text}`
+  const fullMessage = genreOverride
+    ? `[Gênero: ${genreOverride}] ${text}`
     : text
 
   // Adiciona mensagem do usuário na tela imediatamente
@@ -108,6 +122,26 @@ async function sendMessage() {
   } finally {
     isLoading.value = false
   }
+}
+
+async function startNewConversationWithPrompt(prompt: string, genre = '') {
+  if (isLoading.value || isClosingConversation.value) return
+
+  isClosingConversation.value = true
+  errorMsg.value = ''
+
+  try {
+    await chatService.closeConversation()
+    await chatService.clearHistory()
+    messages.value = []
+    hasClosedCurrentConversation = false
+  } catch {
+    messages.value = []
+  } finally {
+    isClosingConversation.value = false
+  }
+
+  await sendMessage(prompt, genre)
 }
 
 async function newConversation() {
@@ -293,7 +327,7 @@ function handleKeydown(event: KeyboardEvent) {
             class="send-btn"
             :class="{ 'send-btn--loading': isLoading }"
             :disabled="isLoading || !question.trim()"
-            @click="sendMessage"
+            @click="sendMessage()"
           >
             <v-icon v-if="!isLoading">mdi-send</v-icon>
             <v-progress-circular v-else indeterminate size="20" width="2" color="#C9A227" />
