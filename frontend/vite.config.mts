@@ -36,9 +36,6 @@ export default defineConfig({
     }),
   ],
   define: { 'process.env': {} },
-  optimizeDeps: {
-    exclude: ['vuetify'],
-  },
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('src', import.meta.url)),
