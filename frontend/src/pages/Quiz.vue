@@ -4,9 +4,7 @@ import { useRouter } from 'vue-router'
 import CatalogGlow from '@/components/BackgroundGlow.vue'
 import fundoImg from '@/assets/Fundo_Catalogo.jpg'
 import {
-  bookService,
   quizService,
-  type CatalogItem,
   type QuizFinishResponse,
   type QuizQuestion,
 } from '@/services'
@@ -14,31 +12,7 @@ import {
 const router = useRouter()
 const backgroundImage = `url(${fundoImg})`
 
-const GENERIC_QUESTION_COUNT = 3
-const MORE_BOOKS_TARGET = 8
-
-// Mapeia gêneros em português para "subjects" do Google Books (chaves sem acento).
-const GENRE_SUBJECT_MAP: Record<string, string> = {
-  'ficcao cientifica': 'science fiction',
-  fantasia: 'fantasy',
-  ficcao: 'fiction',
-  romance: 'romance',
-  terror: 'horror',
-  horror: 'horror',
-  misterio: 'mystery',
-  aventura: 'adventure',
-  drama: 'drama',
-  suspense: 'thriller',
-  thriller: 'thriller',
-  biografia: 'biography',
-  historia: 'history',
-  poesia: 'poetry',
-  infantil: 'juvenile fiction',
-  juvenil: 'young adult fiction',
-  quadrinhos: 'comics',
-  hq: 'comics',
-  manga: 'comics',
-}
+const GENERIC_QUESTION_COUNT = 2
 
 const sessionId = ref<string | null>(null)
 const currentQuestion = ref<QuizQuestion | null>(null)
@@ -55,12 +29,6 @@ const regenerating = ref(false)
 const errorMsg = ref('')
 
 const finishResult = ref<QuizFinishResponse | null>(null)
-
-// "Mais livros para explorar" — revelado inline ao clicar em "Ver mais recomendações".
-const moreBooks = ref<CatalogItem[]>([])
-const showMore = ref(false)
-const loadingMore = ref(false)
-const moreError = ref('')
 
 const questionNumber = computed(() => answeredCount.value + 1)
 
@@ -85,9 +53,6 @@ async function startQuiz() {
   loading.value = true
   errorMsg.value = ''
   finishResult.value = null
-  showMore.value = false
-  moreBooks.value = []
-  moreError.value = ''
 
   try {
     const result = await quizService.start()
@@ -186,91 +151,8 @@ function goHome() {
   router.push('/')
 }
 
-function normalizeGenre(value: string): string {
-  return value
-    .trim()
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-}
-
-// Converte um gênero em PT para um subject do Google Books ('' quando não reconhece).
-function mapGenreToSubject(genre: string): string {
-  const key = normalizeGenre(genre)
-  if (GENRE_SUBJECT_MAP[key]) return GENRE_SUBJECT_MAP[key]
-  for (const mapKey of Object.keys(GENRE_SUBJECT_MAP)) {
-    if (key.includes(mapKey)) return GENRE_SUBJECT_MAP[mapKey]
-  }
-  return ''
-}
-
-function firstType(types: string[]): string {
-  const normalized = types.map((t) => t.trim().toLowerCase())
-  if (normalized.includes('manga') || normalized.includes('mangá')) return 'manga'
-  if (normalized.includes('hq')) return 'hq'
-  if (normalized.includes('livro')) return 'livro'
-  return ''
-}
-
-async function showMoreBooks() {
-  showMore.value = true
-
-  if (moreBooks.value.length || loadingMore.value) return
-
-  const prefs = finishResult.value?.preferences
-  if (!prefs) return
-
-  loadingMore.value = true
-  moreError.value = ''
-
-  try {
-    const type = firstType(prefs.types)
-
-    // Títulos já mostrados nas recomendações do quiz (evita duplicar).
-    const quizTitles = new Set(
-      (finishResult.value?.recommendations ?? []).map(
-        (rec) => (rec.title ?? '').toLowerCase(),
-      ),
-    )
-
-    const collected: CatalogItem[] = []
-    const seen = new Set<string>()
-
-    const addItems = (items: CatalogItem[]) => {
-      for (const item of items) {
-        const key = (item.title ?? '').toLowerCase()
-        if (item.coverUrl && item.title && !quizTitles.has(key) && !seen.has(key)) {
-          seen.add(key)
-          collected.push(item)
-        }
-      }
-    }
-
-    // 1) Tenta cada gênero reconhecido até juntar o suficiente.
-    const subjects = [...new Set(prefs.genres.map(mapGenreToSubject).filter(Boolean))]
-    for (const category of subjects) {
-      if (collected.length >= MORE_BOOKS_TARGET) break
-      const response = await bookService.list({ category, type, limit: 12 })
-      addItems(response.items)
-    }
-
-    // 2) Fallback: nada encontrado — busca por tipo e, por fim, geral.
-    if (collected.length === 0) {
-      const response = await bookService.list({ type, limit: 12 })
-      addItems(response.items)
-    }
-    if (collected.length === 0) {
-      const response = await bookService.list({ limit: 12 })
-      addItems(response.items)
-    }
-
-    moreBooks.value = collected
-  } catch (err) {
-    moreError.value =
-      err instanceof Error ? err.message : 'Erro ao buscar mais livros.'
-  } finally {
-    loadingMore.value = false
-  }
+function goRecommendations() {
+  router.push('/recomendacoes')
 }
 
 onMounted(() => {
@@ -320,8 +202,8 @@ onMounted(() => {
 
       <!-- Tela de resultado final -->
       <section v-else-if="finishResult" class="quiz-result">
-        <p class="quiz-step">Quiz concluido</p>
-        <h1 class="quiz-page__title">Suas recomendacoes</h1>
+        <p class="quiz-step">Quiz concluído</p>
+        <h1 class="quiz-page__title">Suas recomendações</h1>
         <p class="quiz-message">{{ finishResult.message }}</p>
 
         <ul class="recommendations">
@@ -357,46 +239,11 @@ onMounted(() => {
           </li>
         </ul>
 
-        <!-- Mais livros para explorar (revelado inline) -->
-        <section v-if="showMore" class="more-books">
-          <h2 class="more-books__title">Mais livros para explorar</h2>
-
-          <p v-if="loadingMore" class="quiz-message">Buscando mais livros...</p>
-          <p v-else-if="moreError" class="quiz-error">{{ moreError }}</p>
-          <p v-else-if="!moreBooks.length" class="quiz-message">
-            Não encontramos outros livros agora. Tente novamente mais tarde.
-          </p>
-
-          <ul v-else class="recommendations">
-            <li
-              v-for="(book, index) in moreBooks"
-              :key="`more-${book.googleBooksId ?? book.title}-${index}`"
-              class="recommendation"
-            >
-              <img
-                :src="book.coverUrl!"
-                :alt="`Capa de ${book.title}`"
-                class="recommendation__cover"
-              />
-              <div class="recommendation__body">
-                <h2 class="recommendation__title">{{ book.title }}</h2>
-                <p v-if="book.author" class="recommendation__author">
-                  {{ book.author }}
-                </p>
-                <p v-if="book.synopsis" class="recommendation__text">
-                  {{ book.synopsis }}
-                </p>
-              </div>
-            </li>
-          </ul>
-        </section>
-
         <div class="quiz-result__actions">
           <button
-            v-if="!showMore"
             class="continue-button"
             type="button"
-            @click="showMoreBooks"
+            @click="goRecommendations"
           >
             Ver mais recomendações
           </button>
@@ -461,7 +308,7 @@ onMounted(() => {
           :disabled="finishing"
           @click="finishQuiz"
         >
-          {{ finishing ? 'Gerando recomendacoes...' : 'Finalizar quiz agora' }}
+          {{ finishing ? 'Gerando recomendações...' : 'Finalizar quiz agora' }}
         </button>
       </template>
     </div>
@@ -778,20 +625,6 @@ onMounted(() => {
   flex-direction: column;
   align-items: center;
   gap: 12px;
-}
-
-.more-books {
-  width: 100%;
-  margin-bottom: 18px;
-}
-
-.more-books__title {
-  margin: 8px 0 16px 0;
-  font-family: "Playfair Display", serif;
-  font-weight: 600;
-  font-size: 22px;
-  color: #C9A227;
-  text-align: left;
 }
 
 .secondary-button {

@@ -5,6 +5,7 @@ const catalogService = require('./catalogService');
 const llmService = require('./llmService');
 const preferenceModel = require('../models/preferenceModel');
 const quizModel = require('../models/quizModel');
+const suggestionModel = require('../models/suggestionModel');
 const logger = require('../utils/logger');
 
 const MAX_QUESTIONS = 8;
@@ -12,42 +13,37 @@ const MIN_ANSWERS_TO_FINISH = 3;
 
 const GENERIC_QUESTIONS = [
   {
-    id: 'preferred_type',
-    text: 'Qual formato voce quer ler agora?',
-    options: ['Livro', 'HQ', 'Manga', 'Tanto faz'],
-  },
-  {
     id: 'reading_mood',
-    text: 'Que tipo de experiencia voce procura?',
+    text: 'Que tipo de experiência você procura?',
     options: ['Leve', 'Emocionante', 'Sombria', 'Reflexiva'],
   },
   {
     id: 'favorite_theme',
-    text: 'Qual tema chama mais sua atencao hoje?',
-    options: ['Fantasia', 'Misterio', 'Romance', 'Ficcao cientifica'],
+    text: 'Qual tema chama mais sua atenção hoje?',
+    options: ['Fantasia', 'Mistério', 'Romance', 'Ficção científica'],
   },
 ];
 
 const FALLBACK_AI_QUESTIONS = [
   {
-    text: 'Voce prefere uma historia mais focada em personagens ou em acontecimentos?',
-    options: ['Personagens', 'Acontecimentos', 'Equilibrada', 'Nao tenho preferencia'],
+    text: 'Você prefere uma história mais focada em personagens ou em acontecimentos?',
+    options: ['Personagens', 'Acontecimentos', 'Equilibrada', 'Não tenho preferência'],
   },
   {
-    text: 'Qual ritmo combina mais com o que voce quer ler?',
-    options: ['Rapido', 'Medio', 'Lento e contemplativo', 'Tanto faz'],
+    text: 'Qual ritmo combina mais com o que você quer ler?',
+    options: ['Rápido', 'Médio', 'Lento e contemplativo', 'Tanto faz'],
   },
   {
-    text: 'Voce quer evitar temas sensiveis nessa recomendacao?',
-    options: ['Sim', 'Nao', 'Depende do tema', 'Prefiro avisos antes'],
+    text: 'Você quer evitar temas sensíveis nessa recomendação?',
+    options: ['Sim', 'Não', 'Depende do tema', 'Prefiro avisos antes'],
   },
   {
-    text: 'Que nivel de complexidade voce quer agora?',
+    text: 'Que nível de complexidade você quer agora?',
     options: ['Simples', 'Moderado', 'Complexo', 'Tanto faz'],
   },
   {
-    text: 'Voce prefere obras populares ou descobertas menos obvias?',
-    options: ['Populares', 'Menos obvias', 'Misturar as duas', 'Tanto faz'],
+    text: 'Você prefere obras populares ou descobertas menos óbvias?',
+    options: ['Populares', 'Menos óbvias', 'Misturar as duas', 'Tanto faz'],
   },
 ];
 
@@ -92,7 +88,7 @@ function createHttpError(message, statusCode) {
 
 function recordAnswer(session, { questionId, answer }) {
   if (session.finished) {
-    throw createHttpError('Quiz ja finalizado.', 409);
+    throw createHttpError('Quiz já finalizado.', 409);
   }
 
   if (isComplete(session)) {
@@ -101,12 +97,12 @@ function recordAnswer(session, { questionId, answer }) {
 
   const question = findQuestion(session, questionId);
   if (!question) {
-    throw createHttpError('Pergunta nao encontrada nesta sessao de quiz.', 400);
+    throw createHttpError('Pergunta não encontrada nesta sessão de quiz.', 400);
   }
 
   const normalizedAnswer = typeof answer === 'string' ? answer.trim() : answer;
   if (!normalizedAnswer || typeof normalizedAnswer !== 'string') {
-    throw createHttpError('A resposta deve ser um texto nao vazio.', 400);
+    throw createHttpError('A resposta deve ser um texto não vazio.', 400);
   }
 
   const nextSession = clone(session);
@@ -179,7 +175,7 @@ async function startQuiz(userEmail) {
 async function answerQuestion(userEmail, { sessionId, questionId, answer }) {
   const existing = await quizModel.findActiveBySessionId(userEmail, sessionId);
   if (!existing) {
-    throw createHttpError('Sessao de quiz nao encontrada.', 404);
+    throw createHttpError('Sessão de quiz não encontrada.', 404);
   }
 
   let session = recordAnswer(existing, { questionId, answer });
@@ -225,11 +221,11 @@ async function answerQuestion(userEmail, { sessionId, questionId, answer }) {
 async function regenerateCurrentQuestion(userEmail, sessionId) {
   const session = await quizModel.findActiveBySessionId(userEmail, sessionId);
   if (!session) {
-    throw createHttpError('Sessao de quiz nao encontrada.', 404);
+    throw createHttpError('Sessão de quiz não encontrada.', 404);
   }
 
   if (session.finished) {
-    throw createHttpError('Quiz ja finalizado.', 409);
+    throw createHttpError('Quiz já finalizado.', 409);
   }
 
   if (isComplete(session)) {
@@ -279,11 +275,11 @@ async function regenerateCurrentQuestion(userEmail, sessionId) {
 async function finishQuiz(userEmail, { sessionId, savePreferences = false }) {
   const session = await quizModel.findActiveBySessionId(userEmail, sessionId);
   if (!session) {
-    throw createHttpError('Sessao de quiz nao encontrada.', 404);
+    throw createHttpError('Sessão de quiz não encontrada.', 404);
   }
 
   if (session.finished) {
-    throw createHttpError('Quiz ja finalizado.', 409);
+    throw createHttpError('Quiz já finalizado.', 409);
   }
 
   if (!canFinish(session)) {
@@ -326,6 +322,10 @@ async function finishQuiz(userEmail, { sessionId, savePreferences = false }) {
     readBooks
   );
   const enrichedRecommendations = await catalogService.enrichRecommendations(aiResponse.recommendations);
+
+  if (savePreferences) {
+    await suggestionModel.saveAll(userEmail, enrichedRecommendations);
+  }
 
   const finishedSession = {
     ...session,
