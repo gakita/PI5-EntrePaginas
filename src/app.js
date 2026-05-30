@@ -4,17 +4,23 @@ const path = require('path');
 
 const env = require('./config/env');
 const routes = require('./routes');
+const {
+  securityHeaders,
+  globalRateLimiter,
+} = require('./middlewares/security');
 const notFound = require('./middlewares/notFound');
 const errorHandler = require('./middlewares/errorHandler');
 
 const app = express();
 
+app.use(securityHeaders);
 app.use(
   cors({
     origin: env.corsOrigin,
   })
 );
-app.use(express.json());
+app.use(globalRateLimiter);
+app.use(express.json({ limit: env.jsonBodyLimit }));
 app.use(express.static(path.join(__dirname, '..', 'public')));
 
 app.get(env.chatbotPagePath, (req, res) => {

@@ -24,7 +24,7 @@ async function findByUserEmail(email) {
   try {
     const result = await connection.execute(
       `
-        SELECT GENEROS, TIPOS, AUTORES_FAVORITOS, ATUALIZADO_EM
+        SELECT GENEROS, TIPOS, AUTORES_FAVORITOS, TEMAS_SENSIVEIS, ATUALIZADO_EM
         FROM PREFERENCIAS_USUARIO
         WHERE LOWER(USUARIO_EMAIL) = LOWER(:email)
         FETCH FIRST 1 ROWS ONLY
@@ -47,6 +47,7 @@ async function findByUserEmail(email) {
       genres:          await readClob(row.GENEROS),
       types:           await readClob(row.TIPOS),
       favoriteAuthors: await readClob(row.AUTORES_FAVORITOS),
+      sensitiveThemes: await readClob(row.TEMAS_SENSIVEIS),
       updatedAt:       row.ATUALIZADO_EM,
     };
   } finally {
@@ -61,9 +62,9 @@ async function findByUserEmail(email) {
  *   - Se o gênero "ficção científica" já estava salvo, não duplica.
  *
  * @param {string} email
- * @param {{ genres: string[], types: string[], favoriteAuthors: string[] }} preferences
+ * @param {{ genres: string[], types: string[], favoriteAuthors: string[], sensitiveThemes: string[] }} preferences
  */
-async function upsertPreferences(email, { genres = [], types = [], favoriteAuthors = [] }) {
+async function upsertPreferences(email, { genres = [], types = [], favoriteAuthors = [], sensitiveThemes = [] }) {
   const connection = await getConnection();
 
   try {
@@ -71,13 +72,15 @@ async function upsertPreferences(email, { genres = [], types = [], favoriteAutho
     const existing = await findByUserEmail(email);
 
     // Mescla listas removendo duplicatas (Set garante unicidade)
-    const mergedGenres  = [...new Set([...(existing?.genres || []),          ...genres])];
-    const mergedTypes   = [...new Set([...(existing?.types || []),           ...types])];
-    const mergedAuthors = [...new Set([...(existing?.favoriteAuthors || []), ...favoriteAuthors])];
+    const mergedGenres    = [...new Set([...(existing?.genres || []),          ...genres])];
+    const mergedTypes     = [...new Set([...(existing?.types || []),           ...types])];
+    const mergedAuthors   = [...new Set([...(existing?.favoriteAuthors || []), ...favoriteAuthors])];
+    const mergedSensitive = [...new Set([...(existing?.sensitiveThemes || []), ...sensitiveThemes])];
 
-    const genresJson  = JSON.stringify(mergedGenres);
-    const typesJson   = JSON.stringify(mergedTypes);
-    const authorsJson = JSON.stringify(mergedAuthors);
+    const genresJson    = JSON.stringify(mergedGenres);
+    const typesJson     = JSON.stringify(mergedTypes);
+    const authorsJson   = JSON.stringify(mergedAuthors);
+    const sensitiveJson = JSON.stringify(mergedSensitive);
 
     await connection.execute(
       `
@@ -90,23 +93,30 @@ async function upsertPreferences(email, { genres = [], types = [], favoriteAutho
             dest.GENEROS           = :generos,
             dest.TIPOS             = :tipos,
             dest.AUTORES_FAVORITOS = :autores,
+            dest.TEMAS_SENSIVEIS   = :temas,
             dest.ATUALIZADO_EM     = CURRENT_TIMESTAMP
 
         WHEN NOT MATCHED THEN
-          INSERT (USUARIO_EMAIL, GENEROS, TIPOS, AUTORES_FAVORITOS)
-          VALUES (:email, :generos, :tipos, :autores)
+          INSERT (USUARIO_EMAIL, GENEROS, TIPOS, AUTORES_FAVORITOS, TEMAS_SENSIVEIS)
+          VALUES (:email, :generos, :tipos, :autores, :temas)
       `,
       {
         email,
-        generos: { val: genresJson,  type: oracledb.CLOB },
-        tipos:   { val: typesJson,   type: oracledb.CLOB },
-        autores: { val: authorsJson, type: oracledb.CLOB },
+        generos: { val: genresJson,    type: oracledb.CLOB },
+        tipos:   { val: typesJson,     type: oracledb.CLOB },
+        autores: { val: authorsJson,   type: oracledb.CLOB },
+        temas:   { val: sensitiveJson, type: oracledb.CLOB },
       }
     );
 
     await connection.commit();
 
-    return { genres: mergedGenres, types: mergedTypes, favoriteAuthors: mergedAuthors };
+    return {
+      genres: mergedGenres,
+      types: mergedTypes,
+      favoriteAuthors: mergedAuthors,
+      sensitiveThemes: mergedSensitive,
+    };
   } finally {
     await connection.close();
   }

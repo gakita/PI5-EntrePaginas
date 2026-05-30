@@ -1,26 +1,26 @@
 // src/router/guards.ts
 
-import type { Router } from 'vue-router'
+import type { RouteLocationNormalized, Router } from 'vue-router'
 import { useAuthStore } from '@/stores/authStore'
+
+export function resolveAuthRedirect(
+  to: Pick<RouteLocationNormalized, 'meta'>,
+  isAuthenticated: boolean,
+) {
+  if (to.meta.requiresAuth && !isAuthenticated) {
+    return { path: '/login' }
+  }
+
+  if (to.meta.guest && isAuthenticated) {
+    return { path: '/' }
+  }
+
+  return undefined
+}
 
 export function setupGuards(router: Router) {
   router.beforeEach((to) => {
     const auth = useAuthStore()
-    
-    // -------------- Workaround do login
-    const bypassAuth = true
-
-    if (bypassAuth) {
-      return
-    }
-
-    // -------------------
-    if (to.meta.requiresAuth && !auth.isAuthenticated) {
-      return { path: '/login' }
-    }
-
-    if (to.meta.guest && auth.isAuthenticated) {
-      return { path: '/' }
-    }
+    return resolveAuthRedirect(to, auth.isAuthenticated)
   })
 }

@@ -42,6 +42,7 @@ const bookCards = computed(() => {
       coverUrl: book.coverUrl || '',
       to: book.googleBooksId ? `/livros/${encodeURIComponent(book.googleBooksId)}` : '',
       isPlaceholder: false,
+      sensitiveContent: !!book.sensitiveContent,
     }))
   }
 
@@ -53,6 +54,7 @@ const bookCards = computed(() => {
     coverUrl: '',
     to: '',
     isPlaceholder: true,
+    sensitiveContent: false,
   }))
 })
 </script>
@@ -80,6 +82,12 @@ const bookCards = computed(() => {
           <div v-else class="book-card__fallback">
             <span>{{ card.title }}</span>
           </div>
+
+          <div v-if="card.sensitiveContent" class="book-card__sensitive-tag">
+            <v-icon icon="mdi-alert-decagram" size="12" color="#110C07" class="mr-1" />
+            <span>SENSÍVEL</span>
+          </div>
+
           <div class="book-card__shade" />
           <div class="book-card__info">
             <strong>{{ card.title }}</strong>
@@ -173,6 +181,26 @@ const bookCards = computed(() => {
   text-decoration: none;
   transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
   border: 1px solid transparent;
+}
+
+.book-card__sensitive-tag {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  z-index: 3;
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  background: rgba(201, 162, 39, 0.95);
+  border: 1px solid rgba(17, 12, 7, 0.15);
+  border-radius: 6px;
+  color: #110c07;
+  font-family: 'Roboto', sans-serif;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.8px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.35);
+  pointer-events: none;
 }
 
 .book-card:not(.book-card--placeholder):hover {

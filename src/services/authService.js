@@ -6,6 +6,7 @@ const env = require('../config/env');
 const emailService = require('./emailService');
 const passwordResetTokenModel = require('../models/passwordResetTokenModel');
 const userModel = require('../models/userModel');
+const preferenceModel = require('../models/preferenceModel');
 const logger = require('../utils/logger');
 
 // Cache em memória para os códigos de verificação de cadastro (expira em 10 minutos)
@@ -37,7 +38,7 @@ function generateResetToken() {
   return crypto.randomBytes(32).toString('hex');
 }
 
-async function register(name, email, password) {
+async function register(name, email, password, initialPreferences = null) {
   const normalizedName = name.trim();
   const normalizedEmail = email.trim().toLowerCase();
 
@@ -63,6 +64,19 @@ async function register(name, email, password) {
     email: normalizedEmail,
     passwordHash,
   });
+
+  // Salvar as preferências iniciais (ex: gêneros e temas sensíveis), se informados
+  if (initialPreferences) {
+    try {
+      await preferenceModel.upsertPreferences(normalizedEmail, initialPreferences);
+      logger.info('Preferencias iniciais salvas no cadastro', { email: normalizedEmail });
+    } catch (prefErr) {
+      logger.error('Falha ao salvar preferencias iniciais no cadastro', {
+        email: normalizedEmail,
+        error: prefErr.message
+      });
+    }
+  }
 
   // Limpar a verificação da memória pós cadastro com sucesso
   verificationCodes.delete(normalizedEmail);

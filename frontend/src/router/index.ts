@@ -69,21 +69,6 @@ const router = createRouter({
       component: () => import('@/pages/Profile.vue'),
       meta: { requiresAuth: true },
     },
-    // {
-    //   path: '/preferencias',
-    //   component: () => import('@/pages/Preferences.vue'),
-    //   meta: { requiresAuth: true },
-    // },
-    // {
-    //   path: '/historico',
-    //   component: () => import('@/pages/History.vue'),
-    //   meta: { requiresAuth: true },
-    // },
-    // {
-    //   path: '/recomendacoes',
-    //   component: () => import('@/pages/Recommendations.vue'),
-    //   meta: { requiresAuth: true },
-    // },
   ],
 })
 

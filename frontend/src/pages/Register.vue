@@ -122,10 +122,17 @@ function handleStep3() {
 async function handleStep4() {
   clearError()
   loading.value = true
-  const { name, email, password } = formData.value
+  const { name, email, password, genres, subGenres, sensitiveThemes } = formData.value
+
+  const preferences = {
+    genres: [...genres, ...subGenres],
+    types: ['livro', 'hq', 'mangá'],
+    favoriteAuthors: [],
+    sensitiveThemes,
+  }
 
   try {
-    const { token } = await authService.register(name, email, password)
+    const { token } = await authService.register(name, email, password, preferences)
     auth.setToken(token)
     router.push('/')
   } catch (error) {

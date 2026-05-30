@@ -71,13 +71,35 @@ npm run db:setup
 
 Esse comando prepara as tabelas usadas pelo backend, incluindo chat, preferencias, sugestoes, favoritos, quiz e recuperacao de senha.
 
-### 5. Inicie a API
+### 5. Inicie a aplicação completa
+
+Para subir backend e frontend com um único comando, rode na raiz do projeto:
+
+```bash
+npm run dev:all
+```
+
+Esse comando inicia:
+
+- backend em `http://localhost:3000`
+- frontend em `http://localhost:3001`
+
+Para encerrar os dois processos, use `Ctrl+C` no terminal.
+
+### 6. Inicie apenas a API
 
 ```bash
 npm run dev
 ```
 
-### 6. Como rodar o Mailpit (SMTP de testes local)
+### 7. Inicie apenas o frontend
+
+```bash
+cd frontend
+npm run dev
+```
+
+### 8. Como rodar o Mailpit (SMTP de testes local)
 
 O Mailpit captura todos os e-mails enviados pelo backend (recuperação de senha e confirmação de cadastro) sem precisar enviá-los de fato para caixas reais.
 
@@ -102,6 +124,7 @@ Após iniciar o Mailpit, acesse a interface web de leitura de e-mails em: [http:
 | Comando | Descrição |
 |---|---|
 | `npm run dev` | Inicia o servidor em modo desenvolvimento |
+| `npm run dev:all` | Inicia backend e frontend juntos, com logs prefixados |
 | `npm start` | Inicia o servidor em modo produção |
 | `npm run seed:user` | Cria/atualiza um usuário de teste no banco |
 | `npm run db:setup` | Cria/verifica todas as tabelas principais do projeto |
@@ -113,6 +136,18 @@ Após iniciar o Mailpit, acesse a interface web de leitura de e-mails em: [http:
 | `npm run test:quiz` | Roda os cenários HTTP completos do quiz (requer servidor no ar) |
 | `npm run test:quiz:run` | Cria/verifica tabela, sobe a API se necessário e roda os cenários do quiz |
 | `npm run chat:play` | Inicia o chat interativo no terminal |
+
+### Scripts do frontend
+
+Rode os comandos abaixo dentro da pasta `frontend/`.
+
+| Comando | Descrição |
+|---|---|
+| `npm run dev` | Inicia o frontend em modo desenvolvimento |
+| `npm run build` | Roda type-check e gera build de produção |
+| `npm run type-check` | Valida tipos Vue/TypeScript |
+| `npm run test` | Roda testes do frontend com Vitest |
+| `npm run lint` | Roda ESLint |
 
 ---
 
@@ -154,6 +189,12 @@ Content-Type: application/json
 ```
 
 Retorna um `token` JWT. Use ele no header `Authorization: Bearer <token>` em todas as rotas protegidas.
+
+### Como a autenticação funciona hoje
+
+O projeto usa um JWT único, assinado com `JWT_SECRET` e expiração controlada por `JWT_EXPIRES_IN` (padrão: `1h`). Não há refresh token nesta versão.
+
+No frontend, as rotas protegidas usam `meta.requiresAuth` no Vue Router. Usuários sem token são redirecionados para `/login`; usuários autenticados que tentam acessar rotas de visitante, como `/login` e `/registrar`, são redirecionados para `/`.
 
 ### Solicitar recuperacao de senha
 
@@ -817,7 +858,11 @@ Em produção, troque pelo endereço real do backend.
 |---|---|
 | `PORT` | Porta do servidor (padrão: 3000) |
 | `JWT_SECRET` | Chave secreta para assinar tokens JWT |
-| `JWT_EXPIRES_IN` | Tempo de expiração do token (ex: `1h`) |
+| `JWT_EXPIRES_IN` | Tempo de expiração do token JWT unico usado pela API (padrao: `1h`) |
+| `JSON_BODY_LIMIT` | Limite do body JSON aceito pelo Express (padrao: `10mb`) |
+| `RATE_LIMIT_WINDOW_MS` | Janela do rate limit global em milissegundos (padrao: `900000`) |
+| `RATE_LIMIT_MAX` | Maximo de requisicoes por janela no limite global (padrao: `300`) |
+| `AUTH_RATE_LIMIT_MAX` | Maximo de requisicoes por janela nas rotas de autenticacao (padrao: `20`) |
 | `ORACLE_USER` | Usuário do Oracle Database |
 | `ORACLE_PASSWORD` | Senha do Oracle |
 | `ORACLE_CONNECT_STRING` | String de conexão (do tnsnames.ora) |
@@ -841,17 +886,51 @@ Em produção, troque pelo endereço real do backend.
 
 ---
 
-## Pendências para Fechamento do MVP (Trabalhos Futuros)
+## Segurança da API
 
-Apesar de a base principal do backend (Autenticação, Recuperação de Senha, Chat com IA, Quiz Adaptativo e Preferências) estar implementada, os seguintes itens identificados nos requisitos funcionais (`Time_13_pdf.pdf`) ainda precisam de endpoints dedicados:
+O backend aplica os middlewares de segurança na inicialização do Express:
+
+- `helmet()` para headers de segurança HTTP.
+- `express-rate-limit` global para limitar volume de requisições.
+- `express-rate-limit` específico nas rotas públicas de autenticação (`/auth/register`, `/auth/login`, `/auth/forgot-password`, `/auth/reset-password`, `/auth/send-code`, `/auth/verify-code`).
+- `express.json({ limit: env.jsonBodyLimit })`, com limite padrão de `10mb`.
+
+As configurações principais ficam nas variáveis `JSON_BODY_LIMIT`, `RATE_LIMIT_WINDOW_MS`, `RATE_LIMIT_MAX` e `AUTH_RATE_LIMIT_MAX`.
+
+---
+
+## Testes e Validação
+
+### Backend
+
+```bash
+npm test
+```
+
+Esse comando roda os testes JavaScript em `test/*.test.js`, incluindo controllers, services, catálogo, quiz, segurança da API e o script `dev:all`.
+
+### Frontend
+
+```bash
+cd frontend
+npm run test
+npm run type-check
+npm run build
+```
+
+Os testes do frontend usam Vitest. O teste atual cobre o guard de autenticação do Vue Router.
+
+---
+
+## Pendências e Decisões de Escopo
+
+Apesar de a base principal do backend e frontend estar implementada, os seguintes pontos ainda dependem de decisão de produto ou atualização de documentação externa:
 
 1. **Carrossel de Banners/Categorias (RF05)**
-   - Falta uma rota (ex: `GET /categories` ou `GET /banners`) para consultar e retornar os dados (nome, imagens, ícones) das categorias a serem exibidas na página inicial.
+   - A home atual não exibe o carrossel descrito no PDF. Isso foi tratado como decisão de design; reimplementar o RF05 deve ser uma tarefa separada.
 
-2. **Sistema de Filtros Gerais e Busca Local (RF06)**
-   - Falta uma rota de busca de livros (`GET /books`) que permita aplicar filtros como `categoria`, `gênero` e `tipo` fora do modo chat, consultando diretamente o banco local (`FERNANDO.LIVROS`) ou fazendo o *merge* com resultados do Google Books.
-   - Atualmente, existe apenas a rota `/books/search` configurada para buscas pontuais de um único título/autor para enriquecimento visual do chat.
+2. **PDF do projeto**
+   - O arquivo `Time_13_pdf-2.pdf` ainda precisa ser atualizado para refletir o código atual: Gemini padrão `gemini-2.5-flash-lite`, JWT único sem refresh token, comando `npm run db:setup`, tabela `FAVORITOS`, Helmet, rate limiting e payload `10mb`.
 
-3. **Gerenciamento do Histórico de Leitura (Avaliações)**
-   - A Inteligência Artificial já lê a tabela local `AVALIACOES` para montar o contexto de recomendação de forma altamente personalizada. Contudo, não existe uma rota no backend (ex: `POST /avaliacoes`) para o usuário adicionar livros que já leu a partir do próprio aplicativo.
-
+3. **Refresh token**
+   - Não foi implementado nesta versão. O projeto usa JWT único com expiração por `JWT_EXPIRES_IN`, mantendo o fluxo de autenticação mais simples.

@@ -74,10 +74,20 @@ export const authService = {
    * POST /auth/register
    * Cria uma conta e retorna { token, user }.
    */
-  register(name: string, email: string, password: string): Promise<RegisterResponse> {
+  register(
+    name: string,
+    email: string,
+    password: string,
+    preferences?: {
+      genres?: string[]
+      types?: string[]
+      favoriteAuthors?: string[]
+      sensitiveThemes?: string[]
+    }
+  ): Promise<RegisterResponse> {
     return request<RegisterResponse>('/auth/register', {
       method: 'POST',
-      body: JSON.stringify({ name, email, password }),
+      body: JSON.stringify({ name, email, password, preferences }),
     })
   },
 

@@ -57,7 +57,15 @@ onMounted(async () => {
 
   try {
     const { messages: history } = await chatService.getHistory()
-    messages.value = history
+    messages.value = history.map(msg => {
+      if (msg.recommendations) {
+        msg.recommendations = msg.recommendations.map(rec => ({
+          ...rec,
+          isRevealed: false
+        }))
+      }
+      return msg
+    })
     scrollToBottom()
   } catch {
     // Sem histórico ainda — tudo bem
@@ -109,10 +117,14 @@ async function sendMessage(messageOverride = '', genreOverride = selectedGenre.v
     const response = await chatService.sendMessage(fullMessage)
     hasClosedCurrentConversation = false
 
+    const mappedRecs = response.recommendations
+      ? response.recommendations.map(rec => ({ ...rec, isRevealed: false }))
+      : []
+
     messages.value.push({
       role: 'assistant',
       content: response.reply,
-      recommendations: response.recommendations,
+      recommendations: mappedRecs,
       timestamp: new Date().toISOString(),
     })
     scrollToBottom()
@@ -214,18 +226,31 @@ function handleKeydown(event: KeyboardEvent) {
                   v-for="(book, bookIndex) in msg.recommendations"
                   :key="bookIndex"
                   class="book-item"
+                  :class="{ 'book-item--blurred': book.sensitiveContent && !book.isRevealed }"
                 >
-                  <!-- Capa do livro (quando disponível via Google Books) -->
-                  <div v-if="book.coverUrl" class="book-cover-wrapper">
-                    <img :src="book.coverUrl" :alt="book.title" class="book-cover" />
-                  </div>
+                  <template v-if="book.sensitiveContent && !book.isRevealed">
+                    <div class="sensitive-overlay">
+                      <v-icon icon="mdi-alert-decagram" color="#c9a227" size="24" class="mb-1" />
+                      <span class="sensitive-title">Conteúdo Sensível</span>
+                      <p class="sensitive-text">Esta sugestão contém temas sensíveis.</p>
+                      <button class="sensitive-btn" type="button" @click="book.isRevealed = true">
+                        Revelar
+                      </button>
+                    </div>
+                  </template>
+                  <template v-else>
+                    <!-- Capa do livro (quando disponível via Google Books) -->
+                    <div v-if="book.coverUrl" class="book-cover-wrapper">
+                      <img :src="book.coverUrl" :alt="book.title" class="book-cover" />
+                    </div>
 
-                  <div class="book-info">
-                    <span class="book-title">{{ book.title }}</span>
-                    <span v-if="book.author" class="book-author">{{ book.author }}</span>
-                    <p v-if="book.synopsis" class="book-synopsis">{{ book.synopsis }}</p>
-                    <span v-if="book.publishedDate" class="book-date">{{ book.publishedDate }}</span>
-                  </div>
+                    <div class="book-info">
+                      <span class="book-title">{{ book.title }}</span>
+                      <span v-if="book.author" class="book-author">{{ book.author }}</span>
+                      <p v-if="book.synopsis" class="book-synopsis">{{ book.synopsis }}</p>
+                      <span v-if="book.publishedDate" class="book-date">{{ book.publishedDate }}</span>
+                    </div>
+                  </template>
                 </div>
               </div>
             </div>
@@ -498,6 +523,68 @@ function handleKeydown(event: KeyboardEvent) {
 
 .book-item:hover {
   border-color: rgba(201, 162, 39, 0.3);
+}
+
+.book-item--blurred {
+  position: relative;
+  min-height: 120px;
+  background: rgba(42, 31, 20, 0.45) !important;
+  border: 1px dashed rgba(201, 162, 39, 0.25) !important;
+}
+
+.book-item--blurred:hover {
+  border-color: rgba(201, 162, 39, 0.4) !important;
+}
+
+.sensitive-overlay {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 12px;
+  text-align: center;
+}
+
+.sensitive-title {
+  font-family: 'Playfair Display', serif;
+  font-weight: 700;
+  font-size: 15px;
+  color: #e8d5b7;
+}
+
+.sensitive-text {
+  font-family: 'Roboto', sans-serif;
+  font-size: 13px;
+  color: #9b8a75;
+  margin: 4px 0 10px;
+}
+
+.sensitive-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 32px;
+  padding: 0 18px;
+  border: none;
+  border-radius: 999px;
+  background: #c9a227;
+  color: #110c07;
+  font-family: 'Playfair Display', serif;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+  transition: background 0.15s ease, transform 0.15s ease;
+}
+
+.sensitive-btn:hover {
+  background: #e3be46;
+  transform: translateY(-1px);
+}
+
+.sensitive-btn:active {
+  transform: translateY(1px);
 }
 
 .book-cover-wrapper {

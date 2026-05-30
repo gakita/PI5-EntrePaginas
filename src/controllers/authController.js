@@ -2,7 +2,7 @@ const authService = require('../services/authService');
 
 async function register(req, res, next) {
   try {
-    const { name, email, password } = req.body;
+    const { name, email, password, preferences } = req.body;
 
     if (!name || !email || !password) {
       return res.status(400).json({
@@ -10,7 +10,7 @@ async function register(req, res, next) {
       });
     }
 
-    const result = await authService.register(name, email, password);
+    const result = await authService.register(name, email, password, preferences);
 
     return res.status(201).json({
       message: 'Usuario cadastrado com sucesso.',

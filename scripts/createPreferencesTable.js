@@ -63,6 +63,7 @@ async function main() {
             GENEROS           CLOB,            -- JSON array: ["ficção científica", "fantasia"]
             TIPOS             CLOB,            -- JSON array: ["livro", "hq", "mangá"]
             AUTORES_FAVORITOS CLOB,            -- JSON array: ["Stephen King"]
+            TEMAS_SENSIVEIS   CLOB,            -- JSON array: ["Violência"]
             ATUALIZADO_EM     TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
       `,
@@ -129,6 +130,7 @@ async function main() {
     );
 
     await addColumnIfMissing(connection, 'FAVORITOS', 'GENEROS', 'GENEROS CLOB');
+    await addColumnIfMissing(connection, 'PREFERENCIAS_USUARIO', 'TEMAS_SENSIVEIS', 'TEMAS_SENSIVEIS CLOB');
 
     await connection.commit();
 

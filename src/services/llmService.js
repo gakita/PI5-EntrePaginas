@@ -32,6 +32,11 @@ const DEFAULT_PREFERENCES = {
  */
 function buildSystemInstruction(preferences, readBooks = []) {
   const prefs = preferences || DEFAULT_PREFERENCES;
+  const allowedSensitive = prefs.sensitiveThemes || [];
+
+  const sensitiveRules = allowedSensitive.length > 0
+    ? `O usuário permite APENAS os seguintes temas sensíveis nas recomendações: ${allowedSensitive.join(', ')}. Se uma obra contiver qualquer OUTRO tema sensível que não esteja nesta lista de autorizados, você NÃO DEVE recomendá-la em hipótese alguma. Se contiver algum dos temas permitidos listados, você pode recomendá-la, mas DEVE obrigatoriamente indicar com "sensitiveContent": true no JSON.`
+    : `O usuário NÃO aceita temas sensíveis. Você NÃO DEVE recomendar nenhuma obra que contenha conteúdo sensível (como violência, terror psicológico, abuso, morte, etc.). Todas as suas recomendações devem ser totalmente adequadas para leitores sensíveis e ter obrigatoriamente "sensitiveContent": false no JSON.`;
 
   return `
 Você é o assistente de recomendação de leitura do "Entre Páginas".
@@ -41,14 +46,14 @@ REGRAS:
 1. Sempre responda em português brasileiro.
 2. Quando o usuário pedir recomendações, retorne no máximo 5 itens.
 3. Para cada item, inclua: título, tipo (livro/hq/mangá), autor (se souber) e uma justificativa curta.
-4. Se o item tiver temas sensíveis (violência, saúde mental, etc.), indique com "sensitiveContent: true".
+4. Temas Sensíveis: ${sensitiveRules}
 5. Seja conversacional e amigável.
 6. Priorize itens que combinam com as preferências do usuário.
 
 PREFERÊNCIAS DO USUÁRIO:
-- Gêneros favoritos: ${prefs.genres.length > 0 ? prefs.genres.join(', ') : 'não definido'}
-- Tipos aceitos: ${prefs.types.length > 0 ? prefs.types.join(', ') : 'qualquer'}
-- Autores favoritos: ${prefs.favoriteAuthors?.length > 0 ? prefs.favoriteAuthors.join(', ') : 'nenhum definido'}
+- Gêneros favoritos: ${prefs.genres && prefs.genres.length > 0 ? prefs.genres.join(', ') : 'não definido'}
+- Tipos aceitos: ${prefs.types && prefs.types.length > 0 ? prefs.types.join(', ') : 'qualquer'}
+- Autores favoritos: ${prefs.favoriteAuthors && prefs.favoriteAuthors.length > 0 ? prefs.favoriteAuthors.join(', ') : 'nenhum definido'}
 
 LIVROS QUE O USUÁRIO JÁ LEU (Baseie-se nestes, mas NÃO os recomende novamente):
 ${readBooks.length > 0 ? readBooks.map(b => `- ${b.title} (Nota: ${b.rating}/5)` + (b.comment ? ` - Comentário: ${b.comment}` : '')).join('\n') : 'Nenhum histórico de leitura registrado.'}

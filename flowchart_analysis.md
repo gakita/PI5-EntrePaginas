@@ -233,20 +233,20 @@ erDiagram
 
 ---
 
-## 🚨 O que falta implementar
+## 🚨 Status das correções
 
 > [!WARNING]
-> Problemas encontrados no código da `main`:
+> Problemas encontrados originalmente no código da `main` e status após correções:
 
 | # | Item | Detalhe | Severidade |
 |---|------|---------|------------|
-| 1 | **Auth bypass ativo** | `guards.ts` L11: `const bypassAuth = true` — **pula toda autenticação** | 🔴 Crítico |
-| 2 | **Rota /preferencias** | Comentada no router (L72-76), mas funcionalidade existe dentro de Profile.vue | ⚠️ Baixo |
-| 3 | **Rota /historico** | Comentada no router (L77-80), sem página implementada | ⚠️ Baixo |
-| 4 | **Helmet** | PDF menciona implementado — **não existe** no package.json nem app.js | 🔴 PDF incorreto |
-| 5 | **Rate Limiting** | PDF menciona 3 níveis — **não existe** no código | 🔴 PDF incorreto |
-| 6 | **Payload 10MB** | PDF menciona — `express.json()` usa default (100kb) | ⚠️ PDF incorreto |
-| 7 | **Refresh Token** | PDF menciona 7 dias — **não implementado** | ⚠️ PDF incorreto |
+| 1 | **Auth bypass ativo** | Corrigido: `guards.ts` usa `requiresAuth`/`guest` sem bypass | ✅ Corrigido |
+| 2 | **Rota /preferencias** | Comentário removido do router; preferências continuam dentro de `Profile.vue` | ✅ Corrigido |
+| 3 | **Rota /historico** | Comentário removido do router; página dedicada segue fora do escopo | ✅ Limpado |
+| 4 | **Helmet** | Implementado em `src/middlewares/security.js` e aplicado em `src/app.js` | ✅ Corrigido |
+| 5 | **Rate Limiting** | Implementado com limite global e limite específico para rotas de autenticação | ✅ Corrigido |
+| 6 | **Payload 10MB** | Implementado via `express.json({ limit: env.jsonBodyLimit })`, default `10mb` | ✅ Corrigido |
+| 7 | **Refresh Token** | Mantido simples: não implementado; a API usa JWT único com `JWT_EXPIRES_IN` | ✅ Decisão de escopo |
 | 8 | **Carrossel Home** | PDF (RF05) descreve carrossel de categorias — **removido** na home atual | ⚠️ Design choice |
 
 ---
@@ -271,23 +271,22 @@ erDiagram
 | nodemon | 3.1.14 | `"^3.1.14"` | ✅ |
 | Pool conexões | min 1, max 5 | env.js: `POOL_MIN=1, POOL_MAX=5` | ✅ |
 | CORS restrito | Variáveis env | `cors({ origin: env.corsOrigin })` | ✅ |
-| 7 tabelas | Listadas no PDF | 8 models (7+favoritos) | ✅ (PDF desatualizado, há +1) |
 | Fontes | Roboto, Playfair Display | package.json do frontend | ✅ |
 
 ### ⚠️ Informações DIVERGENTES no PDF
 | Item | PDF diz | Código real | Status |
 |------|---------|-------------|--------|
 | Modelo Gemini | `gemini-1.5-flash / gemini-2.0-flash` | `gemini-2.5-flash-lite` (env.js L24) | ⚠️ Divergente |
-| JWT expiração | `15 min + Refresh Token 7 dias` | Default `1h`, sem refresh token | ⚠️ Divergente |
+| JWT expiração | `15 min + Refresh Token 7 dias` | Default `1h`, JWT único sem refresh token | ⚠️ Divergente |
 | `npm run db:init` | Script unificado | `npm run db:setup` (nome diferente) | ⚠️ Nome diferente |
 | Tabelas no banco | 7 tabelas | 8 tabelas (+ FAVORITOS) | ⚠️ PDF desatualizado |
 
-### ❌ Ausentes no código (PDF afirma existir)
+### ✅ Itens agora implementados no código
 | Item | PDF afirma | Realidade |
 |------|-----------|-----------|
-| **Helmet** | Headers de segurança implementados | Não instalado, não usado |
-| **Rate Limiting** | 3 níveis (global, brute force, por usuário) | Não existe |
-| **Payload 10MB** | Limite configurado | Usa default Express (100kb) |
+| **Helmet** | Headers de segurança implementados | Implementado com `helmet()` |
+| **Rate Limiting** | 3 níveis (global, brute force, por usuário) | Implementado com limite global e limite específico para autenticação |
+| **Payload 10MB** | Limite configurado | Implementado via `JSON_BODY_LIMIT`, default `10mb` |
 
 ---
 
@@ -302,6 +301,5 @@ erDiagram
 - **8 models** cobrindo todas as entidades do banco
 
 ### 🔴 Itens críticos para corrigir
-1. **Remover `bypassAuth = true`** em `guards.ts` antes de produção
-2. **Atualizar o PDF**: modelo Gemini, JWT, tabela FAVORITOS, remover menções a Helmet/Rate Limiting ou implementá-los
-3. **Implementar Helmet + Rate Limiting** se quiser manter as afirmações do PDF
+1. **Atualizar o PDF**: modelo Gemini, JWT único, tabela FAVORITOS e comando `npm run db:setup`
+2. **Decidir produto/UI**: manter a home sem carrossel ou reimplementar o RF05 em um plano separado

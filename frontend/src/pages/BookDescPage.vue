@@ -12,6 +12,13 @@
   const book = ref<CatalogBook | null>(null)
   const isLoading = ref(false)
   const errorMessage = ref('')
+  const isRevealed = ref(false)
+
+  const hasSensitiveContent = computed(() => !!book.value?.sensitiveContent)
+
+  watch(bookId, () => {
+    isRevealed.value = false
+  })
 
   const bookId = computed(() => String(route.params.id || ''))
   const bookDetailsCacheKey = 'entre-paginas:book-details'
@@ -133,7 +140,7 @@
       <div class="book-layout">
         <aside class="book-card">
           <div class="book-card__cover">
-            <div class="book-card__cover-image" />
+            <div class="book-card__cover-image" :class="{ 'book-card__cover-image--blurred': hasSensitiveContent && !isRevealed }" />
             <div class="book-card__cover-overlay" />
           </div>
           <div class="book-card__footer">
@@ -153,54 +160,69 @@
           <div v-if="isLoading" class="book-panel__state">Carregando livro...</div>
           <div v-else-if="errorMessage" class="book-panel__state">{{ errorMessage }}</div>
           <template v-else>
-            <h2 class="book-panel__title">Descrição</h2>
-            <p class="book-panel__text">{{ synopsis }}</p>
-
-            <dl class="book-panel__details">
-              <div v-for="item in detailItems" :key="item.label">
-                <dt>{{ item.label }}</dt>
-                <dd>{{ item.value }}</dd>
+            <template v-if="hasSensitiveContent && !isRevealed">
+              <div class="sensitive-warning">
+                <v-icon icon="mdi-alert-decagram" color="#c9a227" size="48" class="mb-4" />
+                <h3 class="sensitive-warning__title">Conteúdo Sensível</h3>
+                <p class="sensitive-warning__text">
+                  Este livro foi sinalizado pela inteligência artificial como contendo temas sensíveis (como violência ou temas sombrios).
+                </p>
+                <button class="sensitive-warning__btn" type="button" @click="isRevealed = true">
+                  <v-icon icon="mdi-eye-outline" start size="16" class="mr-1" />
+                  Revelar Detalhes
+                </button>
               </div>
-            </dl>
+            </template>
+            <template v-else>
+              <h2 class="book-panel__title">Descrição</h2>
+              <p class="book-panel__text">{{ synopsis }}</p>
 
-            <div class="book-panel__actions">
-              <button
-                v-if="book?.previewLink"
-                class="book-panel__action"
-                type="button"
-                @click="openExternalLink(book.previewLink)"
-              >
-                <v-icon icon="mdi-book-open-page-variant-outline" size="18" />
-                Preview
-              </button>
-              <button
-                v-if="book?.webReaderLink"
-                class="book-panel__action"
-                type="button"
-                @click="openExternalLink(book.webReaderLink)"
-              >
-                <v-icon icon="mdi-open-in-new" size="18" />
-                {{ externalLinkLabel }}
-              </button>
-            </div>
+              <dl class="book-panel__details">
+                <div v-for="item in detailItems" :key="item.label">
+                  <dt>{{ item.label }}</dt>
+                  <dd>{{ item.value }}</dd>
+                </div>
+              </dl>
 
-            <div class="book-panel__meta">
-              <div class="tag-group">
-                <h3 class="tag-group__title">Tags:</h3>
-                <div class="tag-group__list">
-                  <span
-                    v-for="tag in primaryTags"
-                    :key="tag"
-                    class="tag-chip"
-                  >
-                    <span class="tag-chip__label">{{ tag }}</span>
-                  </span>
-                  <span v-if="primaryTags.length === 0" class="tag-chip">
-                    <span class="tag-chip__label">Sem tags</span>
-                  </span>
+              <div class="book-panel__actions">
+                <button
+                  v-if="book?.previewLink"
+                  class="book-panel__action"
+                  type="button"
+                  @click="openExternalLink(book.previewLink)"
+                >
+                  <v-icon icon="mdi-book-open-page-variant-outline" size="18" />
+                  Preview
+                </button>
+                <button
+                  v-if="book?.webReaderLink"
+                  class="book-panel__action"
+                  type="button"
+                  @click="openExternalLink(book.webReaderLink)"
+                >
+                  <v-icon icon="mdi-open-in-new" size="18" />
+                  {{ externalLinkLabel }}
+                </button>
+              </div>
+
+              <div class="book-panel__meta">
+                <div class="tag-group">
+                  <h3 class="tag-group__title">Tags:</h3>
+                  <div class="tag-group__list">
+                    <span
+                      v-for="tag in primaryTags"
+                      :key="tag"
+                      class="tag-chip"
+                    >
+                      <span class="tag-chip__label">{{ tag }}</span>
+                    </span>
+                    <span v-if="primaryTags.length === 0" class="tag-chip">
+                      <span class="tag-chip__label">Sem tags</span>
+                    </span>
+                  </div>
                 </div>
               </div>
-            </div>
+            </template>
           </template>
         </section>
       </div>
@@ -209,6 +231,68 @@
 </template>
 
 <style scoped>
+.book-card__cover-image--blurred {
+  filter: blur(25px) brightness(0.5) !important;
+  transform: scale(1.2) !important;
+}
+
+.sensitive-warning {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 48px 24px;
+  background: rgba(27, 20, 14, 0.4);
+  border: 1px dashed rgba(201, 162, 39, 0.35);
+  border-radius: 12px;
+  margin: auto;
+  max-width: 500px;
+}
+
+.sensitive-warning__title {
+  font-family: 'Playfair Display', serif;
+  font-size: 24px;
+  font-weight: 700;
+  color: #e8d5b7;
+  margin-bottom: 12px;
+}
+
+.sensitive-warning__text {
+  font-family: 'Playfair Display', serif;
+  font-size: 16px;
+  color: #9b8a75;
+  line-height: 1.5;
+  margin-bottom: 24px;
+}
+
+.sensitive-warning__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 24px;
+  border: none;
+  border-radius: 999px;
+  background: #c9a227;
+  color: #110c07;
+  font-family: 'Playfair Display', serif;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+  transition: background 0.18s ease, transform 0.18s ease;
+}
+
+.sensitive-warning__btn:hover {
+  background: #e3be46;
+  transform: translateY(-1px);
+}
+
+.sensitive-warning__btn:active {
+  transform: translateY(1px);
+}
+
 .book-page {
   --page-gutter-x: 32px;
   --page-gutter-top: 24px;
