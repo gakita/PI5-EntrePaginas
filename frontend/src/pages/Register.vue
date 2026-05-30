@@ -352,7 +352,7 @@ function toggleExpand(id: string) {
     <div class="register-dark__card">
 
       <!-- Stepper -->
-      <div class="reg-steps" style="margin-bottom: 32px">
+      <div class="reg-steps" style="margin-bottom: 24px">
         <template v-for="(step, i) in steps" :key="step.number">
           <div class="reg-steps__item" :class="{ 'is-active': step.number === 4, 'is-done': step.number < 4 }">
             <div class="reg-steps__circle">{{ step.number }}</div>
@@ -398,7 +398,7 @@ function toggleExpand(id: string) {
         {{ errorMessage }}
       </v-alert>
 
-      <v-btn :loading="loading" class="register-dark__btn" block height="64" @click="handleStep4">
+      <v-btn :loading="loading" class="register-dark__btn" block height="50" @click="handleStep4">
         Finalizar
       </v-btn>
     </div>
@@ -755,16 +755,16 @@ function toggleExpand(id: string) {
   position: relative;
   z-index: 1;
   width: 100%;
-  max-width: 860px;
+  max-width: 620px;
   background-color: rgba(26, 18, 11, 0.75);
   border: 1px solid rgba(232, 213, 183, 0.2);
   border-radius: 15px;
-  padding: 40px 48px 48px;
+  padding: 32px 36px 36px;
 }
 
 .register-dark__title {
   font-family: "Playfair Display", serif;
-  font-size: 40px;
+  font-size: 28px;
   font-weight: 600;
   color: #e8d5b7;
   text-align: center;
@@ -773,11 +773,11 @@ function toggleExpand(id: string) {
 
 .register-dark__subtitle {
   font-family: "Playfair Display", serif;
-  font-size: 22px;
+  font-size: 16px;
   font-weight: 400;
   color: #9b8a75;
   text-align: center;
-  margin: 0 0 32px;
+  margin: 0 0 24px;
 }
 
 /* ─── Genre list ──────────────────────────────────────── */
@@ -786,21 +786,21 @@ function toggleExpand(id: string) {
   display: flex;
   flex-direction: column;
   gap: 4px;
-  margin-bottom: 32px;
+  margin-bottom: 24px;
 }
 
 .genre-item__header {
   display: flex;
   align-items: center;
-  gap: 16px;
-  padding: 10px 0;
+  gap: 12px;
+  padding: 8px 0;
 }
 
 .genre-item__circle {
-  width: 32px;
-  height: 32px;
+  width: 20px;
+  height: 20px;
   border-radius: 50%;
-  border: 2px solid rgba(155, 138, 117, 0.4);
+  border: 1.5px solid rgba(155, 138, 117, 0.4);
   background: transparent;
   cursor: pointer;
   flex-shrink: 0;
@@ -814,7 +814,7 @@ function toggleExpand(id: string) {
 
 .genre-item__label {
   font-family: "Playfair Display", serif;
-  font-size: 26px;
+  font-size: 19px;
   font-weight: 400;
   color: #e8d5b7;
   cursor: pointer;
@@ -833,16 +833,16 @@ function toggleExpand(id: string) {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
-  padding: 8px 0 12px 48px;
+  padding: 6px 0 10px 32px;
 }
 
 .subgenre-tag {
-  padding: 6px 16px;
+  padding: 5px 12px;
   border-radius: 25px;
   border: 1.5px solid rgba(155, 138, 117, 0.35);
   background-color: transparent;
   font-family: "Playfair Display", serif;
-  font-size: 14px;
+  font-size: 13px;
   color: #9b8a75;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -863,10 +863,10 @@ function toggleExpand(id: string) {
   background-color: #c9a227 !important;
   color: #120d07 !important;
   font-family: "Playfair Display", serif !important;
-  font-size: 22px !important;
+  font-size: 16px !important;
   font-weight: 600 !important;
   letter-spacing: 0.5px !important;
-  border-radius: 15px !important;
+  border-radius: 12px !important;
   box-shadow: 0px 6px 4px rgba(0, 0, 0, 0.25) !important;
 }
 </style>
