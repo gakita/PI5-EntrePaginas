@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
+import { useAuthStore } from '@/stores/authStore'
 import Navbar from '@/components/Navbar.vue'
 import fundoImg from '@/assets/FUNDO.png'
 import profileIcon from '@/assets/Icone_perfil.svg'
@@ -12,6 +13,7 @@ import {
 } from '@/services'
 
 const router = useRouter()
+const auth = useAuthStore()
 
 // Estados principais
 const user = ref({ name: '', email: '' })
@@ -165,8 +167,7 @@ async function handleDeleteAccount() {
   try {
     await authService.deleteMe({ currentPassword: deleteConfirmPassword.value })
     showDeleteDialog.value = false
-    authService.login // (forçar logout limpando dados)
-    localStorage.removeItem('token')
+    auth.clearToken()
     router.push('/login')
   } catch (error) {
     deleteError.value = error instanceof Error ? error.message : 'Senha incorreta. Não foi possível deletar a conta.'
