@@ -8,9 +8,7 @@ import {
   authService, 
   chatService, 
   favoritesService, 
-  evaluationsService,
-  type CatalogBook, 
-  type BookEvaluation 
+  type CatalogBook
 } from '@/services'
 
 const router = useRouter()
@@ -23,7 +21,6 @@ const preferences = ref({
   favoriteAuthors: [] as string[]
 })
 const favorites = ref<CatalogBook[]>([])
-const evaluations = ref<BookEvaluation[]>([])
 
 const isLoading = ref(true)
 const isSavingPrefs = ref(false)
@@ -64,13 +61,6 @@ const availableGenres = [
   { label: 'Biografia', value: 'biografia' },
   { label: 'Drama', value: 'drama' },
   { label: 'Aventura', value: 'aventura' },
-]
-
-// Tipos/Formatos de leitura
-const availableTypes = [
-  { label: 'Livro', value: 'livro' },
-  { label: 'HQ / Quadrinho', value: 'hq' },
-  { label: 'Mangá', value: 'mangá' },
 ]
 
 // Regras de validação
@@ -114,13 +104,6 @@ async function loadUserData() {
       favorites.value = await favoritesService.listFavorites()
     } catch (e) {
       console.warn('Erro ao carregar favoritos.', e)
-    }
-
-    // 4. Avaliações
-    try {
-      evaluations.value = await evaluationsService.listEvaluations()
-    } catch (e) {
-      console.warn('Erro ao carregar avaliações.', e)
     }
 
   } catch (error) {
@@ -238,16 +221,6 @@ function toggleGenre(genreValue: string) {
   }
 }
 
-// Toggle de Tipo/Formato
-function toggleType(typeValue: string) {
-  const index = preferences.value.types.indexOf(typeValue)
-  if (index >= 0) {
-    preferences.value.types.splice(index, 1)
-  } else {
-    preferences.value.types.push(typeValue)
-  }
-}
-
 // Adicionar Autor
 function addAuthor() {
   const author = newAuthor.value.trim()
@@ -304,13 +277,9 @@ function goToBook(id: string | null) {
             <v-card-text class="py-6">
               <h3 class="text-subtitle-1 font-weight-bold text-primary mb-4 text-center">Resumo de Leitura</h3>
               <v-row class="text-center">
-                <v-col cols="6" class="border-right-soft">
+                <v-col cols="12">
                   <div class="text-h4 font-weight-bold text-on-surface">{{ favorites.length }}</div>
                   <div class="text-caption text-secondary uppercase">Favoritos</div>
-                </v-col>
-                <v-col cols="6">
-                  <div class="text-h4 font-weight-bold text-on-surface">{{ evaluations.length }}</div>
-                  <div class="text-caption text-secondary uppercase">Avaliações</div>
                 </v-col>
               </v-row>
             </v-card-text>
@@ -334,14 +303,6 @@ function goToBook(id: string | null) {
                 class="menu-item"
                 color="primary"
                 @click="activeTab = 'favorites_list'"
-              />
-              <v-list-item
-                :active="activeTab === 'evaluations_list'"
-                prepend-icon="mdi-star-outline"
-                title="Minhas Avaliações"
-                class="menu-item"
-                color="primary"
-                @click="activeTab = 'evaluations_list'"
               />
               <v-list-item
                 :active="activeTab === 'settings'"
@@ -376,7 +337,6 @@ function goToBook(id: string | null) {
                 <h2 class="section-title text-h5 text-on-surface">Preferências de Leitura</h2>
                 <p class="section-subtitle text-caption text-secondary">Ajuste seu perfil literário para que nossa IA forneça as melhores recomendações.</p>
               </div>
-              <v-icon color="primary" size="32">mdi-creation</v-icon>
             </div>
 
             <!-- Gêneros Favoritos -->
@@ -394,27 +354,6 @@ function goToBook(id: string | null) {
                   @click="toggleGenre(genre.value)"
                 >
                   {{ genre.label }}
-                </v-chip>
-              </div>
-            </div>
-
-            <v-divider class="my-6 border-color-soft" />
-
-            <!-- Formatos Preferidos -->
-            <div class="mb-6">
-              <h3 class="input-section-title text-subtitle-1 font-weight-bold text-on-surface mb-3">Formatos Preferidos</h3>
-              <div class="d-flex flex-wrap gap-3">
-                <v-chip
-                  v-for="type in availableTypes"
-                  :key="type.value"
-                  :selected="preferences.types.includes(type.value)"
-                  class="type-chip"
-                  :class="{ 'is-selected': preferences.types.includes(type.value) }"
-                  filter
-                  variant="outlined"
-                  @click="toggleType(type.value)"
-                >
-                  {{ type.label }}
                 </v-chip>
               </div>
             </div>
@@ -505,33 +444,46 @@ function goToBook(id: string | null) {
                 <h2 class="section-title text-h5 text-on-surface">Meus Favoritos</h2>
                 <p class="section-subtitle text-caption text-secondary">Os livros, HQs e mangás que você marcou como favoritos.</p>
               </div>
-              <v-icon color="primary" size="32">mdi-bookmark-multiple</v-icon>
             </div>
 
-            <div v-if="favorites.length > 0" class="favorites-grid">
-              <div 
-                v-for="(book, index) in favorites" 
-                :key="book.googleBooksId || book.title || `favorite-${index}`" 
-                class="book-card"
-                @click="goToBook(book.googleBooksId)"
-              >
-                <div class="book-card__cover-wrapper">
-                  <v-img 
-                    :src="book.coverUrl || '/images/categories/generic-book.svg'" 
-                    class="book-card__cover" 
-                    cover
-                  >
-                    <template #placeholder>
-                      <div class="d-flex align-center justify-center fill-height" style="background: #2a1f14;">
-                        <v-icon color="primary">mdi-book-open-variant</v-icon>
-                      </div>
-                    </template>
-                  </v-img>
+            <div v-if="favorites.length > 0">
+              <div class="favorites-grid">
+                <div
+                  v-for="(book, index) in favorites"
+                  :key="book.googleBooksId || book.title || `favorite-${index}`"
+                  class="book-card"
+                  @click="goToBook(book.googleBooksId)"
+                >
+                  <div class="book-card__cover-wrapper">
+                    <v-img
+                      :src="book.coverUrl || '/images/categories/generic-book.svg'"
+                      class="book-card__cover"
+                      cover
+                    >
+                      <template #placeholder>
+                        <div class="d-flex align-center justify-center fill-height" style="background: #2a1f14;">
+                          <v-icon color="primary">mdi-book-open-variant</v-icon>
+                        </div>
+                      </template>
+                    </v-img>
+                  </div>
+                  <div class="book-card__info py-2 text-center">
+                    <h4 class="book-card__title text-body-2 font-weight-bold text-truncate text-on-surface px-1">{{ book.title }}</h4>
+                    <p class="book-card__author text-caption text-secondary text-truncate px-1">{{ book.author || 'Autor desconhecido' }}</p>
+                  </div>
                 </div>
-                <div class="book-card__info py-2 text-center">
-                  <h4 class="book-card__title text-body-2 font-weight-bold text-truncate text-on-surface px-1">{{ book.title }}</h4>
-                  <p class="book-card__author text-caption text-secondary text-truncate px-1">{{ book.author || 'Autor desconhecido' }}</p>
-                </div>
+              </div>
+
+              <div class="d-flex justify-center mt-6">
+                <v-btn
+                  color="primary"
+                  variant="outlined"
+                  prepend-icon="mdi-open-in-new"
+                  to="/favoritos"
+                  class="font-weight-bold"
+                >
+                  Ver mais
+                </v-btn>
               </div>
             </div>
             <div v-else class="text-center py-12">
@@ -544,70 +496,7 @@ function goToBook(id: string | null) {
             </div>
           </v-card>
 
-          <!-- ABA 3: LISTA DE AVALIAÇÕES -->
-          <v-card v-if="activeTab === 'evaluations_list'" class="glass-card content-card px-6 py-6" flat>
-            <div class="d-flex align-center justify-space-between mb-6">
-              <div>
-                <h2 class="section-title text-h5 text-on-surface">Minhas Avaliações</h2>
-                <p class="section-subtitle text-caption text-secondary">Histórico de notas e comentários que você atribuiu às obras.</p>
-              </div>
-              <v-icon color="primary" size="32">mdi-star</v-icon>
-            </div>
-
-            <div v-if="evaluations.length > 0" class="evaluations-list">
-              <v-card 
-                v-for="evaluation in evaluations" 
-                :key="evaluation.id || evaluation.googleBooksId"
-                class="evaluation-item mb-4 py-4 px-4 bg-surface-dim"
-                variant="outlined"
-                style="border-color: rgba(232, 213, 183, 0.12);"
-              >
-                <div class="d-flex justify-space-between align-start mb-2">
-                  <div>
-                    <h4 
-                      class="evaluation-item__title text-subtitle-1 font-weight-bold text-on-surface cursor-pointer"
-                      @click="goToBook(evaluation.googleBooksId)"
-                    >
-                      {{ evaluation.title }}
-                    </h4>
-                    <!-- Estrelas de Avaliação -->
-                    <div class="d-flex align-center gap-1 mt-1">
-                      <v-icon 
-                        v-for="star in 5" 
-                        :key="star"
-                        size="18"
-                        :color="star <= evaluation.rating ? 'primary' : 'secondary'"
-                      >
-                        {{ star <= evaluation.rating ? 'mdi-star' : 'mdi-star-outline' }}
-                      </v-icon>
-                    </div>
-                  </div>
-                  <v-btn 
-                    variant="text" 
-                    color="primary" 
-                    size="small" 
-                    prepend-icon="mdi-open-in-new"
-                    @click="goToBook(evaluation.googleBooksId)"
-                  >
-                    Ver Livro
-                  </v-btn>
-                </div>
-                <div class="evaluation-item__comment text-body-2 text-on-surface-variant mt-3 italic pl-2 border-left-gold">
-                  "{{ evaluation.comment || 'Sem comentários, apenas avaliação por estrelas.' }}"
-                </div>
-              </v-card>
-            </div>
-            <div v-else class="text-center py-12">
-              <v-icon size="64" color="secondary" class="mb-4">mdi-star-outline</v-icon>
-              <h3 class="text-h6 text-on-surface mb-2">Nenhum livro avaliado ainda</h3>
-              <p class="text-body-2 text-secondary mb-6">Avalie as obras lidas no catálogo para expressar sua opinião e guiar a IA.</p>
-              <v-btn color="primary" to="/catalogo" class="text-on-primary font-weight-bold">
-                Buscar Livros para Avaliar
-              </v-btn>
-            </div>
-          </v-card>
-
-          <!-- ABA 4: CONFIGURAÇÕES DE CONTA -->
+          <!-- ABA 3: CONFIGURAÇÕES DE CONTA -->
           <v-card v-if="activeTab === 'settings'" class="glass-card content-card px-6 py-6" flat>
             <!-- Detalhes Pessoais -->
             <div class="mb-8">
@@ -724,7 +613,7 @@ function goToBook(id: string | null) {
             <div class="danger-zone py-4 px-4 rounded-lg">
               <h2 class="section-title text-h5 text-error mb-2">Excluir Conta</h2>
               <p class="section-subtitle text-caption text-secondary mb-4">
-                Atenção: Esta ação é irreversível. Todos os seus dados, favoritos, histórico de conversas e avaliações serão removidos permanentemente.
+                Atenção: Esta ação é irreversível. Todos os seus dados, favoritos e histórico de conversas serão removidos permanentemente.
               </p>
               <v-btn
                 color="error"
@@ -905,7 +794,7 @@ function goToBook(id: string | null) {
 }
 
 .section-subtitle {
-  font-family: 'Roboto', sans-serif;
+  font-family: 'Playfair Display', serif;
 }
 
 .input-section-title {
@@ -915,7 +804,7 @@ function goToBook(id: string | null) {
 }
 
 /* Chips Style */
-.genre-chip, .type-chip {
+.genre-chip {
   font-family: 'Playfair Display', serif;
   border-color: rgba(232, 213, 183, 0.25) !important;
   color: #9b8a75 !important;
@@ -924,13 +813,13 @@ function goToBook(id: string | null) {
   transition: all 0.2s ease;
 }
 
-.genre-chip:hover, .type-chip:hover {
+.genre-chip:hover {
   border-color: #c9a227 !important;
   color: #e8d5b7 !important;
   background-color: rgba(201, 162, 39, 0.05) !important;
 }
 
-.genre-chip.is-selected, .type-chip.is-selected {
+.genre-chip.is-selected {
   border-color: #c9a227 !important;
   background-color: rgba(201, 162, 39, 0.18) !important;
   color: #c9a227 !important;
@@ -1017,11 +906,6 @@ function goToBook(id: string | null) {
   font-size: 11px !important;
 }
 
-/* Avaliações list */
-.border-left-gold {
-  border-left: 3px solid #c9a227;
-}
-
 .cursor-pointer {
   cursor: pointer;
   transition: color 0.2s ease;
@@ -1029,10 +913,6 @@ function goToBook(id: string | null) {
 
 .cursor-pointer:hover {
   color: #c9a227 !important;
-}
-
-.italic {
-  font-style: italic;
 }
 
 /* Utils styles */
