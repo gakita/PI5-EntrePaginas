@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, nextTick } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, onMounted, nextTick } from 'vue'
+import { onBeforeRouteLeave, useRouter } from 'vue-router'
 import Navbar from '@/components/Navbar.vue'
 import { chatService, type BookRecommendation, type ChatMessage } from '@/services'
 
@@ -15,6 +15,7 @@ const isLoading    = ref(false)
 const isClosingConversation = ref(false)
 const errorMsg     = ref('')
 const chatContent  = ref<HTMLElement | null>(null)
+let hasClosedCurrentConversation = false
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 function scrollToBottom() {
@@ -23,6 +24,21 @@ function scrollToBottom() {
       chatContent.value.scrollTop = chatContent.value.scrollHeight
     }
   })
+}
+
+async function closeActiveConversation() {
+  if (isClosingConversation.value || hasClosedCurrentConversation || messages.value.length === 0) {
+    return
+  }
+
+  isClosingConversation.value = true
+
+  try {
+    await chatService.closeConversation()
+    hasClosedCurrentConversation = true
+  } finally {
+    isClosingConversation.value = false
+  }
 }
 
 // ── Ciclo de vida ────────────────────────────────────────────────────────────
@@ -36,12 +52,11 @@ onMounted(async () => {
   }
 })
 
-onUnmounted(async () => {
-  // Ao sair da tela, encerra a conversa e salva preferências no banco
+onBeforeRouteLeave(async () => {
   try {
-    await chatService.closeConversation()
+    await closeActiveConversation()
   } catch {
-    // Silencioso — não bloqueia a navegação
+    // Silencioso — não bloqueia a navegação.
   }
 })
 
@@ -78,6 +93,7 @@ async function sendMessage() {
 
   try {
     const response = await chatService.sendMessage(fullMessage)
+    hasClosedCurrentConversation = false
 
     messages.value.push({
       role: 'assistant',
@@ -101,9 +117,10 @@ async function newConversation() {
   errorMsg.value = ''
 
   try {
-    await chatService.closeConversation()
+    await closeActiveConversation()
     await chatService.clearHistory()
     messages.value = []
+    hasClosedCurrentConversation = false
   } catch (error) {
     errorMsg.value = error instanceof Error
       ? error.message

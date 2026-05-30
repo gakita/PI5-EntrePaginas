@@ -4,9 +4,14 @@ import BookSearchLayout from '@/components/BookSearchPage.vue'
 import fundoImg from '@/assets/Fundo_Catalogo.jpg'
 import { booksService, favoritesService, mergeCatalogBookData, type CatalogBook } from '@/services'
 import type { BookFilters } from '@/components/FiltersPanel.vue'
+import {
+  getBookSearchText,
+  matchesBookGenre,
+  normalizeTaxonomyText,
+} from '@/utils/bookTaxonomy'
 
 const favFilters = [
-  'Ordenar por', 'Gênero', 'Tipo', 'Editora', 'Autor', 'Ano',
+  'Ordenar por', 'Gênero', 'Editora', 'Autor', 'Ano',
 ]
 
 const books = ref<CatalogBook[]>([])
@@ -16,23 +21,16 @@ const activeFilters = ref<BookFilters>({})
 
 const filteredBooks = computed(() => {
   const filters = activeFilters.value
-  const search = normalizeText(filters.search)
-  const author = normalizeText(filters.author)
-  const publisher = normalizeText(filters.publisher)
-  const category = normalizeText(filters.category)
-  const type = normalizeText(filters.type)
+  const search = normalizeTaxonomyText(filters.search)
+  const author = normalizeTaxonomyText(filters.author)
+  const publisher = normalizeTaxonomyText(filters.publisher)
 
   const filtered = books.value.filter((book) => {
-    const title = normalizeText(book.title)
-    const bookAuthor = normalizeText(book.author)
-    const bookType = normalizeText(book.type)
-    const bookTags = [
-      ...(book.genres || []),
-      ...(book.categories || []),
-    ].map(normalizeText)
+    const haystack = getBookSearchText(book)
+    const bookAuthor = normalizeTaxonomyText(book.author)
     const publishedYear = getPublishedYear(book)
 
-    if (search && !title.includes(search) && !bookAuthor.includes(search)) {
+    if (search && !haystack.includes(search)) {
       return false
     }
 
@@ -40,15 +38,11 @@ const filteredBooks = computed(() => {
       return false
     }
 
-    if (publisher) {
+    if (publisher && !haystack.includes(publisher)) {
       return false
     }
 
-    if (category && !bookTags.some((tag) => tag.includes(category))) {
-      return false
-    }
-
-    if (type && bookType !== type) {
+    if (!matchesBookGenre(book, filters.category)) {
       return false
     }
 
@@ -66,10 +60,6 @@ const filteredBooks = computed(() => {
   return sortBooks(filtered, filters.orderBy)
 })
 
-function normalizeText(value?: string | null) {
-  return value?.trim().toLowerCase() || ''
-}
-
 function getPublishedYear(book: CatalogBook) {
   const match = book.publishedDate?.match(/\d{4}/)
   return match ? Number(match[0]) : null
@@ -85,7 +75,7 @@ function sortBooks(items: CatalogBook[], orderBy?: BookFilters['orderBy']) {
     const secondYear = getPublishedYear(secondBook)
 
     if (!firstYear && !secondYear) {
-      return normalizeText(firstBook.title).localeCompare(normalizeText(secondBook.title))
+      return normalizeTaxonomyText(firstBook.title).localeCompare(normalizeTaxonomyText(secondBook.title))
     }
 
     if (!firstYear) {

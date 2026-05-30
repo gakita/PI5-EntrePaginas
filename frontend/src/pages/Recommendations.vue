@@ -2,8 +2,20 @@
 import { computed, onMounted, ref } from 'vue'
 import BookSearchLayout from '@/components/BookSearchPage.vue'
 import fundoImg from '@/assets/Fundo_Catalogo.jpg'
-import { booksService, chatService, type CatalogBook, type ListBooksParams } from '@/services'
+import {
+  booksService,
+  chatService,
+  type BookRecommendation,
+  type CatalogBook,
+  type ListBooksParams,
+} from '@/services'
 import type { BookFilters } from '@/components/FiltersPanel.vue'
+import {
+  getBookSearchText,
+  getGenreSearchKey,
+  matchesBookGenre,
+  normalizeTaxonomyText,
+} from '@/utils/bookTaxonomy'
 
 type UserPreferences = {
   genres: string[]
@@ -12,7 +24,7 @@ type UserPreferences = {
 }
 
 const recommendationsFilters = [
-  'Ordenar por', 'Gênero', 'Tipo', 'Editora', 'Autor', 'Ano',
+  'Ordenar por', 'Gênero', 'Editora', 'Autor', 'Ano',
 ]
 
 const pageSize = 15
@@ -23,34 +35,7 @@ const currentPage = ref(1)
 const isLoading = ref(false)
 const errorMessage = ref('')
 
-const categoryAliases: Record<string, string[]> = {
-  comedy: ['comedy', 'humor', 'comédia', 'comedia'],
-  terror: ['terror', 'horror'],
-  romance: ['romance'],
-  fantasy: ['fantasy', 'fantasia'],
-  'science fiction': ['science fiction', 'sci-fi', 'ficção científica', 'ficcao cientifica'],
-  adventure: ['adventure', 'aventura'],
-}
-
 const fallbackSeeds = ['ficção', 'fantasia', 'romance']
-
-function normalizeText(value?: string | null) {
-  return (value || '')
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .toLowerCase()
-}
-
-function bookSearchText(book: CatalogBook) {
-  return normalizeText([
-    book.title,
-    book.author,
-    book.type,
-    book.synopsis,
-    ...(book.categories || []),
-    ...(book.genres || []),
-  ].filter(Boolean).join(' '))
-}
 
 function getPublishedYear(book: CatalogBook) {
   const match = book.publishedDate?.match(/\d{4}/)
@@ -58,7 +43,7 @@ function getPublishedYear(book: CatalogBook) {
 }
 
 function getBookKey(book: CatalogBook) {
-  return normalizeText(book.googleBooksId || book.title)
+  return normalizeTaxonomyText(book.googleBooksId || book.title)
 }
 
 function dedupeValidBooks(books: CatalogBook[]) {
@@ -78,30 +63,23 @@ function dedupeValidBooks(books: CatalogBook[]) {
   return uniqueBooks
 }
 
-function matchesCategory(book: CatalogBook, category?: string) {
-  if (!category) return true
-
-  const haystack = bookSearchText(book)
-  const aliases = categoryAliases[category] || [category]
-  return aliases.some((alias) => haystack.includes(normalizeText(alias)))
-}
-
-function matchesType(book: CatalogBook, type?: string) {
-  if (!type) return true
-
-  const normalizedType = normalizeText(type)
-  const bookType = normalizeText(book.type)
-  const haystack = bookSearchText(book)
-
-  if (normalizedType === 'hq') {
-    return bookType === 'hq' || haystack.includes('comics') || haystack.includes('quadrinho')
+function recommendationToCatalogBook(book: BookRecommendation): CatalogBook {
+  return {
+    googleBooksId: book.googleBooksId || null,
+    title: book.title || null,
+    author: book.author || book.authors?.join(', ') || null,
+    authors: book.authors || (book.author ? [book.author] : []),
+    type: book.type || 'livro',
+    categories: book.categories || [],
+    genres: book.genres || [],
+    coverUrl: book.coverUrl || null,
+    synopsis: book.synopsis || null,
+    publishedDate: book.publishedDate || null,
+    previewLink: book.previewLink || null,
+    webReaderLink: book.webReaderLink || null,
+    embeddable: Boolean(book.embeddable),
+    viewability: book.viewability || null,
   }
-
-  if (normalizedType === 'manga') {
-    return bookType === 'manga' || haystack.includes('manga')
-  }
-
-  return bookType === normalizedType || haystack.includes(normalizedType)
 }
 
 function matchesYear(book: CatalogBook, filters: BookFilters) {
@@ -121,7 +99,7 @@ function buildPreferenceQueries(userPreferences: UserPreferences): ListBooksPara
   const queries: ListBooksParams[] = []
 
   for (const genre of userPreferences.genres.slice(0, 4)) {
-    queries.push({ search: genre, limit: 15 })
+    queries.push({ search: getGenreSearchKey(genre), limit: 15 })
   }
 
   for (const author of userPreferences.favoriteAuthors.slice(0, 3)) {
@@ -135,20 +113,28 @@ function buildPreferenceQueries(userPreferences: UserPreferences): ListBooksPara
   return queries
 }
 
+async function loadSavedSuggestions() {
+  try {
+    const response = await chatService.getSuggestions(20)
+    return response.suggestions.map(recommendationToCatalogBook)
+  } catch {
+    return []
+  }
+}
+
 const filteredRecommendations = computed(() => {
   const filters = activeFilters.value
-  const search = normalizeText(filters.search)
-  const author = normalizeText(filters.author)
-  const publisher = normalizeText(filters.publisher)
+  const search = normalizeTaxonomyText(filters.search)
+  const author = normalizeTaxonomyText(filters.author)
+  const publisher = normalizeTaxonomyText(filters.publisher)
 
   const filtered = allRecommendations.value.filter((book) => {
-    const haystack = bookSearchText(book)
+    const haystack = getBookSearchText(book)
 
     return (!search || haystack.includes(search)) &&
-      (!author || normalizeText(book.author).includes(author)) &&
+      (!author || normalizeTaxonomyText(book.author).includes(author)) &&
       (!publisher || haystack.includes(publisher)) &&
-      matchesCategory(book, filters.category) &&
-      matchesType(book, filters.type) &&
+      matchesBookGenre(book, filters.category) &&
       matchesYear(book, filters)
   })
 
@@ -199,14 +185,22 @@ async function loadRecommendations() {
   errorMessage.value = ''
 
   try {
-    preferences.value = await chatService.getPreferences()
+    const loadedPreferences = await chatService.getPreferences()
+
+    preferences.value = loadedPreferences
     const queries = buildPreferenceQueries(preferences.value)
-    const results = await Promise.allSettled(
-      queries.map((query) => booksService.listBooks({ ...query, limit: 15 })),
-    )
+    const [savedSuggestions, results] = await Promise.all([
+      loadSavedSuggestions(),
+      Promise.allSettled(
+        queries.map((query) => booksService.listBooks({ ...query, limit: 15 })),
+      ),
+    ])
 
     allRecommendations.value = dedupeValidBooks(
-      results.flatMap((result) => result.status === 'fulfilled' ? result.value.items : []),
+      [
+        ...savedSuggestions,
+        ...results.flatMap((result) => result.status === 'fulfilled' ? result.value.items : []),
+      ],
     )
     currentPage.value = 1
   } catch (error) {

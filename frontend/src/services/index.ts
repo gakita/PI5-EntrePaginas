@@ -248,6 +248,10 @@ export interface HistoryResponse {
   messages: ChatMessage[]
 }
 
+export interface SuggestionsResponse {
+  suggestions: BookRecommendation[]
+}
+
 export const chatService = {
   /**
    * POST /chat/message
@@ -291,6 +295,14 @@ export const chatService = {
    */
   getPreferences(): Promise<{ genres: string[]; types: string[]; favoriteAuthors: string[] }> {
     return request<{ genres: string[]; types: string[]; favoriteAuthors: string[] }>('/chat/preferences')
+  },
+
+  /**
+   * GET /chat/suggestions
+   * Retorna os livros que o chatbot ja sugeriu e que foram salvos ao encerrar conversa.
+   */
+  getSuggestions(limit = 20): Promise<SuggestionsResponse> {
+    return request<SuggestionsResponse>(`/chat/suggestions?limit=${limit}`)
   },
 
   /**

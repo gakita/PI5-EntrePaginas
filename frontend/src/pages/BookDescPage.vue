@@ -14,6 +14,7 @@
   const errorMessage = ref('')
 
   const bookId = computed(() => String(route.params.id || ''))
+  const bookDetailsCacheKey = 'entre-paginas:book-details'
   const backgroundImage = `url(${fundoImg})`
   const coverImage = computed(() => `url(${book.value?.coverUrl || fundoImg})`)
   const title = computed(() => book.value?.title || 'Livro não encontrado')
@@ -45,12 +46,31 @@
       book.value = await catalogService.getBookById(bookId.value)
       await loadFavoriteState()
     } catch (error) {
-      errorMessage.value = error instanceof Error
-        ? error.message
-        : 'Não foi possível carregar os dados do livro.'
-      book.value = null
+      const cachedBook = getCachedBook(bookId.value)
+
+      if (cachedBook) {
+        book.value = cachedBook
+        await loadFavoriteState()
+      } else {
+        errorMessage.value = error instanceof Error
+          ? error.message
+          : 'Não foi possível carregar os dados do livro.'
+        book.value = null
+      }
     } finally {
       isLoading.value = false
+    }
+  }
+
+  function getCachedBook(id: string) {
+    try {
+      const cachedBooks = JSON.parse(sessionStorage.getItem(bookDetailsCacheKey) || '{}')
+      const cachedBook = cachedBooks[id]
+      return cachedBook && typeof cachedBook === 'object'
+        ? cachedBook as CatalogBook
+        : null
+    } catch {
+      return null
     }
   }
 

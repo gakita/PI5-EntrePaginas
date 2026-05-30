@@ -18,20 +18,36 @@ const emit = defineEmits<{
   pageChange: [page: number]
 }>()
 
+const bookDetailsCacheKey = 'entre-paginas:book-details'
+
+function cacheBookForDetails(book: CatalogBook) {
+  if (!book.googleBooksId) return
+
+  try {
+    const cachedBooks = JSON.parse(sessionStorage.getItem(bookDetailsCacheKey) || '{}')
+    cachedBooks[book.googleBooksId] = book
+    sessionStorage.setItem(bookDetailsCacheKey, JSON.stringify(cachedBooks))
+  } catch {
+    // Cache is only a navigation fallback; ignore storage failures.
+  }
+}
+
 const bookCards = computed(() => {
   if (props.books.length > 0) {
     return props.books.map((book, index) => ({
       id: book.googleBooksId || `${index + 1}`,
+      book,
       title: book.title || 'Título indisponível',
       author: book.author || '',
       coverUrl: book.coverUrl || '',
-      to: book.googleBooksId ? `/livros/${book.googleBooksId}` : '',
+      to: book.googleBooksId ? `/livros/${encodeURIComponent(book.googleBooksId)}` : '',
       isPlaceholder: false,
     }))
   }
 
   return Array.from({ length: props.total }, (_, index) => ({
     id: index + 1,
+    book: null,
     title: '',
     author: '',
     coverUrl: '',
@@ -52,6 +68,7 @@ const bookCards = computed(() => {
         :class="{ 'book-card--placeholder': card.isPlaceholder }"
         :to="card.to || undefined"
         :aria-label="card.to ? `Abrir livro ${card.title}` : undefined"
+        @click="card.book && cacheBookForDetails(card.book)"
       >
         <div v-if="!card.isPlaceholder" class="book-card__cover">
           <img

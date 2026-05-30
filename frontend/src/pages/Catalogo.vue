@@ -4,9 +4,10 @@ import BookSearchLayout from '@/components/BookSearchPage.vue'
 import fundoImg from '@/assets/Fundo_Catalogo.jpg'
 import { booksService, type CatalogBook, type CatalogResponse, type ListBooksParams } from '@/services'
 import type { BookFilters } from '@/components/FiltersPanel.vue'
+import { getGenreSearchKey } from '@/utils/bookTaxonomy'
 
 const filterGroups = [
-  'Ordenar por', 'Gênero', 'Tipo', 'Editora', 'Autor', 'Ano'
+  'Ordenar por', 'Gênero', 'Editora', 'Autor', 'Ano'
 ]
 
 const books = ref<CatalogBook[]>([])
@@ -106,7 +107,10 @@ async function loadPage(page: number) {
 }
 
 function applyFilters(filters: BookFilters) {
-  activeFilters.value = { ...filters }
+  activeFilters.value = {
+    ...filters,
+    category: filters.category ? getGenreSearchKey(filters.category) : undefined,
+  }
   pageCache.clear()
   inFlightRequests.clear()
   loadPage(1)

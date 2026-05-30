@@ -9,6 +9,7 @@
  * Novos endpoints em relação à versão anterior:
  *   - closeConversation (POST /chat/close)
  *   - getPreferences    (GET /chat/preferences)
+ *   - getSuggestions    (GET /chat/suggestions)
  *   - updatePreferences (PUT /chat/preferences)
  *   - clearPreferences  (DELETE /chat/preferences)
  */
@@ -104,6 +105,20 @@ async function getPreferences(req, res, next) {
 }
 
 /**
+ * GET /chat/suggestions
+ * Retorna as sugestões já salvas pelo chatbot.
+ */
+async function getSuggestions(req, res, next) {
+  try {
+    const limit = Number(req.query.limit) || 20;
+    const suggestions = await chatService.getSuggestions(req.user.email, limit);
+    return res.status(200).json({ suggestions });
+  } catch (error) {
+    return next(error);
+  }
+}
+
+/**
  * PUT /chat/preferences
  * Atualiza as preferências manualmente.
  *
@@ -164,6 +179,7 @@ module.exports = {
   clearHistory,
   closeConversation,
   getPreferences,
+  getSuggestions,
   updatePreferences,
   clearPreferences,
 };

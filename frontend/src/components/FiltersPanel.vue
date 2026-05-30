@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import { ref, nextTick, watch } from 'vue'
+import { genreOptions } from '@/utils/bookTaxonomy'
 
 export interface BookFilters {
   search?: string
   author?: string
   publisher?: string
   category?: string
-  type?: string
   orderBy?: 'newest' | 'oldest' | 'relevance'
   yearFrom?: number
   yearTo?: number
@@ -41,15 +41,11 @@ type FilterOption = {
 const orderOptions = [
   'Mais antigos',
   'Mais novos',
-  'Popularidade',
-  'Mais recomendados',
 ]
 
 const orderMap: Record<string, BookFilters['orderBy']> = {
   'Mais antigos': 'oldest',
   'Mais novos': 'newest',
-  Popularidade: 'relevance',
-  'Mais recomendados': 'relevance',
 }
 
 const yearRangeOptions: FilterOption[] = [
@@ -62,41 +58,7 @@ const yearRangeOptions: FilterOption[] = [
 
 const filterOptions: Record<string, FilterOption[]> = {
   'Gênero': [
-    { key: 'comedy', label: 'Comédia' },
-    { key: 'terror', label: 'Terror' },
-    { key: 'romance', label: 'Romance' },
-    { key: 'fantasy', label: 'Fantasia' },
-    { key: 'science fiction', label: 'Ficção científica' },
-    { key: 'adventure', label: 'Aventura' },
-  ],
-  'Tipo': [
-    { key: 'livro', label: 'Livro' },
-    { key: 'hq', label: 'HQ' },
-    { key: 'manga', label: 'Manga' },
-  ],
-  'Editora': [
-    { key: 'etc-1', label: 'ETC' },
-    { key: 'etc-2', label: 'ETC' },
-    { key: 'etc-3', label: 'ETC' },
-    { key: 'etc-4', label: 'ETC' },
-    { key: 'etc-5', label: 'ETC' },
-    { key: 'etc-6', label: 'ETC' },
-  ],
-  'Autor': [
-    { key: 'etc-1', label: 'ETC' },
-    { key: 'etc-2', label: 'ETC' },
-    { key: 'etc-3', label: 'ETC' },
-    { key: 'etc-4', label: 'ETC' },
-    { key: 'etc-5', label: 'ETC' },
-    { key: 'etc-6', label: 'ETC' },
-  ],
-  'Ano': [
-    { key: 'etc-1', label: 'ETC' },
-    { key: 'etc-2', label: 'ETC' },
-    { key: 'etc-3', label: 'ETC' },
-    { key: 'etc-4', label: 'ETC' },
-    { key: 'etc-5', label: 'ETC' },
-    { key: 'etc-6', label: 'ETC' },
+    ...genreOptions.map(({ key, label }) => ({ key, label })),
   ],
 }
 
@@ -147,7 +109,8 @@ function clearFilters() {
 
 function toggleFilterOption(groupLabel: string, optionKey: string) {
   const currentValues = selectedFilters.value[groupLabel] ?? []
-  const nextValues = groupLabel === 'Ano'
+  const isSingleSelectGroup = groupLabel === 'Ano' || groupLabel === 'Gênero'
+  const nextValues = isSingleSelectGroup
     ? (currentValues.includes(optionKey) ? [] : [optionKey])
     : (currentValues.includes(optionKey)
         ? currentValues.filter(value => value !== optionKey)
@@ -217,7 +180,6 @@ function normalizeText(value: string) {
 function buildFilters(): BookFilters {
   const selectedYear = selectedFilters.value['Ano']?.[0]
   const selectedGenre = selectedFilters.value['Gênero']?.[0]
-  const selectedType = selectedFilters.value['Tipo']?.[0]
   const chipYearRange = getYearRangeFromChip(selectedYear)
   const customYearFrom = yearFrom.value ? Number(yearFrom.value) : undefined
   const customYearTo = yearTo.value ? Number(yearTo.value) : undefined
@@ -228,7 +190,6 @@ function buildFilters(): BookFilters {
     author: normalizeText(authorSearch.value),
     publisher: normalizeText(publisherSearch.value),
     category: selectedGenre,
-    type: selectedType,
     orderBy: selectedOrder.value ? orderMap[selectedOrder.value] : undefined,
     yearFrom: hasValidCustomYear ? customYearFrom : chipYearRange.yearFrom,
     yearTo: hasValidCustomYear ? customYearTo : chipYearRange.yearTo,

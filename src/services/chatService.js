@@ -172,6 +172,14 @@ async function getPreferences(userEmail) {
 }
 
 /**
+ * Retorna as sugestões salvas do chatbot, enriquecidas com dados do catálogo.
+ */
+async function getSuggestions(userEmail, limit = 20) {
+  const suggestions = await suggestionModel.findByUserEmail(userEmail, limit);
+  return catalogService.enrichRecommendations(suggestions);
+}
+
+/**
  * Atualiza as preferências manualmente (via frontend de configurações).
  */
 async function updatePreferences(userEmail, preferences) {
@@ -192,6 +200,7 @@ module.exports = {
   clearHistory,
   closeConversation,
   getPreferences,
+  getSuggestions,
   updatePreferences,
   clearPreferences,
 };

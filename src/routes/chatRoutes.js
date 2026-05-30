@@ -9,6 +9,7 @@
  *   DELETE /chat/history        → Limpa histórico (inicia nova conversa)
  *   POST   /chat/close          → Encerra conversa (salva preferências + sugestões)
  *   GET    /chat/preferences    → Retorna preferências de leitura do usuário
+ *   GET    /chat/suggestions    → Retorna sugestões salvas pelo chatbot
  *   PUT    /chat/preferences    → Atualiza preferências manualmente
  *   DELETE /chat/preferences    → Apaga/reseta preferências
  */
@@ -28,6 +29,7 @@ router.post('/close',       authMiddleware, chatController.closeConversation);
 
 // ── Preferências ──
 router.get('/preferences',  authMiddleware, chatController.getPreferences);
+router.get('/suggestions',  authMiddleware, chatController.getSuggestions);
 router.put('/preferences',  authMiddleware, chatController.updatePreferences);
 router.delete('/preferences', authMiddleware, chatController.clearPreferences);
 
