@@ -2,11 +2,12 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const http = require('node:http');
 
-const SRC_PATH_FRAGMENT = '/src/';
+const path = require('node:path');
+const SRC_PATH_FRAGMENT = path.sep + 'src' + path.sep;
 
 function clearSrcCache() {
   for (const key of Object.keys(require.cache)) {
-    if (key.includes(SRC_PATH_FRAGMENT)) {
+    if (key.includes(SRC_PATH_FRAGMENT) || key.includes('/src/') || key.includes('\\src\\')) {
       delete require.cache[key];
     }
   }

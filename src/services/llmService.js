@@ -35,49 +35,48 @@ function buildSystemInstruction(preferences, readBooks = []) {
   const allowedSensitive = prefs.sensitiveThemes || [];
 
   const sensitiveRules = allowedSensitive.length > 0
-    ? `O usuário permite APENAS os seguintes temas sensíveis nas recomendações: ${allowedSensitive.join(', ')}. Se uma obra contiver qualquer OUTRO tema sensível que não esteja nesta lista de autorizados, você NÃO DEVE recomendá-la em hipótese alguma. Se contiver algum dos temas permitidos listados, você pode recomendá-la, mas DEVE obrigatoriamente indicar com "sensitiveContent": true no JSON.`
-    : `O usuário NÃO aceita temas sensíveis. Você NÃO DEVE recomendar nenhuma obra que contenha conteúdo sensível (como violência, terror psicológico, abuso, morte, etc.). Todas as suas recomendações devem ser totalmente adequadas para leitores sensíveis e ter obrigatoriamente "sensitiveContent": false no JSON.`;
+    ? `Permitido APENAS: ${allowedSensitive.join(', ')}. Não recomende se contiver qualquer outro tema sensível. Se contiver algum tema permitido, marque "sensitiveContent": true no JSON.`
+    : `Bloqueado totalmente. Não recomende nenhuma obra com conteúdo sensível (violência, abuso, morte, etc.). Defina obrigatoriamente "sensitiveContent": false no JSON.`;
 
-  return `
-Você é o assistente de recomendação de leitura do "Entre Páginas".
-Seu objetivo é ajudar o usuário a descobrir livros, HQs e mangás.
+  return `Você é o assistente de recomendação de leitura do "Entre Páginas".
+Aja de forma direta, concisa e objetiva. Evite rodeios, saudações excessivas ou enrolações.
 
 REGRAS:
-1. Sempre responda em português brasileiro.
-2. Quando o usuário pedir recomendações, retorne no máximo 5 itens.
-3. Para cada item, inclua: título, tipo (livro/hq/mangá), autor (se souber) e uma justificativa curta.
+1. Idioma: Sempre responda em português brasileiro.
+2. Resposta: Direta e concisa nas suas interações e explicações.
+3. Quantidade: No máximo 5 recomendações por vez.
 4. Temas Sensíveis: ${sensitiveRules}
-5. Seja conversacional e amigável.
-6. Priorize itens que combinam com as preferências do usuário.
+5. Histórico: Não recomende novamente obras já lidas pelo usuário.
+6. Justificativa: Extremamente curta e focada no motivo exato da recomendação.
 
 PREFERÊNCIAS DO USUÁRIO:
-- Gêneros favoritos: ${prefs.genres && prefs.genres.length > 0 ? prefs.genres.join(', ') : 'não definido'}
-- Tipos aceitos: ${prefs.types && prefs.types.length > 0 ? prefs.types.join(', ') : 'qualquer'}
-- Autores favoritos: ${prefs.favoriteAuthors && prefs.favoriteAuthors.length > 0 ? prefs.favoriteAuthors.join(', ') : 'nenhum definido'}
+- Gêneros: ${prefs.genres && prefs.genres.length > 0 ? prefs.genres.join(', ') : 'Não definidos'}
+- Tipos: ${prefs.types && prefs.types.length > 0 ? prefs.types.join(', ') : 'Todos'}
+- Autores: ${prefs.favoriteAuthors && prefs.favoriteAuthors.length > 0 ? prefs.favoriteAuthors.join(', ') : 'Nenhum'}
 
-LIVROS QUE O USUÁRIO JÁ LEU (Baseie-se nestes, mas NÃO os recomende novamente):
-${readBooks.length > 0 ? readBooks.map(b => `- ${b.title} (Nota: ${b.rating}/5)` + (b.comment ? ` - Comentário: ${b.comment}` : '')).join('\n') : 'Nenhum histórico de leitura registrado.'}
+HISTÓRICO DE LEITURA (Não recomende novamente):
+${readBooks.length > 0 ? readBooks.map(b => `- ${b.title} (Nota: ${b.rating}/5)` + (b.comment ? ` - Comentário: ${b.comment}` : '')).join('\n') : 'Nenhum.'}
 
-Quando fizer recomendações, responda SEMPRE neste formato JSON (sem markdown, sem crases):
+FORMATO DE RESPOSTA (Obrigatório retornar JSON puro, sem markdown, sem crases):
+Se pedir recomendação:
 {
-  "message": "Sua mensagem conversacional aqui",
+  "message": "Apresentação extremamente direta das recomendações.",
   "recommendations": [
     {
-      "title": "Nome do Livro",
-      "type": "livro",
+      "title": "Nome da obra",
+      "type": "livro" | "hq" | "mangá",
       "author": "Nome do Autor",
-      "justification": "Por que recomendo...",
+      "justification": "Justificativa direta (máximo 15 palavras).",
       "sensitiveContent": false
     }
   ]
 }
 
-Se a mensagem do usuário for conversa casual (saudação, dúvida geral) sem pedir recomendações:
+Se for conversa casual:
 {
-  "message": "Sua resposta aqui",
+  "message": "Resposta direta e objetiva.",
   "recommendations": []
-}
-`;
+}`;
 }
 
 function cleanJsonText(text) {
@@ -182,22 +181,19 @@ async function inferPreferences(messageHistory) {
     .map((m) => `${m.role === 'user' ? 'Usuário' : 'Assistente'}: ${m.content}`)
     .join('\n');
 
-  const prompt = `
-Com base na conversa abaixo entre um usuário e um assistente de recomendação de leitura,
-identifique as preferências de leitura implícitas do usuário.
+  const prompt = `Analise a conversa abaixo e extraia as preferências de leitura implícitas do usuário de forma direta.
 
 Conversa:
 ${conversationText}
 
-Responda APENAS com JSON (sem markdown, sem crases):
+Responda APENAS com JSON puro (sem markdown, sem crases):
 {
-  "genres": ["lista de gêneros mencionados ou inferidos"],
-  "types": ["livro", "hq", "mangá", "manhwa" — apenas os que o usuário demonstrou interesse],
-  "favoriteAuthors": ["autores que o usuário mencionou gostar"]
+  "genres": ["gêneros ou temas de interesse mencionados ou inferidos"],
+  "types": ["livro", "hq", "mangá", "manhwa" — apenas os que demonstrou interesse],
+  "favoriteAuthors": ["autores citados com interesse"]
 }
 
-Se não houver informação suficiente para algum campo, retorne um array vazio [].
-`;
+Se não houver dados suficientes para um campo, retorne o array vazio [].`;
 
   try {
     const result = await model.generateContent(prompt);
@@ -218,29 +214,24 @@ Se não houver informação suficiente para algum campo, retorne um array vazio 
 async function generateQuizQuestion(questions, answers) {
   const model = genAI.getGenerativeModel({ model: env.geminiModel });
 
-  const prompt = `
-Voce cria perguntas objetivas para um quiz de recomendacao de leitura do Entre Paginas.
+  const prompt = `Crie a próxima pergunta objetiva para um quiz de recomendação de leitura. Seja curto e direto.
 
-PERGUNTAS JA FEITAS:
-${questions.map((q, index) => `${index + 1}. ${q.text} Opcoes: ${q.options.join(', ')}`).join('\n')}
+PERGUNTAS ANTERIORES:
+${questions.map((q, index) => `- ${q.text} (Opções: ${q.options.join(', ')})`).join('\n')}
 
-RESPOSTAS DO USUARIO:
-${answers.map((item, index) => `${index + 1}. ${item.question} Resposta: ${item.answer}`).join('\n')}
+RESPOSTAS DO USUÁRIO:
+${answers.map((item, index) => `- ${item.question}: ${item.answer}`).join('\n')}
 
-Crie a proxima pergunta mais util para descobrir preferencias de leitura.
-Regras:
-- A pergunta deve ser em portugues brasileiro.
-- A pergunta deve ser objetiva.
-- Retorne de 2 a 5 opcoes curtas.
-- Nao repita perguntas ja feitas.
-- Nao use markdown.
+DIRETRIZES:
+1. Pergunta: Curta, objetiva e útil para mapear o perfil. Em português brasileiro.
+2. Opções: 2 a 5 alternativas curtas. Não repita perguntas passadas.
+3. Formato: Retorne APENAS o JSON puro (sem markdown, sem crases).
 
-Responda APENAS com JSON:
+Responda APENAS neste formato:
 {
-  "text": "Pergunta aqui",
-  "options": ["Opcao 1", "Opcao 2", "Opcao 3", "Opcao 4"]
-}
-`;
+  "text": "Pergunta direta?",
+  "options": ["Opção A", "Opção B", "Opção C"]
+}`;
 
   const result = await model.generateContent(prompt);
   const parsed = JSON.parse(cleanJsonText(result.response.text()));
@@ -254,21 +245,19 @@ Responda APENAS com JSON:
 async function inferQuizPreferences(answers) {
   const model = genAI.getGenerativeModel({ model: env.geminiModel });
 
-  const prompt = `
-Com base nas respostas de um quiz de recomendacao de leitura, inferir preferencias do usuario.
+  const prompt = `Infira as preferências de leitura do usuário com base no quiz de forma direta.
 
-RESPOSTAS:
-${answers.map((item, index) => `${index + 1}. ${item.question} Resposta: ${item.answer}`).join('\n')}
+RESPOSTAS DO QUIZ:
+${answers.map((item, index) => `- ${item.question}: ${item.answer}`).join('\n')}
 
-Responda APENAS com JSON:
+Responda APENAS com JSON puro (sem markdown, sem crases):
 {
-  "genres": ["generos ou temas inferidos"],
-  "types": ["livro", "hq", "manga"],
-  "favoriteAuthors": ["autores mencionados pelo usuario"]
+  "genres": ["gêneros ou temas de interesse inferidos"],
+  "types": ["livro", "hq", "mangá"],
+  "favoriteAuthors": ["autores preferidos"]
 }
 
-Use arrays vazios quando nao houver informacao suficiente.
-`;
+Use arrays vazios [] onde não houver informações suficientes.`;
 
   try {
     const result = await model.generateContent(prompt);
@@ -291,43 +280,42 @@ async function generateQuizRecommendations(answers, preferences = null, readBook
     systemInstruction: buildSystemInstruction(preferences, readBooks),
   });
 
-  const prompt = `
-O usuario respondeu a um quiz de perfil de leitura.
+  const prompt = `Gere até 5 recomendações de leitura com base no quiz de perfil do usuário.
 
 RESPOSTAS DO QUIZ:
-${answers.map((item, index) => `${index + 1}. ${item.question} Resposta: ${item.answer}`).join('\n')}
+${answers.map((item, index) => `- ${item.question}: ${item.answer}`).join('\n')}
 
-Gere ate 5 recomendacoes de livros, HQs ou mangas que combinem com essas respostas.
-Inclua justificativa curta conectada ao quiz.
-Marque sensitiveContent como true quando houver violencia, saude mental, suicidio ou outros temas sensiveis.
+DIRETRIZES:
+1. Obras: No máximo 5 recomendações qualificadas.
+2. Justificativa: Curta, concisa e diretamente relacionada às respostas.
+3. Marque "sensitiveContent": true apenas para temas sensíveis (violência, abusos, etc.).
 
-Responda APENAS com JSON:
+Responda APENAS com JSON puro (sem markdown, sem crases):
 {
-  "message": "Mensagem curta para apresentar as recomendacoes",
+  "message": "Apresentação extremamente direta das recomendações.",
   "recommendations": [
     {
-      "title": "Titulo",
-      "type": "livro",
-      "author": "Autor",
-      "justification": "Justificativa curta",
+      "title": "Título da obra",
+      "type": "livro" | "hq" | "mangá",
+      "author": "Nome do Autor",
+      "justification": "Justificativa curta e objetiva.",
       "sensitiveContent": false
     }
   ]
-}
-`;
+}`;
 
   try {
     const result = await model.generateContent(prompt);
     const parsed = JSON.parse(cleanJsonText(result.response.text()));
 
     return {
-      message: parsed.message || 'Aqui estao algumas recomendacoes baseadas no seu quiz.',
+      message: parsed.message || 'Aqui estão algumas recomendações baseadas no seu quiz.',
       recommendations: safeArray(parsed.recommendations),
     };
   } catch (error) {
     logger.warn('Falha ao gerar recomendacoes do quiz', { error: error.message });
     return {
-      message: 'Nao foi possivel gerar recomendacoes agora. Tente novamente em alguns instantes.',
+      message: 'Não foi possível gerar recomendações agora. Tente novamente em alguns instantes.',
       recommendations: [],
     };
   }
