@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
+import { useRouter } from 'vue-router'
 import Navbar from '@/components/Navbar.vue'
 import fundoImg from '@/assets/FUNDO.png'
 
@@ -13,6 +14,14 @@ const categories = [
 
 const categorySearch = ref('')
 const activeCategory  = ref('Ficção')
+
+const categoriesSection = ref<HTMLElement | null>(null)
+
+const router = useRouter()
+
+function goToQuiz() {
+  router.push('/quiz')
+}
 </script>
 
 <template>
@@ -44,7 +53,7 @@ const activeCategory  = ref('Ficção')
       </div>
 
       <div class="hero__ctas">
-        <button class="cta-primary">
+        <button class="cta-primary" @click="goToQuiz">
           <v-icon>mdi-magnify</v-icon>
           Faça um quiz de recomendações
         </button>

@@ -37,6 +37,21 @@ async function answerQuestion(req, res, next) {
   }
 }
 
+async function regenerateQuestion(req, res, next) {
+  try {
+    const { sessionId } = req.body;
+
+    if (!sessionId || typeof sessionId !== 'string') {
+      return res.status(400).json({ message: 'O campo "sessionId" e obrigatorio.' });
+    }
+
+    const result = await quizService.regenerateCurrentQuestion(req.user.email, sessionId);
+    return res.status(200).json(result);
+  } catch (error) {
+    return next(error);
+  }
+}
+
 async function finishQuiz(req, res, next) {
   try {
     const { sessionId, savePreferences } = req.body;
@@ -59,5 +74,6 @@ async function finishQuiz(req, res, next) {
 module.exports = {
   answerQuestion,
   finishQuiz,
+  regenerateQuestion,
   startQuiz,
 };

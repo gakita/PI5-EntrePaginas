@@ -222,6 +222,60 @@ async function answerQuestion(userEmail, { sessionId, questionId, answer }) {
   };
 }
 
+async function regenerateCurrentQuestion(userEmail, sessionId) {
+  const session = await quizModel.findActiveBySessionId(userEmail, sessionId);
+  if (!session) {
+    throw createHttpError('Sessao de quiz nao encontrada.', 404);
+  }
+
+  if (session.finished) {
+    throw createHttpError('Quiz ja finalizado.', 409);
+  }
+
+  if (isComplete(session)) {
+    throw createHttpError('O quiz atingiu o limite de 8 perguntas.', 409);
+  }
+
+  const currentIndex = session.answers.length;
+
+  if (currentIndex < GENERIC_QUESTIONS.length) {
+    throw createHttpError('Apenas perguntas geradas pela IA podem ser regeradas.', 400);
+  }
+
+  const currentQuestionNumber = currentIndex + 1;
+  let newQuestion;
+
+  try {
+    const generated = await llmService.generateQuizQuestion(
+      session.questions.slice(0, currentIndex),
+      buildQuestionAnswerPairs(session)
+    );
+    newQuestion = normalizeAiQuestion(generated, currentQuestionNumber);
+  } catch (error) {
+    logger.warn('Falha ao regerar pergunta adaptativa do quiz', {
+      userEmail,
+      sessionId,
+      error: error.message,
+    });
+    newQuestion = fallbackQuestion(currentQuestionNumber);
+  }
+
+  const nextSession = clone(session);
+  nextSession.questions[currentIndex] = newQuestion;
+  nextSession.updatedAt = nowIso();
+
+  await quizModel.upsertActiveSession(userEmail, nextSession);
+
+  return {
+    sessionId: nextSession.sessionId,
+    answeredCount: nextSession.answers.length,
+    maxQuestions: MAX_QUESTIONS,
+    question: newQuestion,
+    canFinish: canFinish(nextSession),
+    isComplete: isComplete(nextSession),
+  };
+}
+
 async function finishQuiz(userEmail, { sessionId, savePreferences = false }) {
   const session = await quizModel.findActiveBySessionId(userEmail, sessionId);
   if (!session) {
@@ -298,6 +352,7 @@ async function finishQuiz(userEmail, { sessionId, savePreferences = false }) {
 module.exports = {
   startQuiz,
   answerQuestion,
+  regenerateCurrentQuestion,
   finishQuiz,
   _test: {
     canFinish,
