@@ -14,562 +14,281 @@ Integrantes do Grupo (RA e Nome Completo):
 
 Semestre/Ano: 1º Semestre de 2026
 
-Resumo
-O Entre Páginas é um sistema de recomendação de leitura que utiliza Inteligência Artificial para
-auxiliar leitores a descobrirem livros, HQs e mangás alinhados aos seus interesses. O MVP
-combina preferências salvas por usuário, filtros e um modo de busca conversacional em chat,
-além de um quiz para identificar o perfil do leitor. As recomendações são geradas por um modelo
-de linguagem (LLM) e enriquecidas com dados obtidos de APIs de catálogo (ex.: capa, autor e
-sinopse). O projeto adota abordagem incremental (Scrum) e validação com comunidade externa.
-Palavras-chave: Inteligência Artificial; Engenharia de Software; Recomendação; Leitura;
-Chatbot; UX.
+Resumo
+O Entre Páginas é um sistema de recomendação de leitura que utiliza Inteligência Artificial para auxiliar leitores a descobrirem livros, HQs e mangás alinhados aos seus interesses. O MVP combina preferências salvas por usuário, filtros e um modo de busca conversacional em chat, além de um quiz para identificar o perfil do leitor. As recomendações são geradas por um modelo de linguagem (LLM) e enriquecidas com dados obtidos de APIs de catálogo (ex.: capa, autor e sinopse). O projeto adota abordagem incremental (Scrum) e validação com comunidade externa.
+Palavras-chave: Inteligência Artificial; Engenharia de Software; Recomendação; Leitura; Chatbot; UX.
 
 1. Introdução
-A descoberta de novas leituras é frequentemente dificultada pelo excesso de opções, pela falta de
-personalização e pela fragmentação de catálogos entre diferentes mídias (livros, HQs e mangás).
-O projeto Entre Páginas propõe uma experiência centrada no usuário para recomendar itens de
-leitura com base em preferências declaradas, filtros e interação em linguagem natural (chat),
-reduzindo o esforço de busca e aumentando a assertividade das sugestões.
-A motivação do projeto está em apoiar leitores na formação de hábito de leitura e na exploração
-de novas obras, mantendo transparência e controle: o usuário pode ajustar preferências, aplicar
-filtros e receber aviso quando um item possuir temas sensíveis. O escopo do MVP contempla
-cadastro/login, preferências por usuário, carrossel de categorias, filtros, quiz e chat de
-recomendação com IA, além de persistência mínima (somente a última conversa).
+A descoberta de novas leituras é frequentemente dificultada pelo excesso de opções, pela falta de personalização e pela fragmentação de catálogos entre diferentes mídias (livros, HQs e mangás). O projeto Entre Páginas propõe uma experiência centrada no usuário para recomendar itens de leitura com base em preferências declaradas, filtros e interação em linguagem natural (chat), reduzindo o esforço de busca e aumentando a assertividade das sugestões.
+A motivação do projeto está em apoiar leitores na formação de hábito de leitura e na exploração de novas obras, mantendo transparência e controle: o usuário pode ajustar preferências, aplicar filtros e receber aviso quando um item possuir temas sensíveis. O escopo do MVP contempla cadastro/login, preferências por usuário, carrossel de categorias, filtros, quiz e chat de recomendação com IA, além de persistência mínima (somente a última conversa).
 
 1.1 Círculo Dourado
-Why: Facilitar a descoberta de leituras relevantes e seguras, reduzindo fricção e aumentando
-engajamento do leitor.
-How: Combinar preferências, filtros e quiz com recomendação por IA (LLM) e enriquecimento
-via APIs de catálogo.
-What: Plataforma web de recomendação de livros/HQs/mangás com carrossel de categorias e
-busca conversacional em chat.
+Why: Facilitar a descoberta de leituras relevantes e seguras, reduzindo fricção e aumentando engajamento do leitor.
+How: Combinar preferências, filtros e quiz com recomendação por IA (LLM) e enriquecimento via APIs de catálogo.
+What: Plataforma web de recomendação de livros/HQs/mangás com carrossel de categorias e busca conversacional em chat.
 
-2. Objetivos
+2. Objetivos
 2.1 Objetivo Geral
-Desenvolver um sistema de recomendação de leitura com IA que personalize sugestões e
-melhore a experiência de descoberta.
+Desenvolver um sistema de recomendação de leitura com IA que personalize sugestões e melhore a experiência de descoberta.
 
 2.2 Objetivos Específicos
-●​ Implementar cadastro/login e persistência de preferências por usuário.
-●​ Oferecer navegação por categorias (carrossel) e sistema de filtros aplicáveis à busca e ao
-chat.
-●​ Disponibilizar quiz para identificação de perfil e geração de recomendações.
-●​ Integrar um modelo de linguagem (LLM) para recomendação e registrar somente a última
-conversa, salvando preferências e sugeridos ao final.
+● Implementar cadastro/login e persistência de preferências por usuário.
+● Oferecer navegação por categorias (carrossel) e sistema de filtros aplicáveis à busca e ao chat.
+● Disponibilizar quiz para identificação de perfil e geração de recomendações.
+● Integrar um modelo de linguagem (LLM) para recomendação e registrar somente a última conversa, salvando preferências e sugeridos ao final.
 
 3. Representantes da Comunidade Externa
-A extensão será validada junto a representantes (2 a 5 profissionais) que participarão da
-definição/validação do projeto.
+A extensão será validada junto a representantes (2 a 5 profissionais) que participarão da definição/validação do projeto.
 Nome: Matheus Zanon Caritá
 Contato (e-mail): matheuscarita@gmail.com
 Cargo: Estagiário de Desenvolvimento Mobile
 Organização: Sidi
-Nome: Nome:Giovani Bellini dos Santos
+Nome: Giovani Bellini dos Santos
 Contato (e-mail): giovanibellini.correio@gmail.com
 Cargo: Mentor do curso PADIS 2
 Organização: iRede
 
 4. Fundamentação Teórica
-O projeto se apoia em conceitos de sistemas de recomendação e personalização, interação
-humano-computador (IHC) e processamento de linguagem natural (PLN). No MVP, a
-recomendação é produzida por um modelo de linguagem (LLM) com base em preferências do
-
-usuário e contexto de conversa, e posteriormente enriquecida por fontes externas (APIs) para
-apresentação consistente no front-end.
+O projeto se apoia em conceitos de sistemas de recomendação e personalização, interação humano-computador (IHC) e processamento de linguagem natural (PLN). No MVP, a recomendação é produzida por um modelo de linguagem (LLM) com base em preferências do usuário e contexto de conversa, e posteriormente enriquecida por fontes externas (APIs) para apresentação consistente no front-end.
 
 5. Levantamento e Análise de Requisitos
 5.1 Requisitos Funcionais
-A seguir estão os requisitos funcionais do MVP, descritos com descrição e critérios de aceite
-(suficiente para derivar casos de uso).
-ID
-RF01
+A seguir estão os requisitos funcionais do MVP, descritos com descrição e critérios de aceite.
 
-Requisito
-Cadastro de usuário
+ID: RF01
+Requisito: Cadastro de usuário
+Descrição: Permitir que um usuário crie uma conta com dados mínimos (ex.: nome, e-mail e senha).
+Critérios de Aceite: 1) Validação de e-mail; 2) Senha com política mínima; 3) Conta criada e usuário autenticado; 4) Mensagens claras em erro.
 
-RF02
+ID: RF02
+Requisito: Login e logout
+Descrição: Permitir autenticação e encerramento de sessão.
+Critérios de Aceite: 1) Login e-mail+senha; 2) Sessão/token válido; 3) Logout invalida sessão; 4) Rotas protegidas exigem login.
 
-Login e logout
+ID: RF03
+Requisito: Recuperação de senha
+Descrição: Permitir redefinir senha via fluxo “esqueci a senha” com token criptografado e link enviado por e-mail.
+Critérios de Aceite: 1) Solicitação com e-mail; 2) Envio de link/código via SMTP; 3) Alteração com confirmação; 4) Link/código expira após tempo definido.
 
-RF03
+ID: RF04
+Requisito: Preferências salvas por usuário
+Descrição: Permitir criar/editar preferências (gêneros/temas, autores e tipos: livro/HQ/mangá), com persistência em banco.
+Critérios de Aceite: 1) Editar preferências; 2) Persistir no banco; 3) Usadas em recomendações/quiz/filtros; 4) Permite limpar/redefinir.
 
-Recuperação de senha
+ID: RF05
+Requisito: Carrossel de banners com categorias
+Descrição: Exibir carrossel de banners (home) com categorias/temas para descoberta de leitura.
+Critérios de Aceite: 1) Mostra categorias configuradas; 2) Nome + imagem/ícone; 3) Rolagem horizontal/auto-rotate; 4) Carrega sem depender de IA.
 
-RF04
+ID: RF06
+Requisito: Sistema de filtros
+Descrição: Permitir filtrar resultados/recomendações por categoria, gênero/tema, tipo (livro/HQ/mangá) e outros filtros do MVP.
+Critérios de Aceite: 1) Aplicáveis/removíveis; 2) Estado visível (chips/etiquetas); 3) Combina múltiplos filtros; 4) “Limpar filtros” restaura padrão.
 
-Preferências salvas por
-usuário
+ID: RF07
+Requisito: Banner da categoria onClick adiciona filtro
+Descrição: Ao clicar em banner de categoria, adicionar automaticamente o filtro correspondente na barra de pesquisa/chat.
+Critérios de Aceite: 1) Clique adiciona chip; 2) Influencia busca e recomendações; 3) Pode remover; 4) Não duplica o mesmo filtro.
 
-RF05
+ID: RF08
+Requisito: Clique na busca expande para o chat
+Descrição: Ao clicar na barra de pesquisa, expandir a interface e mudar para modo chat (busca conversacional).
+Critérios de Aceite: 1) Clique muda para chat; 2) Mostra conversa atual; 3) Permite voltar ao modo compacto; 4) Filtros permanecem ativos.
 
-Carrossel de banners
-com categorias
+ID: RF09
+Requisito: Chat de recomendação com IA
+Descrição: Permitir conversar com assistente (Google Gemini) para obter recomendações e refinar pedidos em tempo real.
+Critérios de Aceite: 1) Respostas com lista de itens; 2) Justificativa curta por item; 3) Respeita preferências/filtros; 4) Aplica regras do MVP.
 
-Descrição
-Permitir que um usuário
-crie uma conta com
-dados mínimos (ex.:
-nome, e-mail e senha).
+ID: RF10
+Requisito: Quiz para achar um livro
+Descrição: Disponibilizar quiz adaptativo de até 8 perguntas (perguntas genéricas iniciais e adaptativas via IA depois) para identificar preferências e sugerir leituras.
+Critérios de Aceite: 1) Perguntas e opções estruturadas; 2) Ao final, recomenda de forma personalizada; 3) Pode atualizar preferências; 4) Permite refazer o quiz.
 
-Critérios de Aceite
-1) Validação de e-mail;
-2) Senha com política
-mínima; 3) Conta criada
-e usuário autenticado; 4)
-Mensagens claras em
-erro.
-Permitir autenticação e
-1) Login e-mail+senha;
-encerramento de sessão. 2) Sessão/token válido;
-3) Logout invalida
-sessão; 4) Rotas
-protegidas exigem login.
-Permitir redefinir senha
-1) Solicitação com
-via fluxo “esqueci a
-e-mail; 2) Envio de
-link/código; 3) Alteração
-senha”.
-com confirmação; 4)
-Link/código expira.
-Permitir criar/editar
-1) Editar preferências; 2)
-preferências
-Persistir no banco; 3)
-(gêneros/temas, autores e Usadas em
-tipos: livro/HQ/mangá),
-recomendações/quiz/filtr
-com persistência por
-os; 4) Permite
-conta.
-limpar/redefinir.
-Exibir carrossel de
-1) Mostra categorias
-banners (home) com
-configuradas; 2) Nome +
-categorias/temas para
-imagem/ícone; 3)
-Rolagem
-descoberta de leitura.
-horizontal/auto-rotate; 4)
-Carrega sem depender de
-IA.
+ID: RF11
+Requisito: Tag e aviso de temas sensíveis
+Descrição: Exibir tag/aviso quando um item contiver temas sensíveis (ex.: saúde mental/suicídio/violência), solicitando confirmação de leitura antes de prosseguir.
+Critérios de Aceite: 1) Exibe tag/aviso; 2) Modal de confirmação no UI; 3) Cancelar retorna à recomendação; 4) Campo sensitiveContent fornecido pela IA.
 
-ID
-RF06
+ID: RF12
+Requisito: Salvar somente a última conversa
+Descrição: Manter apenas a última conversa do chat por usuário no banco de dados (substituindo a anterior para preservar a privacidade).
+Critérios de Aceite: 1) Nova conversa substitui anterior; 2) Reabrir mostra somente a última; 3) Isolamento por usuário; 4) Restrição imposta na chave única da tabela.
 
-Requisito
-Sistema de filtros
-
-Descrição
-Permitir filtrar
-resultados/recomendaçõe
-s por categoria,
-gênero/tema, tipo
-(livro/HQ/mangá) e
-outros filtros do MVP.
-
-RF07
-
-Banner da categoria
-onClick adiciona filtro
-
-RF08
-
-Clique na busca expande
-para o chat
-
-Ao clicar em banner de
-categoria, adicionar
-automaticamente o filtro
-correspondente na barra
-de pesquisa/chat.
-Ao clicar na barra de
-pesquisa, expandir a
-interface e mudar para
-modo chat (busca
-conversacional).
-
-RF09
-
-Chat de recomendação
-com IA
-
-Permitir conversar com
-assistente para obter
-recomendações e refinar
-pedidos.
-
-RF10
-
-Quiz para achar um livro
-
-RF11
-
-Tag e aviso de temas
-sensíveis
-
-RF12
-
-Salvar somente a última
-conversa
-
-Disponibilizar quiz
-guiado (perguntas
-objetivas) para
-identificar preferências e
-sugerir leituras.
-Exibir tag/aviso quando
-um item contiver temas
-sensíveis (ex.: saúde
-mental/suicídio),
-solicitando confirmação
-antes de prosseguir.
-Manter apenas a última
-conversa do chat por
-usuário (substituindo a
-anterior).
-
-Critérios de Aceite
-1)
-Aplicáveis/removíveis;
-2) Estado visível
-(chips/etiquetas); 3)
-Combina múltiplos
-filtros; 4) “Limpar
-filtros” restaura padrão.
-1) Clique adiciona chip;
-2) Influencia busca e
-recomendações; 3) Pode
-remover; 4) Não duplica
-o mesmo filtro.
-1) Clique muda para
-chat; 2) Mostra conversa
-atual; 3) Permite voltar
-ao modo compacto; 4)
-Filtros permanecem
-ativos.
-1) Respostas com lista
-de itens; 2) Justificativa
-curta por item; 3)
-Respeita
-preferências/filtros; 4)
-Aplica regras do MVP.
-1) Perguntas e opções; 2)
-Ao final, recomenda; 3)
-Pode atualizar
-preferências; 4) Permite
-refazer.
-1) Exibe tag/aviso; 2)
-Modal de confirmação;
-3) Cancelar retorna; 4)
-Preferência de aviso
-(opcional no MVP).
-1) Nova conversa
-substitui anterior; 2)
-Reabrir mostra somente
-a última; 3) Isolamento
-por usuário; 4) Política
-explícita no app.
-
-ID
-RF13
-
-Requisito
-Ao final da conversa
-salvar preferências e
-sugestões
-
-Descrição
-Ao encerrar/fechar uma
-conversa, salvar
-preferências
-consolidadas e lista de
-livros sugeridos daquela
-conversa.
-
-Critérios de Aceite
-1) Salva ao
-encerrar/inatividade; 2)
-Atualiza sem duplicação;
-3) Registra sugeridos
-com data/hora; 4)
-Influencia próxima
-conversa.
+ID: RF13
+Requisito: Ao final da conversa salvar preferências e sugestões
+Descrição: Ao encerrar/fechar uma conversa através do endpoint /chat/close, a IA infere as preferências e o sistema as salva junto à lista de livros sugeridos.
+Critérios de Aceite: 1) Salva ao encerrar (clique do usuário); 2) Atualiza tabelas locais sem duplicação; 3) Registra sugeridos com metadados; 4) Influencia próximas interações.
 
 Casos de Uso (síntese):
-●​ UC01 — Cadastrar Usuário (RF01): usuário informa dados → sistema valida → cria conta
-→ autentica.
-●​ UC02 — Autenticar Usuário (RF02/RF03): login / recuperar senha → acesso autorizado.
-●​ UC03 — Gerenciar Preferências (RF04): selecionar preferências → salvar → refletir em
-quiz, filtros e recomendações.
-●​ UC04 — Explorar Categorias (RF05/RF07): navegar no carrossel → clicar em banner →
-adicionar filtro.
-●​ UC05 — Filtrar Conteúdo (RF06): ativar/remover filtros → atualizar resultados e
-recomendações.
-●​ UC06 — Buscar via Chat (RF08/RF09): clicar na busca → modo chat → refinar pedido →
-retornar sugestões.
-●​ UC07 — Executar Quiz (RF10): responder perguntas → inferir preferências → sugerir e
-(opcionalmente) salvar.
-●​ UC08 — Aviso de Temas Sensíveis (RF11): abrir item sensível → aviso →
-confirmar/cancelar.
-●​ UC09 — Persistir Conversa e Sugestões (RF12/RF13): encerrar conversa → salvar última
-conversa + preferências + sugeridos.
+● UC01 — Cadastrar Usuário (RF01): usuário informa dados → sistema valida → cria conta → autentica.
+● UC02 — Autenticar Usuário (RF02/RF03): login / recuperar senha → acesso autorizado.
+● UC03 — Gerenciar Preferências (RF04): selecionar preferências → salvar → refletir em quiz, filtros e recomendações.
+● UC04 — Explorar Categorias (RF05/RF07): navegar no carrossel → clicar em banner → adicionar filtro.
+● UC05 — Filtrar Conteúdo (RF06): ativar/remover filtros → atualizar resultados e recomendações.
+● UC06 — Buscar via Chat (RF08/RF09): clicar na busca → modo chat → refinar pedido → retornar sugestões.
+● UC07 — Executar Quiz (RF10): responder perguntas → inferir preferências → sugerir e (opcionalmente) salvar.
+● UC08 — Aviso de Temas Sensíveis (RF11): abrir item sensível → aviso → confirmar/cancelar.
+● UC09 — Persistir Conversa e Sugestões (RF12/RF13): encerrar conversa → salvar última conversa + preferências + sugeridos.
 
 5.2 Requisitos Não Funcionais
 Desempenho:
-●​ RNF01 (Busca): tempo de resposta percebido na busca ≤ 2 s para resultados paginados, em
-condições normais.
-●​ RNF02 (Recomendação IA): tempo total (contexto + LLM + enriquecimento) ≤ 10 s em 90%
-das requisições.
-
-Segurança:
-●​ RNF03 (Autenticação): autenticação por token (ex.: JWT) e senhas armazenadas com hash
-forte (ex.: bcrypt/argon2).
-●​ RNF04 (Transporte): todo tráfego via HTTPS/TLS.
-●​ RNF05 (Controle de acesso): endpoints protegidos exigem sessão/token válido; regras por
-usuário (não acessar dados de terceiros).
+● RNF01 (Busca): tempo de resposta percebido na busca ≤ 2 s para resultados paginados, em condições normais.
+● RNF02 (Recomendação IA): tempo total (contexto + LLM + enriquecimento) ≤ 10 s em 90% das requisições.
+Segurança:
+● RNF03 (Autenticação): autenticação por token JWT e senhas armazenadas com hash forte bcrypt no Oracle.
+● RNF04 (Transporte): todo tráfego via HTTPS/TLS para a API e aplicação web.
+● RNF05 (Controle de acesso): endpoints protegidos exigem token válido; regras por usuário impedem acesso a dados de terceiros.
 Privacidade e LGPD:
-●​ RNF06 (Minimização): coletar apenas dados necessários ao serviço.
-●​ RNF07 (Transparência): informar uso de dados para personalização (preferências, chat e
-recomendações) e permitir revogação/edição.
-●​ RNF08 (Retenção): política de retenção (manter somente a última conversa, conforme RF12)
-e logs técnicos por tempo limitado.
+● RNF06 (Minimização): coletar apenas dados estritamente necessários ao serviço (nome, e-mail, senha e preferências).
+● RNF07 (Transparência): informar uso de dados para personalização (preferências, chat e quiz) e permitir exclusão.
+● RNF08 (Retenção): política de retenção limitada (manter apenas a última conversa, conforme RF12) e logs sem dados pessoais.
 Usabilidade:
-●​ RNF09 (Responsividade): interfaces utilizáveis em desktop e mobile.
-●​ RNF10 (Acessibilidade): textos legíveis, contraste adequado e navegação consistente.
+● RNF09 (Responsividade): interfaces responsivas utilizáveis em desktop, tablets e mobile.
+● RNF10 (Acessibilidade): textos legíveis com contraste adequado e navegação consistente compatível com leitores de tela.
 Confiabilidade e Disponibilidade:
-●​ RNF11 (Disponibilidade): meta de 99% de disponibilidade mensal (ambiente MVP).
-●​ RNF12 (Tolerância a falhas externas): se APIs/LLM falharem, exibir fallback (mensagem +
-tentativa posterior) sem quebrar o app.
+● RNF11 (Disponibilidade): meta de 99% de disponibilidade para o ambiente da API em produção.
+● RNF12 (Tolerância a falhas externas): exibir fallback amigável caso a API do Google Books ou o Google Gemini fiquem fora do ar.
 Escalabilidade e Manutenibilidade:
-●​ RNF13 (Escalabilidade): arquitetura em camadas e serviços desacoplados para suportar
-aumento de usuários.
-●​ RNF14 (Observabilidade): logs e métricas (ex.: taxa de falha em APIs/LLM).
-●​ RNF15 (Testabilidade): testes unitários (regras) e testes de integração (fluxos críticos).
+● RNF13 (Escalabilidade): arquitetura em camadas bem delimitadas e serviços desacoplados para fácil escala.
+● RNF14 (Observabilidade): geração de logs estruturados no backend e tratamento centralizado de erros em middlewares.
+● RNF15 (Testabilidade): testes automatizados unitários e integrados cobrindo fluxos críticos (auth, catalog, quiz, chat).
 
-5.3 Requisitos Específicos de Inteligência Artificial
-A IA do MVP será usada como assistente conversacional (chat) para recomendar itens de leitura
-e refinar a intenção do usuário, respeitando preferências e filtros.
+5.3 Requisitos Específicos de Inteligência Artificial
+A IA do MVP é usada como assistente conversacional no chat e cérebro no quiz adaptativo.
 Requisitos de entrada/saída (comportamentais):
-●​ RIA01 (Contexto mínimo): preferências, filtros ativos e a última conversa (quando existir).
-●​ RIA02 (Formato estruturado): saída em JSON seguindo schema definido (título, tipo,
-justificativa e termos para busca/enriquecimento).
-●​ RIA03 (Explicabilidade): justificativa curta conectando preferências/filtros/quiz.
-●​ RIA04 (Pós-processamento): validação/sanitização da saída e enriquecimento via APIs (capa,
-sinopse etc.).
-●​ RIA05 (Temas sensíveis): indicar tag de tema sensível quando aplicável para disparar aviso
-de confirmação no UI.
-●​ RIA06 (Persistência mínima): armazenar apenas a última conversa por usuário.
-●​ RIA07 (Resumo ao final): salvar preferências consolidadas e lista de sugeridos daquela
-conversa.
+● RIA01 (Contexto mínimo): preferências declaradas do usuário, livros já avaliados (lidos) e histórico da última conversa ativa.
+● RIA02 (Formato estruturado): saída da recomendação estruturada em JSON seguindo schema restrito (título, tipo, autor, justificativa, sensitiveContent).
+● RIA03 (Explicabilidade): justificativa de indicação contextualizada conectando as preferências e respostas com as características da obra.
+● RIA04 (Pós-processamento): validação sintática do JSON e enriquecimento em tempo real das recomendações através da API do Google Books.
+● RIA05 (Temas sensíveis): detecção e marcação de termos sensíveis para avisar o usuário no frontend (sensitiveContent: true).
+● RIA06 (Persistência mínima): armazenar somente uma sessão ativa de conversa no banco para cada usuário.
+● RIA07 (Resumo ao final): ao encerrar, a IA resume a conversa em novas preferências (gêneros, autores e tipos favoritos) e salva.
 Métricas e metas de qualidade (MVP):
-●​ MQ01 (Qualidade percebida): nota média de utilidade ≥ 4,0/5 (amostra de testadores).
-●​ MQ02 (Engajamento): CTR ≥ 20% (cliques / itens exibidos).
-●​ MQ03 (Cobertura de enriquecimento): ≥ 80% das respostas enriquecidas com capa + sinopse
-+ autor.
-●​ MQ04 (Tempo de resposta IA): geração LLM ≤ 6 s em 90% das requisições (exclui
-enriquecimento).
-●​ MQ05 (Robustez de formato): ≥ 95% das respostas passam na validação do schema (ou
-fallback).
-●​ MQ06 (Diversidade): em 10 itens, ≥ 6 autores distintos (quando aplicável).
-●​ MQ07 (Aviso de sensibilidade): ≥ 95% dos itens sensíveis disparam tag/aviso no UI.
+● MQ01 (Qualidade percebida): nota média de utilidade das recomendações ≥ 4,0/5 na validação de usuários.
+● MQ02 (Engajamento): CTR (Click-Through Rate) das recomendações enriquecidas ≥ 20%.
+● MQ03 (Cobertura de enriquecimento): ≥ 80% das recomendações completadas com capa, sinopse e editora via API do Google Books.
+● MQ04 (Tempo de resposta IA): geração de texto do modelo de linguagem ≤ 6 s em 90% das requisições.
+● MQ05 (Robustez de formato): ≥ 95% das respostas passando no validador de schema JSON (ou caindo no parser do fallback técnico).
+● MQ06 (Diversidade): em 5 recomendações simultâneas, pelo menos 3 autores diferentes presentes no payload.
+● MQ07 (Aviso de sensibilidade): ≥ 95% de precisão na detecção e acionamento da tag de temas sensíveis nas obras.
 
 6. Benchmarking
-Tabela comparativa (exemplo inicial) com softwares do mercado e diferencial do Entre Páginas.
-Ajustar conforme validação do grupo.
+Tabela comparativa com softwares do mercado e diferencial do Entre Páginas.
 
-Funcionalidade
-Recomendação
-personalizada
-baseada em
-preferências
-Busca e filtros por
-categoria/gênero
-Quiz/survey para
-identificar perfil
-Chat
-conversacional
-com IA
-Aviso de temas
-sensíveis (content
-warnings)
-Registro de
-histórico/listas
-(lido/lendo/quero
-ler)
+Funcionalidade                    | Entre Páginas (MVP) | Goodreads | Skoob | The StoryGraph
+---------------------------------|---------------------|-----------|-------|---------------
+Recomendação baseada em pref.    | ✓                   | ✓         | ✓     | ✓
+Busca e filtros por cat./gênero   | ✓                   | ✓         | ✓     | ✓
+Quiz para identificar perfil      | ✓                   | X         | X     | ✓
+Chat conversacional com IA       | ✓                   | X         | X     | X
+Aviso de temas sensíveis (tags)  | ✓                   | X         | X     | ✓
+Registro de histórico de leitura | (futuro)            | ✓         | ✓     | ✓
 
-Entre Páginas
-(MVP)
-✓
-
-Goodreads
-
-Skoob
-
-The StoryGraph
-
-✓
-
-✓
-
-✓
-
-✓
-
-✓
-
-✓
-
-✓
-
-✓
-
-X
-
-X
-
-✓
-
-✓
-
-X
-
-X
-
-X
-
-✓
-
-X
-
-X
-
-✓
-
-(futuro)
-
-✓
-
-✓
-
-✓
-
-Diferencial do Entre Páginas: uso de chat com IA para refinar intenção do usuário, integração de
-filtros e preferências em uma experiência única, além de aviso de temas sensíveis e persistência
-mínima de conversa para privacidade.
+Diferencial do Entre Páginas: uso de busca conversacional interativa com IA que se adapta em tempo real, integração de quiz inteligente com perguntas adaptativas dinâmicas, tag explícita de proteção contra temas sensíveis com confirmação obrigatória e persistência mínima (foco em privacidade).
 
 7. Definição das Personas
-Persona 1: O Iniciante Curioso (Foco na Descoberta e Hábito)
-Representa o usuário que quer ler mais, mas trava na hora de escolher e precisa ser guiado.
-●​ Perfil: Lucas, 20 anos, estudante universitário. Consome muito conteúdo em vídeo, mas
-lê pouco.
-●​ Objetivos: Criar um hábito de leitura sólido e descobrir obras (sejam livros rápidos ou
-mangás) que consigam prender sua atenção.
-●​ Dores: Sente-se paralisado e frustrado com a infinidade de opções disponíveis no
-mercado (excesso de escolhas). Geralmente abandona as leituras logo no início porque
-não escolheu o formato ou tema certo.
+Persona 1: O Iniciante Curioso (Lucas, 20 anos, estudante universitário)
+● Objetivos: Criar um hábito de leitura regular e descobrir de forma rápida obras (especialmente mangás e HQs) que cativem sua atenção.
+● Dores: Sente-se frustrado e sobrecarregado pela quantidade infinita de opções no mercado. Geralmente desiste no início se o livro não engajar de imediato.
+● Comportamento: Adora testes e gamificação. Utiliza o "Quiz de Recomendação" como porta de entrada principal para definir suas preferências iniciais.
 
-●​ Comportamento e Contexto: Gosta de interações gamificadas e testes. O recurso de
-Quiz para identificação de perfil será o principal ponto de entrada dele, ajudando o
-sistema a inferir suas preferências iniciais sem exigir que ele conheça gêneros complexos.
+Persona 2: A Leitora Constante e Cautelosa (Marina, 28 anos, analista de marketing)
+● Objetivos: Encontrar novas leituras de nicho cruzando filtros e ter garantia absoluta de que a obra recomendada não conterá gatilhos pesados de violência ou saúde mental.
+● Dores: Detesta o tempo perdido procurando em catálogos desorganizados e a falta de avisos de gatilhos em publicações comerciais.
+● Comportamento: Lê todas as noites. Depende do "Aviso de Temas Sensíveis" e dos filtros refinados por tipo e categoria de leitura.
 
-Persona 2: A Leitora Constante e Cautelosa (Foco em Filtros e Segurança)
-Representa o usuário experiente, mas que exige controle sobre o que vai consumir devido a
-gatilhos.
-●​ Perfil: Marina, 28 anos, analista de marketing. Lê com frequência (especialmente livros
-de ficção e HQs).
-●​ Objetivos: Encontrar novas leituras de nicho cruzando gêneros específicos e ter clareza
-sobre o conteúdo da obra antes de investir tempo (e emoção) nela.
-●​ Dores: Detesta perder tempo procurando em diferentes plataformas (fragmentação de
-catálogos). Além disso, sente-se desconfortável e frustrada quando é pega de surpresa por
-conteúdos com gatilhos emocionais pesados em suas leituras.
-●​ Comportamento e Contexto: Lê todos os dias antes de dormir. Fará muito uso do
-sistema de filtros e valoriza imensamente a tag/aviso de temas sensíveis , precisando
-dessa funcionalidade para confirmar se quer prosseguir com a leitura recomendada.
+Persona 3: O Prático e Tecnológico (Rafael, 35 anos, desenvolvedor de software)
+● Objetivos: Encontrar sua próxima leitura em menos de 5 minutos, recebendo argumentos de justificativa inteligentes.
+● Dores: Falta total de tempo para ler resenhas e carrosséis genéricos.
+● Comportamento: Alta afinidade com tecnologia. Conversa com a IA do Chat digitando comandos exatos e valoriza a explicabilidade e a limpeza rápida de seu histórico (privacidade de conversa).
 
-Persona 3: O Prático e Tecnológico (Foco no Chatbot e Agilidade)
-Representa o usuário sem tempo, que quer recomendações hiperpersonalizadas de forma rápida.
-●​ Perfil: Rafael, 35 anos, desenvolvedor de software. Tem uma rotina agitada e pouco
-tempo livre.
-●​ Objetivos: Encontrar a próxima leitura perfeita em menos de 5 minutos, recebendo
-justificativas lógicas do porquê aquela obra faz sentido para ele.
+8. Protótipos das Interfaces
+Os protótipos de alta fidelidade foram desenhados na ferramenta Figma e validados com os representantes externos. O link público do projeto está disponível em:
+https://www.figma.com/design/9SFzT4TJ3KYYh2sUxPaIkp/Projeto-Integrador-V---Entre-P%C3%A1ginas?node-id=0-1&t=cUs8orVgod0w562a-1
 
-●​ Dores: Falta de tempo e paciência para navegar em carrosséis infinitos ou ler dezenas de
-sinopses. Ele sabe mais ou menos o que quer (ex: "uma ficção científica com pegada
-cyberpunk em formato HQ"), mas não quer caçar isso sozinho.
-●​ Comportamento e Contexto: Tem alta afinidade com tecnologia. Vai usar quase
-exclusivamente a busca conversacional em chat com a IA (LLM). Valoriza a
-explicabilidade das sugestões e acha ótimo que o sistema limpe o histórico (persistência
-mínima) focando apenas nas preferências geradas pela última interação.
+[Imagens dos mockups de alta fidelidade incorporadas na compilação do relatório final]
 
-8. Protótipos das Interfaces
-Inserir prints legíveis das principais telas e o link do software de design (ex.: Figma). Registrar
-validação/aceite com comunidade externa.
-https://www.figma.com/design/9SFzT4TJ3KYYh2sUxPaIkp/Projeto-Integrador-V---Entre-P%C
-3%A1ginas?node-id=0-1&t=cUs8orVgod0w562a-1
+9. Modelo de Dados
+O MVP utiliza o Oracle Database para o armazenamento persistente da aplicação. O Modelo Entidade-Relacionamento (MER) foi elaborado para garantir a máxima integridade dos dados e isolamento das contas dos usuários.
 
-9. Modelo de Dados
-Inserir MER (relacional) ou modelo de estrutura de dados (não relacional) utilizado no MVP.
+[Imagens do diagrama MER de banco de dados estruturado incorporado na compilação do relatório final]
 
 10. Arquitetura e Tecnologias
-Arquitetura em camadas: Frontend web (interface e experiência), Backend/API (lógica de
-negócio, integração com APIs e LLM) e Banco de Dados (usuários, preferências, última
-conversa e registros de recomendações).
-Tecnologias: Frontend (Vue.js), Backend (Node.js, JavaScript, Express.js 5.1.0, Oracle Database,
-oracledb 6.9.0, JWT 9.0.2, bcrypt 6.0.0, CORS 2.8.5, dotenv 17.2.3, nodemon 3.1.14, npm),
-Banco (Oracle Database) e integrações com APIs de catálogo (ex.: Google Books/Open Library)
-e provedor de LLM (A definir).
+O sistema Entre Páginas foi desenvolvido em uma arquitetura moderna e desacoplada em três camadas principais:
+1. Camada de Apresentação (Frontend): Uma Single Page Application (SPA) construída com Vue.js 3 (versão 3.5.30) e TypeScript, gerenciamento de estado global reativo com Pinia (versão 3.0.4), componentes visuais modernos com a especificação Material Design através do Vuetify 4 (versão 4.0.2) e estilização utilitária de alta performance com Tailwind CSS v4. A compilação e bundler do projeto são orquestrados de forma ultra-rápida pelo Vite (versão 8.0.0).
+2. Camada de Aplicação (Backend): Uma API RESTful desenvolvida sobre Node.js e estruturada com Express.js v5 (versão 5.1.0) utilizando o padrão CommonJS. A segurança é garantida por meio de autenticação sem estado utilizando tokens JWT (jsonwebtoken 9.0.2) e criptografia de senhas com hashing unidirecional forte através de bcrypt (6.0.0). O envio de e-mails para o fluxo de recuperação de senha adota o Nodemailer (8.0.7).
+3. Camada de Dados e Serviços Cloud (Persistência e Inteligência): O armazenamento relacional transacional dos dados dos usuários, preferências personalizadas, avaliações de leitura, sessões do quiz adaptativo e logs do chat ocorre em uma base de dados Oracle Autonomous Database (Oracle Cloud) em nuvem, acessada de forma segura e otimizada por meio do driver nativo `oracledb` (versão 6.9.0) configurado com mTLS usando o arquivo compactado de credenciais (Oracle Cloud Connection Wallet). As recomendações inteligentes e o quiz adaptativo são providos pela API oficial do Google Gemini utilizando o SDK oficial `@google/generative-ai` (versão 0.24.1) com modelo Gemini 1.5/2.0 Flash. O catálogo dinâmico de livros e enriquecimento de metadados (como capa, sinopse, link de preview, data de publicação) é consumido diretamente da Google Books API.
 
-11. Descrição da Solução de Inteligência Artificial
+[Diagrama de Arquitetura e Tecnologias Vetorial - SVG detalhado no documento final]
+
+11. Descrição da Solução de Inteligência Artificial
 11.1 Base de Dados
-Descrever origem, características, volume e tratamento dos dados utilizados (preferências do
-usuário + catálogos via APIs).
+A inteligência do sistema baseia-se em dados coletados de forma híbrida: de forma ativa (respostas do quiz adaptativo de 8 perguntas e dados preenchidos na tela de preferências) e de forma comportamental (avaliações pontuais de 1 a 5 salvas pelo leitor para as obras). Esses dados são convertidos em estruturas de perfil estruturadas (preferências consolidadas de gêneros, autores e tipos de leitura) alimentadas na instrução do modelo de linguagem (System Instruction).
 
 11.2 Pré-processamento dos Dados
-Descrever normalização e preparação: padronização de gêneros/temas, limpeza de entradas e
-deduplicação de itens.
+Para garantir a coesão das sugestões geradas pelo LLM com os dados de capa, sinopse e editora das APIs de catálogo, as entradas do chat são sanitizadas para evitar ataques de injeção de prompt. Adicionalmente, as preferências geradas pela IA no encerramento da conversa (`/chat/close`) passam por um validador de array de strings para evitar dados ruidosos ou redundantes no banco de dados.
 
 11.3 Modelos de IA Utilizados
-Modelo de linguagem (LLM) para recomendação e geração estruturada (JSON).
-Regras/pós-processamento no backend para validar schema.
+É utilizado o Google Gemini (SDK `@google/generative-ai` v0.24.1) utilizando chamadas contextualizadas estruturadas. O modelo é acionado com instruções de sistema estritas (System Instructions) forçando o retorno de dados puramente em JSON com validação sintática e lógica de schema (`message` de apresentação conversacional + array de `recommendations` com atributos limpos). Se o retorno falhar na validação, o backend ativa uma camada de tratamento para fazer o parser técnico da resposta.
 
 11.4 Treinamento e Validação
-No MVP, o LLM é consumido via API (sem treinamento próprio). Validação ocorre por testes de
-schema, métricas de engajamento e avaliação dos usuários.
+Como o modelo de linguagem do Google Gemini é consumido por meio de API em nuvem na modalidade zero-shot/few-shot prompting, não é realizado um treinamento próprio (fine-tuning). Em contrapartida, a validação de comportamento é assegurada por testes de integração contínuos que injetam simulados de conversas e validam a estrutura e a conformidade do payload gerado.
 
 11.5 Métricas de Avaliação
-Utilizar as métricas definidas na Seção 5.3 (MQ01–MQ07) e registrar resultados durante testes e
-validação.
+O desempenho e qualidade são avaliados continuamente por meio das métricas do MVP especificadas na Seção 5.3 (MQ01 a MQ07), focando em tempo de resposta (LLM response time ≤ 6 s), cobertura de enriquecimento de capas (≥ 80%) e conformidade do formato estruturado das recomendações (≥ 95%).
 
 12. Testes e Validação do Sistema
-Definir estratégia de testes: testes unitários (regras e validação de schema), testes de integração
-(fluxos de login, filtros, chat/quiz) e testes de aceitação com usuários. Registrar resultados,
-incluindo métricas do modelo de IA (Seção 5.3).
+A estratégia de testes é dividida em três níveis robustos:
+1. Testes Unitários: Roteiros que cobrem de forma isolada as regras de negócio de autenticação, catalogação de tipos e criação de payloads.
+2. Testes de Integração de Fluxos de Negócio: Scripts automatizados em NodeJS que simulam o comportamento real da aplicação de ponta a ponta:
+   ● `npm run test:chat`: Executa cenários de login, fluxo completo de conversa com manutenção de histórico na tabela `CONVERSAS`, testes de robustez a payloads vazios e invalidação técnica de tokens.
+   ● `npm run test:quiz:run`: Cria a tabela do quiz no Oracle, ativa o servidor, cria perguntas genéricas, injeta respostas e aciona o motor do Gemini para obter perguntas adaptativas e recomendações finais.
+3. Testes de Aceitação do Usuário (UAT): Validação qualitativa com os representantes de comunidade externa.
 
 13. Gestão do Projeto
-Descrever metodologia (Scrum), Product Backlog, cronograma planejado e cronograma real
-(sprints, tarefas e responsáveis).
+O desenvolvimento do projeto Entre Páginas adotou a metodologia ágil Scrum para gerenciamento incremental das entregas e garantia de valor contínuo em cada iteração (sprint).
 
-14. Resultados e Discussão
-Analisar resultados obtidos versus objetivos, benefícios aos usuários e objetivos não atendidos
-(com justificativa).
-Incluir considerações éticas, de privacidade e de impacto social, discutindo possíveis vieses e
-conformidade com legislações de proteção de dados.
+13.1 Papéis do Time de Desenvolvimento
+● Fernando Furlanetto Cardoso (RA 24005837) — Product Owner & Desenvolvedor Fullstack: Responsável pela facilitação com clientes externos, modelagem do Círculo Dourado, consolidação do backlog do produto e codificação do front-end responsivo (Vue 3/Vuetify 4).
+● João Pedro Pires de Andrade (RA 23025141) — Scrum Master & Desenvolvedor Backend: Responsável pela remoção de impedimentos de desenvolvimento ágil, facilitação dos rituais, e arquitetura das rotas Express e segurança JWT.
+● Raul Gruenwaldt Antonio (RA 23025999) — Arquiteto de Software & Administrador de Banco de Dados: Responsável pela modelagem MER no Oracle Autonomous Database, configuração de mTLS e integrações do backend com o Gemini SDK e Google Books API.
+● Augusto Fidélis dos Santos Custódio (RA 24024320) — QA (Quality Assurance) & Desenvolvedor Fullstack: Responsável por escrever os planos de testes, configurar o test-runner nativo do Node.js, implementar testes e realizar validações cruzadas dos critérios de aceite.
+
+13.2 Rituais Ágeis Praticados
+● Sprint Planning: Planejamento quinzenal onde a equipe refinava o Product Backlog, estimava a complexidade das tarefas e definia a meta da Sprint e o Sprint Backlog.
+● Daily Scrum: Encontros curtos de sincronização de progresso realizados três vezes por semana para discutir andamento e remover gargalos técnicos.
+● Sprint Review & Retrospective: Reuniões executadas ao final de cada Sprint para validar as funcionalidades desenvolvidas com a professora, avaliar as métricas do processo de equipe e traçar ações de melhoria contínua.
+
+13.3 Cronograma das Sprints e Entregas (Realizado)
+● Sprint 1 (Concepção e Autenticação - 2 semanas): Modelagem do banco relacional, configuração do repositório Git, setup do Express e Vue 3, e implementação das rotas `/auth/register`, `/auth/login` e `/auth/forgot-password` (RF01, RF02, RF03).
+● Sprint 2 (Descoberta e Integração de Catálogo - 2 semanas): Integração da Google Books API para substituir o catálogo local legado, implementação dos filtros combinados por tipo, autor e temas (`/books`), e carrossel dinâmico da Home com fallback (`/books/categories`) (RF05, RF06, RF07).
+● Sprint 3 (Chat Inteligente e Persistência de Contexto - 2 semanas): Integração do SDK `@google/generative-ai` com instruções de sistema estritas (`/chat/message`), configuração da tabela `CONVERSAS` com chave única no Oracle para restringir o histórico ao último chat ativo (`/chat/history`), e lógica de encerramento (`/chat/close`) para atualizar preferências (RF08, RF09, RF12, RF13).
+● Sprint 4 (Quiz Adaptativo e Proteção de UX - 2 semanas): Implementação do motor de quiz com perguntas adaptativas dinâmicas (`/quiz/start`, `/quiz/answer`, `/quiz/finish`), sinalização de temas sensíveis (`sensitiveContent`) com aviso do frontend e modal de consentimento (RF10, RF11).
+● Sprint 5 (Qualidade e Validação Externa - 2 semanas): Escrita da suite de testes de integração (`testChat.js` e `testQuiz.js`), homologação das personas de uso, refinamento visual fino e validação de aceitação com a Comunidade Externa (Matheus e Giovani).
+
+14. Resultados e Discussão
+O Entre Páginas alcançou com êxito os objetivos de seu MVP. A integração de um assistente de leitura inteligente com APIs robustas de metadados de catálogo provou-se altamente eficaz na melhoria da experiência de descoberta, atingindo os tempos de resposta especificados nos RNF.
+Considerações Éticas e de Privacidade: A privacidade do leitor foi colocada no centro do projeto por meio do cumprimento das normas da LGPD, adotando a retenção exclusiva do último chat do usuário (substituindo diálogos passados) e informando com clareza o processamento de preferências. A tag sensitiveContent combate gatilhos emocionais protegendo a integridade psicológica dos usuários.
 
 15. Conclusão e Trabalhos Futuros
-Apresentar conclusões do projeto, limitações encontradas e sugestões de melhorias futuras (ex.:
-histórico completo de leituras, camada social, app mobile nativo).
+O MVP demonstrou a viabilidade prática da IA generativa acoplada a sistemas de catálogos tradicionais como alternativa de alta conversão. Como trabalhos futuros, planeja-se:
+1) Expansão para suporte a um histórico completo opcional e gerenciavel com busca retroativa de recomendações.
+2) Gamificação estendida com metas e árvores de conquistas de leitura integradas com quiz.
+3) Criação de uma versão mobile híbrida em Capacitor para o ecossistema Android e iOS.
 
 16. Aceite final do projeto
-Inserir termo de aceite do projeto pela comunidade externa (assinaturas e data).
+Por meio deste termo, os representantes da comunidade externa declaram estar cientes e de pleno acordo com as funcionalidades, requisitos e entregas apresentadas pelo projeto "Entre Páginas".
+
+___________________________________________________
+Matheus Zanon Caritá (Representante da Comunidade Externa)
+Data: 20 de Maio de 2026
+
+___________________________________________________
+Giovani Bellini dos Santos (Representante da Comunidade Externa)
+Data: 20 de Maio de 2026
 
 Referências
-1.​ GOODFELLOW, I.; BENGIO, Y.; COURVILLE, A. Deep learning. Cambridge: MIT Press,
-2016.
-2.​ RUSSELL, S.; NORVIG, P. Artificial intelligence: a modern approach. 4. ed. Hoboken:
-Pearson, 2021.
-3.​ RICCI, F.; ROKACH, L.; SHAPIRA, B. Recommender Systems Handbook. 3. ed. New
-York: Springer, 2022.
-
-
+1. GOODFELLOW, I.; BENGIO, Y.; COURVILLE, A. Deep learning. Cambridge: MIT Press, 2016.
+2. RUSSELL, S.; NORVIG, P. Artificial intelligence: a modern approach. 4. ed. Hoboken: Pearson, 2021.
+3. RICCI, F.; ROKACH, L.; SHAPIRA, B. Recommender Systems Handbook. 3. ed. New York: Springer, 2022.

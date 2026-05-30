@@ -1,0 +1,935 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Entre Páginas — Relatório do Projeto Integrador V</title>
+  <style>
+    /* CSS para impressão de alta qualidade (Padrão ABNT / Acadêmico) */
+    @page {
+      size: A4;
+      margin: 3.0cm 2.0cm 3.0cm 3.0cm; /* Superior 3cm, Direita 2cm, Inferior 3cm, Esquerda 3cm */
+    }
+    
+    body {
+      font-family: "Liberation Sans", "Arial", "Helvetica", sans-serif;
+      font-size: 12pt;
+      line-height: 1.6;
+      color: #1E293B;
+      margin: 0;
+      padding: 0;
+    }
+    
+    /* Capa Acadêmica */
+    .cover-page {
+      page-break-after: always;
+      height: 24cm;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      text-align: center;
+      box-sizing: border-box;
+      padding-top: 1cm;
+    }
+    
+    .institution {
+      font-size: 14pt;
+      font-weight: bold;
+      text-transform: uppercase;
+      color: #0F172A;
+      margin-bottom: 2cm;
+      line-height: 1.4;
+    }
+    
+    .project-container {
+      margin-top: 3.5cm;
+      margin-bottom: 3.5cm;
+    }
+    
+    .project-title {
+      font-size: 26pt;
+      font-weight: 800;
+      color: #0F172A;
+      margin: 0;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    
+    .project-subtitle {
+      font-size: 14pt;
+      color: #475569;
+      margin-top: 0.4cm;
+      font-weight: 500;
+    }
+    
+    .team-container {
+      text-align: left;
+      margin-left: 2cm;
+      margin-bottom: 4cm;
+    }
+    
+    .team-title {
+      font-size: 12pt;
+      font-weight: bold;
+      margin-bottom: 0.4cm;
+      color: #0F172A;
+    }
+    
+    .team-members {
+      list-style-type: none;
+      padding: 0;
+      margin: 0;
+    }
+    
+    .team-members li {
+      font-size: 12pt;
+      margin-bottom: 0.25cm;
+      color: #334155;
+    }
+    
+    .cover-footer {
+      font-size: 12pt;
+      font-weight: bold;
+      text-transform: uppercase;
+      color: #0F172A;
+      margin-top: auto;
+    }
+    
+    /* Estilos de Seção */
+    h1, h2, h3, h4 {
+      color: #0F172A;
+      font-weight: bold;
+      page-break-after: avoid;
+    }
+    
+    h1 {
+      font-size: 16pt;
+      border-bottom: 2px solid #E2E8F0;
+      padding-bottom: 0.2cm;
+      margin-top: 1.2cm;
+      margin-bottom: 0.6cm;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    h2 {
+      font-size: 13pt;
+      margin-top: 0.8cm;
+      margin-bottom: 0.4cm;
+    }
+    
+    h3 {
+      font-size: 12pt;
+      margin-top: 0.6cm;
+      margin-bottom: 0.3cm;
+    }
+    
+    p {
+      margin-top: 0;
+      margin-bottom: 0.4cm;
+      text-align: justify;
+      text-indent: 1.5cm; /* Recuo padrão de parágrafo acadêmico */
+    }
+    
+    /* Listas */
+    ul, ol {
+      margin-top: 0;
+      margin-bottom: 0.4cm;
+      padding-left: 1cm;
+    }
+    
+    li {
+      margin-bottom: 0.2cm;
+      text-align: justify;
+    }
+    
+    /* Tabelas Premium */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 0.4cm;
+      margin-bottom: 0.6cm;
+      page-break-inside: avoid;
+    }
+    
+    th, td {
+      border: 1px solid #94A3B8;
+      padding: 0.25cm 0.3cm;
+      font-size: 10pt;
+      text-align: left;
+    }
+    
+    th {
+      background-color: #0F172A;
+      color: #FFFFFF;
+      font-weight: bold;
+      text-transform: uppercase;
+      font-size: 9.5pt;
+    }
+    
+    tr:nth-child(even) {
+      background-color: #F8FAFC;
+    }
+    
+    /* Box de Destaque */
+    .highlight-box {
+      background-color: #F8FAFC;
+      border-left: 4px solid #0284C7;
+      padding: 0.4cm;
+      margin-bottom: 0.5cm;
+      border-radius: 0 6px 6px 0;
+      page-break-inside: avoid;
+    }
+    
+    .highlight-box p {
+      margin: 0;
+      text-indent: 0;
+    }
+    
+    /* Imagens e Captions */
+    .image-container {
+      text-align: center;
+      margin: 0.8cm 0;
+      page-break-inside: avoid;
+    }
+    
+    .image-container img {
+      max-width: 95%;
+      max-height: 11cm;
+      border: 1px solid #CBD5E1;
+      border-radius: 6px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.06);
+    }
+    
+    .image-caption {
+      font-size: 10pt;
+      color: #64748B;
+      margin-top: 0.25cm;
+      font-style: italic;
+    }
+    
+    .page-break {
+      page-break-after: always;
+    }
+    
+    /* Elementos de Assinatura */
+    .signature-row {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 1.5cm;
+      margin-bottom: 1cm;
+      page-break-inside: avoid;
+    }
+    
+    .signature-box {
+      width: 45%;
+      text-align: center;
+    }
+    
+    .signature-line {
+      border-top: 1px solid #0F172A;
+      margin-bottom: 0.2cm;
+    }
+    
+    .signature-name {
+      font-size: 11pt;
+      font-weight: bold;
+      color: #0F172A;
+    }
+    
+    .signature-title {
+      font-size: 10pt;
+      color: #64748B;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ==================== CAPA ==================== -->
+  <div class="cover-page">
+    <div class="institution">
+      Pontifícia Universidade Católica de Campinas<br>
+      Curso: Engenharia de Software<br>
+      Disciplina: 12554 – Projeto Integrador V – Engenharia de Software<br>
+      Professora: Sílvia C. de Matos Soares
+    </div>
+    
+    <div class="project-container">
+      <div class="project-title">Entre Páginas</div>
+      <div class="project-subtitle">Sistema de Recomendação de Leitura Personalizada com Inteligência Artificial</div>
+    </div>
+    
+    <div class="team-container">
+      <div class="team-title">INTEGRANTES DO GRUPO (Time 13):</div>
+      <ul class="team-members">
+        <li>• <strong>RA: 24005837</strong> — Fernando Furlanetto Cardoso</li>
+        <li>• <strong>RA: 23025141</strong> — João Pedro Pires de Andrade</li>
+        <li>• <strong>RA: 23025999</strong> — Raul Gruenwaldt Antonio</li>
+        <li>• <strong>RA: 24024320</strong> — Augusto Fidélis dos Santos Custódio</li>
+      </ul>
+    </div>
+    
+    <div class="cover-footer">
+      Campinas — SP<br>
+      1º Semestre de 2026
+    </div>
+  </div>
+
+  <!-- ==================== RESUMO ==================== -->
+  <h1>Resumo</h1>
+  <p>
+    O <em>Entre Páginas</em> é um sistema de recomendação de leitura inovador que utiliza inteligência artificial generativa para auxiliar leitores a descobrirem livros, HQs e mangás alinhados aos seus perfis de interesse individuais. O MVP (Minimum Viable Product) combina preferências estáticas cadastradas, filtros de catálogo combinados e um modo de busca conversacional interativa em chat, além de um quiz adaptativo que inferência as preferências de leitura.
+  </p>
+  <p>
+    As recomendações são estruturadas logicamente por um modelo de linguagem avançado (LLM) do Google Gemini e enriquecidas em tempo real com metadados detalhados obtidos da Google Books API (capa, sinopse, link de preview, autores e data de publicação). O projeto adota uma abordagem de engenharia ágil ágil incremental (Scrum), visando manter transparência e conformidade com a LGPD por meio de mecanismos estritos de controle de dados pessoais e avisos explícitos para conteúdos com temas sensíveis. O sistema foi validado tecnicamente e qualitativamente junto a representantes da comunidade externa profissional.
+  </p>
+  <p>
+    <strong>Palavras-chave:</strong> Inteligência Artificial; Engenharia de Software; Sistemas de Recomendação; Hábitos de Leitura; Chatbot; Experiência do Usuário (UX); LGPD.
+  </p>
+
+  <div class="page-break"></div>
+
+  <!-- ==================== 1. INTRODUÇÃO ==================== -->
+  <h1>1. Introdução</h1>
+  <p>
+    A descoberta de novas leituras é frequentemente dificultada pelo excesso de opções no mercado, pela falta de recomendação focada na experiência do usuário e pela fragmentação extrema de catálogos comerciais entre diferentes mídias e formatos (como livros literários clássicos, quadrinhos ocidentais e mangás orientais). O projeto <em>Entre Páginas</em> resolve essa dor propondo uma plataforma web fluida que recomenda itens baseados no perfil específico de cada leitor, cruzando preferências manuais, chips de categorias e interações em linguagem natural (chat de IA), minimizando o esforço de busca.
+  </p>
+  <p>
+    A motivação primordial do projeto está em fomentar hábitos literários consistentes, protegendo o usuário: o leitor tem total transparência sobre seus dados de interesse, pode aplicar múltiplos filtros conceituais rápidos e conta com tags automáticas que alertam previamente sobre obras que abordam temas sensíveis e gatilhos (como saúde mental, suicídio ou violência extrema). O escopo técnico do MVP contempla rotas completas de cadastro/login, painel de preferências, carrossel dinâmico de categorias, catálogo filtrado, chat adaptativo e quiz inteligente, assegurando privacidade através de persistência mínima, armazenando apenas a última sessão de conversa ativa no banco de dados.
+  </p>
+
+  <h2>1.1 Círculo Dourado</h2>
+  <div class="highlight-box">
+    <p><strong>WHY (Por quê):</strong> Facilitar a descoberta de obras de leitura altamente relevantes, seguras e personalizadas, combatendo a paralisia de escolha e elevando o engajamento do leitor.</p>
+  </div>
+  <div class="highlight-box">
+    <p><strong>HOW (Como):</strong> Unificar em uma única experiência de UI preferências dinâmicas, filtros rápidos e um quiz adaptativo com o poder de contextualização da IA generativa e enriquecimento automatizado via APIs de catálogo.</p>
+  </div>
+  <div class="highlight-box">
+    <p><strong>WHAT (O quê):</strong> Uma plataforma web responsiva de recomendação inteligente de livros, HQs e mangás com carrossel dinâmico de banners e chat conversacional contextual.</p>
+  </div>
+
+  <!-- ==================== 2. OBJETIVOS ==================== -->
+  <h1>2. Objetivos</h1>
+  <h2>2.1 Objetivo Geral</h2>
+  <p>
+    Projetar, modelar e construir um sistema integrado de recomendação de leitura web que explore Inteligência Artificial para prover sugestões literárias ricas e personalizadas de forma rápida e segura.
+  </p>
+  <h2>2.2 Objetivos Específicos</h2>
+  <ul>
+    <li>Desenvolver um sistema de autenticação segura e cadastro de usuários integrado à persistência de preferências de interesse (gêneros, autores e mídias).</li>
+    <li>Prover uma interface de exploração rápida com carrossel de categorias dinâmico e sistema de filtros com chips removíveis (categoria, tema, autor e tipo).</li>
+    <li>Construir um Quiz adaptativo que gere dinamicamente perguntas em tempo real com base nas respostas iniciais do usuário, recomendando títulos ao final.</li>
+    <li>Integrar um assistente de conversação baseado em LLM (Google Gemini) que armazene estritamente o histórico da última conversa ativa por usuário no banco, inferindo preferências consolidadas no encerramento do diálogo.</li>
+  </ul>
+
+  <!-- ==================== 3. COMUNIDADE EXTERNA ==================== -->
+  <h1>3. Representantes da Comunidade Externa</h1>
+  <p>
+    A validação técnica, conceitual e de usabilidade do MVP foi conduzida em parceria com profissionais da área de desenvolvimento e tecnologia, que atuaram ativamente como avaliadores e validadores das metas do produto.
+  </p>
+  <ul>
+    <li><strong>Nome:</strong> Matheus Zanon Caritá (matheuscarita@gmail.com) | <strong>Cargo:</strong> Estagiário de Desenvolvimento Mobile | <strong>Organização:</strong> SIDI.</li>
+    <li><strong>Nome:</strong> Giovani Bellini dos Santos (giovanibellini.correio@gmail.com) | <strong>Cargo:</strong> Mentor do Curso PADIS 2 | <strong>Organização:</strong> iRede.</li>
+  </ul>
+
+  <div class="page-break"></div>
+
+  <!-- ==================== 4. FUNDAMENTAÇÃO TEÓRICA ==================== -->
+  <h1>4. Fundamentação Teórica</h1>
+  <p>
+    O projeto <em>Entre Páginas</em> fundamenta-se nos princípios de Sistemas de Recomendação (baseados em filtragem colaborativa e filtragem baseada em conteúdo), Engenharia de Software moderna, Interação Humano-Computador (IHC) focada em interfaces conversacionais reativas e Processamento de Linguagem Natural (PLN). No contexto do MVP, a recomendação adota uma abordagem híbrida: a inteligência do LLM (Google Gemini) avalia o contexto de conversa (preferências e histórico de leitura) e devolve as obras de maneira estruturada, enquanto a aplicação no backend consome a Google Books API para enriquecer e validar a resposta, garantindo metadados corretos no frontend Vue.
+  </p>
+
+  <!-- ==================== 5. REQUISITOS ==================== -->
+  <h1>5. Levantamento e Análise de Requisitos</h1>
+  <h2>5.1 Requisitos Funcionais (RF)</h2>
+  <table>
+    <thead>
+      <tr>
+        <th style="width: 10%;">ID</th>
+        <th style="width: 25%;">Requisito</th>
+        <th style="width: 35%;">Descrição</th>
+        <th style="width: 30%;">Critérios de Aceite</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>RF01</strong></td>
+        <td>Cadastro de usuário</td>
+        <td>Permitir a criação de contas no sistema informando nome, e-mail e senha.</td>
+        <td>1) Validação sintática de e-mail; 2) Política mínima de senha; 3) Autenticação após criação; 4) Tratamento de erros de e-mail duplicado.</td>
+      </tr>
+      <tr>
+        <td><strong>RF02</strong></td>
+        <td>Login e logout</td>
+        <td>Permitir autenticação do usuário e finalização segura de sua sessão ativa.</td>
+        <td>1) Login via e-mail e senha; 2) Emissão de token JWT seguro; 3) Rota protegida exige cabeçalho Authorization; 4) Logout invalida sessão.</td>
+      </tr>
+      <tr>
+        <td><strong>RF03</strong></td>
+        <td>Recuperação de senha</td>
+        <td>Enviar e-mail para usuários autenticados ou não para redefinir senha esquecida.</td>
+        <td>1) Solicitação com e-mail; 2) Envio de link com token único via SMTP; 3) Validação e alteração com hash bcrypt; 4) Expiração de segurança do token.</td>
+      </tr>
+      <tr>
+        <td><strong>RF04</strong></td>
+        <td>Preferências salvas</td>
+        <td>Cadastrar preferências literárias do usuário (gêneros, formatos, autores) persistindo em banco de dados.</td>
+        <td>1) Permite criar/editar preferências; 2) Salva em JSON CLOB no Oracle; 3) Dados afetam a IA; 4) Permite limpar e restaurar padrão.</td>
+      </tr>
+      <tr>
+        <td><strong>RF05</strong></td>
+        <td>Carrossel de banners</td>
+        <td>Exibir carrossel dinâmico de categorias (gêneros/temas) configuradas na página inicial.</td>
+        <td>1) Carrega dados curados; 2) Nome e imagens responsivas; 3) Rolagem horizontal e auto-rotate; 4) Funcionamento independente de IA.</td>
+      </tr>
+      <tr>
+        <td><strong>RF06</strong></td>
+        <td>Sistema de filtros</td>
+        <td>Disponibilizar barra de busca e filtros de catálogo (categoria, autor, tipo de mídia).</td>
+        <td>1) Filtros dinâmicos e removíveis; 2) Chips visíveis; 3) Paginação de resultados de catálogo; 4) Opção de resetar todos os filtros.</td>
+      </tr>
+      <tr>
+        <td><strong>RF07</strong></td>
+        <td>Banner onClick Filtra</td>
+        <td>Ao clicar em um banner do carrossel da home, aplicar automaticamente o filtro na busca geral.</td>
+        <td>1) Clique redireciona com chip de filtro ativo; 2) Atualiza catálogo; 3) Não duplica chips; 4) Permite remoção rápida do chip.</td>
+      </tr>
+      <tr>
+        <td><strong>RF08</strong></td>
+        <td>Busca expande para Chat</td>
+        <td>O clique na barra de busca expande a interface para o modo conversacional (chat).</td>
+        <td>1) Transição visual suave para o chat; 2) Exibe histórico de mensagens; 3) Mantém os filtros ativos aplicados; 4) Permite fechamento.</td>
+      </tr>
+      <tr>
+        <td><strong>RF09</strong></td>
+        <td>Chat de Recomendação</td>
+        <td>Interagir em linguagem natural com a IA para obter e refinar sugestões literárias.</td>
+        <td>1) Respostas conversacionais com justificativas; 2) Lista de livros estruturada; 3) Respeita preferências e histórico; 4) SDK oficial do Gemini.</td>
+      </tr>
+      <tr>
+        <td><strong>RF10</strong></td>
+        <td>Quiz Adaptativo</td>
+        <td>Responder quiz de recomendação que cria perguntas baseadas nas respostas anteriores do usuário.</td>
+        <td>1) Perguntas iniciais genéricas; 2) Perguntas a partir de 3ª geradas por IA em tempo real; 3) Máximo de 8 perguntas; 4) Recomenda livros ao final.</td>
+      </tr>
+      <tr>
+        <td><strong>RF11</strong></td>
+        <td>Aviso de Temas Sensíveis</td>
+        <td>Sinalizar obras com temas delicados e exigir confirmação explícita do leitor.</td>
+        <td>1) Tag <em>sensitiveContent</em> detectada pela IA; 2) Exibe aviso em destaque; 3) Modal exige clique "Confirmar" para abrir; 4) Opção de retornar.</td>
+      </tr>
+      <tr>
+        <td><strong>RF12</strong></td>
+        <td>Última Conversa Salva</td>
+        <td>Manter unicamente o registro do histórico do último chat ativo por usuário.</td>
+        <td>1) Substituição automática da conversa anterior; 2) Chave única na tabela garante um registro por usuário; 3) Isolamento de dados entre contas.</td>
+      </tr>
+      <tr>
+        <td><strong>RF13</strong></td>
+        <td>Salvar ao Encerrar</td>
+        <td>Ao fechar/encerrar a conversa, atualizar preferências consolidadas e salvar as obras recomendadas.</td>
+        <td>1) Clique no botão "Encerrar"; 2) IA infere interesses do chat; 3) Persiste nas tabelas de sugestões e preferências; 4) Reseta o chat.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="page-break"></div>
+
+  <h2>5.2 Requisitos Não Funcionais (RNF)</h2>
+  <ul>
+    <li><strong>RNF01 (Desempenho da Busca):</strong> O tempo de carregamento de resultados na busca geral do catálogo deve ser &le; 2 segundos.</li>
+    <li><strong>RNF02 (Desempenho do Chat com IA):</strong> O tempo de resposta total do chat (injetar contexto + chamada LLM + enriquecimento de APIs) deve ser &le; 10 segundos em 90% das requisições.</li>
+    <li><strong>RNF03 (Segurança - Autenticação):</strong> As senhas dos usuários devem ser persistidas com criptografia unidirecional forte (bcrypt com salting) e a autenticação da sessão deve utilizar tokens JWT com expiração temporária.</li>
+    <li><strong>RNF04 (Segurança - Transporte):</strong> Todo tráfego de rede e consumo das APIs deve ser encriptado sob HTTPS/TLS 1.3.</li>
+    <li><strong>RNF05 (Controle de Acesso):</strong> Mecanismos de proteção de rotas no backend e frontend para impedir que dados e históricos de um usuário sejam acessados por terceiros sem autorização.</li>
+    <li><strong>RNF06 (LGPD - Minimização):</strong> Armazenar somente dados estritamente necessários para a prestação do serviço contratado.</li>
+    <li><strong>RNF07 (LGPD - Transparência):</strong> Oferecer visibilidade e edição de todas as preferências salvas no banco de dados e permitir a exclusão do histórico da última conversa a qualquer momento.</li>
+    <li><strong>RNF08 (LGPD - Retenção de Dados):</strong> Apagar o histórico de chat anterior ao iniciar um novo chat (RF12) e expirar tokens de reset de senha inutilizados.</li>
+    <li><strong>RNF09 (Responsividade):</strong> A interface Web (Single Page App) deve ser adaptável e perfeitamente operacional em desktops, tablets e smartphones.</li>
+    <li><strong>RNF10 (Acessibilidade):</strong> Garantir contraste de texto adequado e elementos de navegação amigáveis a leitores de tela.</li>
+    <li><strong>RNF11 (Disponibilidade):</strong> Garantir taxa de atividade &ge; 99% mensal para a API em ambiente de homologação.</li>
+    <li><strong>RNF12 (Tolerância a Falhas):</strong> Exibição de fallbacks amigáveis ("O serviço de IA está instável no momento, tente novamente") caso o Gemini API ou a Google Books API fiquem indisponíveis.</li>
+    <li><strong>RNF13 (Escalabilidade):</strong> Arquitetura modularizada em MVC / Camadas de Serviço desacopladas facilitando manutenções e escalabilidade.</li>
+    <li><strong>RNF14 (Observabilidade):</strong> Geração de logs de auditoria técnica estruturados e tratamento centralizado de exceções através de middleware.</li>
+    <li><strong>RNF15 (Testabilidade):</strong> Suite de testes cobrindo testes unitários de rotas e testes integrados completos do Chat e do Quiz adaptativo.</li>
+  </ul>
+
+  <h2>5.3 Requisitos Específicos de Inteligência Artificial (RIA)</h2>
+  <ul>
+    <li><strong>RIA01 (Injeção de Contexto):</strong> A IA deve receber em suas chamadas as preferências atuais declaradas pelo usuário e a lista de livros que ele já leu e avaliou de forma a não recomendá-los novamente.</li>
+    <li><strong>RIA02 (Saída Estruturada):</strong> Garantir que o Google Gemini sempre responda utilizando o schema JSON estrito configurado na instrução de sistema (System Instruction), contendo campos textuais e boleanos definidos.</li>
+    <li><strong>RIA03 (Explicabilidade):</strong> A resposta da IA deve conter um parágrafo curto justificando de forma empática a escolha do livro com base nos termos digitados ou perfil do leitor.</li>
+    <li><strong>RIA04 (Sanitização e Pós-processamento):</strong> O backend deve limpar o cabeçalho markdown da resposta da IA e validar sintaticamente o JSON antes de consultar o Google Books para completar a recomendação.</li>
+    <li><strong>RIA05 (Sensibilidade de Conteúdo):</strong> O modelo do Gemini deve sinalizar de forma autônoma (sensitiveContent: true) sempre que a indicação contiver temas de violência, suicídio, drogas ou saúde mental.</li>
+    <li><strong>RIA06 (Controle de Conversa):</strong> O sistema de IA deve ser reabastecido estritamente com as mensagens da última sessão ativa, garantindo economia de tokens e privacidade.</li>
+    <li><strong>RIA07 (Sumarização de Encerramento):</strong> Ao finalizar a conversa, a IA deve rodar um prompt em background analisando o histórico trocado para extrair novos gêneros, tipos e autores favoritos e atualizar as preferências no banco.</li>
+  </ul>
+
+  <!-- ==================== 6. BENCHMARKING ==================== -->
+  <h1>6. Benchmarking</h1>
+  <p>
+    Comparativo de soluções comerciais e posicionamento estratégico do <em>Entre Páginas</em>.
+  </p>
+  <table>
+    <thead>
+      <tr>
+        <th>Funcionalidade / Critério</th>
+        <th>Entre Páginas (MVP)</th>
+        <th>Goodreads (Amazon)</th>
+        <th>Skoob</th>
+        <th>The StoryGraph</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Busca Avançada e Filtros</strong></td>
+        <td>✓ (Filtros combinados na pesquisa e no chat)</td>
+        <td>✓ (Busca tradicional por texto)</td>
+        <td>✓ (Busca tradicional)</td>
+        <td>✓ (Filtros por humor/ritmo)</td>
+      </tr>
+      <tr>
+        <td><strong>Quiz de Perfil</strong></td>
+        <td>✓ (Quiz adaptativo via IA generativa)</td>
+        <td>X (Não possui)</td>
+        <td>X (Não possui)</td>
+        <td>✓ (Quiz de perfil inicial estático)</td>
+      </tr>
+      <tr>
+        <td><strong>Recomendação via IA Conversacional</strong></td>
+        <td>✓ (Chatbot adaptativo com contexto real)</td>
+        <td>X (Focado em colaborativa estática)</td>
+        <td>X (Colaborativa estática)</td>
+        <td>X (Filtragem baseada em humor)</td>
+      </tr>
+      <tr>
+        <td><strong>Aviso de Temas Sensíveis</strong></td>
+        <td>✓ (Detecção automática de sensitiveContent + Confirmação)</td>
+        <td>X (Não possui)</td>
+        <td>X (Não possui)</td>
+        <td>✓ (Inserido colaborativamente)</td>
+      </tr>
+      <tr>
+        <td><strong>Histórico e Lista de Leitura</strong></td>
+        <td>(Futuro - MVP focado em privacidade rápida)</td>
+        <td>✓ (Completo e social)</td>
+        <td>✓ (Completo e social)</td>
+        <td>✓ (Completo e gráficos)</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="page-break"></div>
+
+  <!-- ==================== 7. PERSONAS ==================== -->
+  <h1>7. Definição das Personas</h1>
+  <div class="highlight-box">
+    <h3><strong>Persona 1: Lucas, 20 anos — O Iniciante Curioso (Foco em Hábito)</strong></h3>
+    <p>
+      Estudante universitário que consome muito conteúdo digital rápido, mas tem dificuldade de manter leitura ativa de livros. Ele quer ler, mas se perde com a infinitude de opções. O <strong>Quiz Adaptativo</strong> é seu recurso principal: responde em menos de um minuto e recebe indicações precisas em formato mangá e HQ, combinando gamificação com simplicidade.
+    </p>
+  </div>
+  <div class="highlight-box">
+    <h3><strong>Persona 2: Marina, 28 anos — A Leitora Constante e Cautelosa (Foco em Filtros e Segurança)</strong></h3>
+    <p>
+      Analista de marketing, lê com frequência de nicho e quadrinhos literários. Detesta surpresas com gatilhos de saúde mental ou violência. A <strong>tag de Temas Sensíveis e o modal de consentimento</strong> garantem a ela controle absoluto antes de visualizar a recomendação da IA, enquanto o <strong>Carrossel e Filtros por Chips</strong> facilitam a busca exata sem fricção.
+    </p>
+  </div>
+  <div class="highlight-box">
+    <h3><strong>Persona 3: Rafael, 35 anos — O Prático e Tecnológico (Foco em Agilidade e IA)</strong></h3>
+    <p>
+      Desenvolvedor de software, agenda lotada, busca recomendações muito específicas em tempo recorde. Usa o <strong>Chat conversacional</strong> para interagir enviando comandos diretos e valoriza a <strong>explicabilidade</strong> por trás de cada indicação, ficando extremamente satisfeito com o recurso de <strong>persistência mínima</strong> que apaga seu chat no encerramento.
+    </p>
+  </div>
+
+  <!-- ==================== 8. PROTÓTIPOS ==================== -->
+  <h1>8. Protótipos das Interfaces</h1>
+  <p>
+    Os protótipos de alta fidelidade foram desenhados cooperativamente no Figma, validando os fluxos e a harmonia visual em conformidade com as personas e requisitos. A seguir, apresentam-se as telas do projeto:
+  </p>
+  
+  <div class="image-container">
+    <img src="file:///home/lu3rf3l/PI5-EntrePaginas/scratch/img_ext-000.png" alt="Tela Principal e Catálogo">
+    <div class="image-caption">Figura 1: Home Dashboard e Carrossel de Categorias</div>
+  </div>
+  <div class="image-container">
+    <img src="file:///home/lu3rf3l/PI5-EntrePaginas/scratch/img_ext-001.png" alt="Fluxo de Login">
+    <div class="image-caption">Figura 2: Tela de Acesso (Login / Autenticação JWT)</div>
+  </div>
+  <div class="image-container">
+    <img src="file:///home/lu3rf3l/PI5-EntrePaginas/scratch/img_ext-002.png" alt="Fluxo de Registro">
+    <div class="image-caption">Figura 3: Cadastro de Contas de Usuário (RF01)</div>
+  </div>
+  <div class="image-container">
+    <img src="file:///home/lu3rf3l/PI5-EntrePaginas/scratch/img_ext-003.png" alt="Tela do Chat de IA">
+    <div class="image-caption">Figura 4: Busca Conversacional com IA Generativa (RF09)</div>
+  </div>
+  <div class="image-container">
+    <img src="file:///home/lu3rf3l/PI5-EntrePaginas/scratch/img_ext-004.png" alt="Visualização do Quiz">
+    <div class="image-caption">Figura 5: Quiz de Perguntas Iniciais (RF10)</div>
+  </div>
+  <div class="image-container">
+    <img src="file:///home/lu3rf3l/PI5-EntrePaginas/scratch/img_ext-005.png" alt="Perguntas Adaptativas">
+    <div class="image-caption">Figura 6: Quiz em Estágio de Pergunta Adaptativa gerada pela IA</div>
+  </div>
+  <div class="image-container">
+    <img src="file:///home/lu3rf3l/PI5-EntrePaginas/scratch/img_ext-006.png" alt="Resultado do Quiz">
+    <div class="image-caption">Figura 7: Recomendações e Finalização de Sessão do Quiz</div>
+  </div>
+  <div class="image-container">
+    <img src="file:///home/lu3rf3l/PI5-EntrePaginas/scratch/img_ext-007.png" alt="Preferências do Usuário">
+    <div class="image-caption">Figura 8: Tela de Preferências Literárias Salvas (RF04)</div>
+  </div>
+  <div class="image-container">
+    <img src="file:///home/lu3rf3l/PI5-EntrePaginas/scratch/img_ext-008.png" alt="Avisos e Confirmações">
+    <div class="image-caption">Figura 9: Modal de Consentimento de Temas Sensíveis (RF11)</div>
+  </div>
+
+  <div class="page-break"></div>
+
+  <!-- ==================== 9. MODELO DE DADOS ==================== -->
+  <h1>9. Modelo de Dados</h1>
+  <p>
+    O armazenamento estruturado da aplicação é efetuado por meio do <strong>Oracle Database</strong>, modelado para garantir integridade relacional, conformidade LGPD e isolamento.
+  </p>
+  
+  <div class="image-container">
+    <img src="file:///home/lu3rf3l/PI5-EntrePaginas/scratch/img_ext-009.png" alt="Diagrama de Banco de Dados MER">
+    <div class="image-caption">Figura 10: Diagrama de Entidade-Relacionamento (MER) do Banco de Dados Oracle</div>
+  </div>
+  
+  <p>
+    O banco de dados do MVP consiste de seis tabelas principais integradas:
+  </p>
+  <ul>
+    <li><strong>FERNANDO.USUARIOS_TESTE:</strong> Tabela central que gerencia credenciais de autenticação (NOME, EMAIL, SENHA criptografada em hash e data de criação).</li>
+    <li><strong>CONVERSAS:</strong> Salva estritamente a última conversa ativa por e-mail de usuário (MENSAGENS em CLOB JSON). Conta com índice único <code>IDX_CONV_USUARIO</code> garantindo restrição e limpeza de chats velhos.</li>
+    <li><strong>PREFERENCIAS_USUARIO:</strong> Armazena as mídias, gêneros literários e autores prediletos do leitor (CLOB JSON) de forma persistente.</li>
+    <li><strong>SUGESTOES_CONVERSA:</strong> Log histórico das obras indicadas em chats encerrados para fins de auditoria e retroalimentação do modelo (sem dados pessoais).</li>
+    <li><strong>QUIZ_SESSOES:</strong> Session manager do quiz adaptativo, persistindo as perguntas genéricas, dinâmicas e respostas dadas pelo usuário.</li>
+    <li><strong>AVALIACOES:</strong> Registra a nota e o comentário dos livros lidos vinculando ao `googleBooksId`. Utilizada pela IA para bloquear indicações repetidas.</li>
+  </ul>
+
+  <div class="page-break"></div>
+
+  <!-- ==================== 10. ARQUITETURA E TECNOLOGIAS ==================== -->
+  <h1>10. Arquitetura e Tecnologias</h1>
+  <p>
+    O sistema <em>Entre Páginas</em> é estruturado em uma arquitetura limpa em três camadas (Presentation, Business e Data/Services), garantindo isolamento de regras, modularidade e alto desempenho:
+  </p>
+  
+  <div class="image-container">
+    <!-- SVG ARQUITETURA ARQUIVADO -->
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 660" width="100%" height="auto" style="background: #0B0F19; border-radius: 10px; font-family: sans-serif;">
+      <defs>
+        <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
+          <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#1E293B" stroke-width="0.5"/>
+        </pattern>
+        <linearGradient id="grad-frontend" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#42B883" />
+          <stop offset="100%" stop-color="#1867C0" />
+        </linearGradient>
+        <linearGradient id="grad-backend" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#8257E6" />
+          <stop offset="100%" stop-color="#339933" />
+        </linearGradient>
+        <linearGradient id="grad-database" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#FF7878" />
+          <stop offset="100%" stop-color="#B30000" />
+        </linearGradient>
+        <linearGradient id="grad-gemini" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#9B5DE5" />
+          <stop offset="100%" stop-color="#00F5D4" />
+        </linearGradient>
+        <marker id="arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <path d="M 0 1 L 10 5 L 0 9 z" fill="#64748B"/>
+        </marker>
+        <marker id="arrow-green" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <path d="M 0 1 L 10 5 L 0 9 z" fill="#42B883"/>
+        </marker>
+        <marker id="arrow-purple" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <path d="M 0 1 L 10 5 L 0 9 z" fill="#8257E6"/>
+        </marker>
+      </defs>
+      <rect width="1000" height="660" fill="#0B0F19" />
+      <rect width="1000" height="660" fill="url(#grid)" opacity="0.4" />
+      <text x="500" y="35" text-anchor="middle" fill="#FFFFFF" font-size="18" font-weight="bold">DIAGRAMA DE ARQUITETURA E TECNOLOGIAS</text>
+      <text x="500" y="52" text-anchor="middle" fill="#64748B" font-size="11">Mapeamento das Camadas do MVP - "Entre Páginas"</text>
+      
+      <!-- Frontend -->
+      <g transform="translate(40, 80)">
+        <rect width="250" height="540" rx="8" fill="#0F172A" stroke="#1E293B" stroke-width="1.5" />
+        <rect width="250" height="35" rx="8" fill="url(#grad-frontend)" opacity="0.15" />
+        <path d="M 0 8 Q 0 0 8 0 L 242 0 Q 250 0 250 8 L 250 35 L 0 35 Z" fill="none" stroke="url(#grad-frontend)" stroke-width="1.5" />
+        <text x="125" y="22" text-anchor="middle" fill="#42B883" font-size="12" font-weight="bold">1. APRESENTAÇÃO (Frontend)</text>
+        
+        <g transform="translate(15, 50)">
+          <rect width="220" height="110" rx="6" fill="#1E293B" stroke="#42B883" stroke-width="1" />
+          <text x="110" y="25" text-anchor="middle" fill="#FFFFFF" font-size="12" font-weight="bold">Vue.js 3 SPA</text>
+          <text x="110" y="42" text-anchor="middle" fill="#64748B" font-size="9">v3.5.30 (TypeScript)</text>
+          <line x1="20" y1="52" x2="200" y2="52" stroke="#1E293B" stroke-width="1"/>
+          <text x="110" y="70" text-anchor="middle" fill="#CBD5E1" font-size="10">Roteamento: Vue Router</text>
+          <text x="110" y="88" text-anchor="middle" fill="#FFE066" font-size="10" font-weight="bold">Bundler: Vite (v8.0.0)</text>
+        </g>
+        
+        <g transform="translate(15, 175)">
+          <rect width="220" height="85" rx="6" fill="#1E293B" stroke="#FFE066" stroke-width="1" />
+          <text x="110" y="25" text-anchor="middle" fill="#FFFFFF" font-size="12" font-weight="bold">Pinia (v3.0.4)</text>
+          <text x="110" y="42" text-anchor="middle" fill="#64748B" font-size="9">Estado Global Reativo</text>
+          <line x1="20" y1="52" x2="200" y2="52" stroke="#1E293B" stroke-width="1"/>
+          <text x="110" y="70" text-anchor="middle" fill="#FFE066" font-size="10">Preferences & Chat States</text>
+        </g>
+        
+        <g transform="translate(15, 275)">
+          <rect width="220" height="110" rx="6" fill="#1E293B" stroke="#1867C0" stroke-width="1" />
+          <text x="110" y="25" text-anchor="middle" fill="#FFFFFF" font-size="12" font-weight="bold">Vuetify 4 & Tailwind 4</text>
+          <text x="110" y="42" text-anchor="middle" fill="#64748B" font-size="9">Componentes & Estilos</text>
+          <line x1="20" y1="52" x2="200" y2="52" stroke="#1E293B" stroke-width="1"/>
+          <text x="110" y="70" text-anchor="middle" fill="#CBD5E1" font-size="10">Vuetify Material v4.0.2</text>
+          <text x="110" y="88" text-anchor="middle" fill="#38BDF8" font-size="10" font-weight="bold">Tailwind CSS v4 (Vite)</text>
+        </g>
+        
+        <g transform="translate(15, 400)">
+          <rect width="220" height="70" rx="6" fill="#1E293B" stroke="#64748B" stroke-width="1" />
+          <text x="110" y="22" text-anchor="middle" fill="#FFFFFF" font-size="11" font-weight="bold">Assets & Fontes</text>
+          <text x="110" y="40" text-anchor="middle" fill="#CBD5E1" font-size="9.5">Playfair Display & Roboto</text>
+          <text x="110" y="55" text-anchor="middle" fill="#CBD5E1" font-size="9.5">FontAwesome & MDI</text>
+        </g>
+      </g>
+      
+      <!-- Backend -->
+      <g transform="translate(370, 80)">
+        <rect width="260" height="540" rx="8" fill="#0F172A" stroke="#1E293B" stroke-width="1.5" />
+        <rect width="260" height="35" rx="8" fill="url(#grad-backend)" opacity="0.15" />
+        <path d="M 0 8 Q 0 0 8 0 L 252 0 Q 260 0 260 8 L 260 35 L 0 35 Z" fill="none" stroke="url(#grad-backend)" stroke-width="1.5" />
+        <text x="130" y="22" text-anchor="middle" fill="#8257E6" font-size="12" font-weight="bold">2. APLICAÇÃO (Backend)</text>
+        
+        <g transform="translate(15, 50)">
+          <rect width="230" height="110" rx="6" fill="#1E293B" stroke="#8257E6" stroke-width="1" />
+          <text x="115" y="25" text-anchor="middle" fill="#FFFFFF" font-size="12" font-weight="bold">Express.js API</text>
+          <text x="115" y="42" text-anchor="middle" fill="#64748B" font-size="9">Node.js (CommonJS, v5.1.0)</text>
+          <line x1="20" y1="52" x2="210" y2="52" stroke="#1E293B" stroke-width="1"/>
+          <text x="115" y="70" text-anchor="middle" fill="#CBD5E1" font-size="10">Rotas: /auth, /chat, /quiz, /books</text>
+          <text x="115" y="88" text-anchor="middle" fill="#A855F7" font-size="10" font-weight="bold">Dev Tool: Nodemon (v3.1.14)</text>
+        </g>
+        
+        <g transform="translate(15, 175)">
+          <rect width="230" height="95" rx="6" fill="#1E293B" stroke="#EC4899" stroke-width="1" />
+          <text x="115" y="25" text-anchor="middle" fill="#FFFFFF" font-size="12" font-weight="bold">Middlewares</text>
+          <line x1="20" y1="35" x2="210" y2="35" stroke="#1E293B" stroke-width="1"/>
+          <text x="115" y="52" text-anchor="middle" fill="#F472B6" font-size="10" font-weight="bold">JWT Auth & protected routes</text>
+          <text x="115" y="70" text-anchor="middle" fill="#CBD5E1" font-size="9.5">CORS & Security Enablers</text>
+          <text x="115" y="85" text-anchor="middle" fill="#CBD5E1" font-size="9.5">Centralized Error Handler</text>
+        </g>
+        
+        <g transform="translate(15, 285)">
+          <rect width="230" height="110" rx="6" fill="#1E293B" stroke="#22C55E" stroke-width="1" />
+          <text x="115" y="22" text-anchor="middle" fill="#FFFFFF" font-size="12" font-weight="bold">Serviços (Services)</text>
+          <line x1="20" y1="32" x2="210" y2="32" stroke="#1E293B" stroke-width="1"/>
+          <text x="115" y="48" text-anchor="middle" fill="#4ADE80" font-size="10" font-weight="bold">llmService (Google Gemini API)</text>
+          <text x="115" y="66" text-anchor="middle" fill="#CBD5E1" font-size="9.5">catalogService (Google Books API)</text>
+          <text x="115" y="84" text-anchor="middle" fill="#CBD5E1" font-size="9.5">quizService & authService</text>
+          <text x="115" y="100" text-anchor="middle" fill="#CBD5E1" font-size="9.5">emailService (Nodemailer v8)</text>
+        </g>
+        
+        <g transform="translate(15, 410)">
+          <rect width="230" height="60" rx="6" fill="#1E293B" stroke="#3B82F6" stroke-width="1" />
+          <text x="115" y="20" text-anchor="middle" fill="#FFFFFF" font-size="11" font-weight="bold">Drivers & Security</text>
+          <text x="115" y="36" text-anchor="middle" fill="#60A5FA" font-size="9.5" font-weight="bold">oracledb Driver (v6.9.0)</text>
+          <text x="115" y="50" text-anchor="middle" fill="#CBD5E1" font-size="9.5">bcrypt (v6.0.0)</text>
+        </g>
+      </g>
+      
+      <!-- Cloud layer -->
+      <g transform="translate(710, 80)">
+        <rect width="250" height="540" rx="8" fill="#0F172A" stroke="#1E293B" stroke-width="1.5" />
+        <rect width="250" height="35" rx="8" fill="url(#grad-database)" opacity="0.1" />
+        <path d="M 0 8 Q 0 0 8 0 L 242 0 Q 250 0 250 8 L 250 35 L 0 35 Z" fill="none" stroke="url(#grad-database)" stroke-width="1.5" />
+        <text x="125" y="22" text-anchor="middle" fill="#F80000" font-size="12" font-weight="bold">3. DADOS & CLOUD</text>
+        
+        <g transform="translate(15, 50)">
+          <rect width="220" height="150" rx="6" fill="#1E293B" stroke="#F80000" stroke-width="1" />
+          <text x="110" y="22" text-anchor="middle" fill="#FFFFFF" font-size="11" font-weight="bold">Oracle Autonomous DB</text>
+          <text x="110" y="36" text-anchor="middle" fill="#FF7878" font-size="9" font-weight="bold">Cloud DB (Oracle Wallet)</text>
+          <line x1="20" y1="46" x2="200" y2="46" stroke="#1E293B" stroke-width="1"/>
+          <text x="25" y="62" fill="#E2E8F0" font-size="9">• USUARIOS_TESTE</text>
+          <text x="25" y="78" fill="#E2E8F0" font-size="9">• CONVERSAS (CLOB JSON)</text>
+          <text x="25" y="94" fill="#E2E8F0" font-size="9">• PREFERENCIAS_USUARIO</text>
+          <text x="25" y="110" fill="#E2E8F0" font-size="9">• SUGESTOES_CONVERSA</text>
+          <text x="25" y="126" fill="#E2E8F0" font-size="9">• QUIZ_SESSOES & AVALIACOES</text>
+          <text x="25" y="142" fill="#E2E8F0" font-size="9">• PASSWORD_RESET_TOKENS</text>
+        </g>
+        
+        <g transform="translate(15, 215)">
+          <rect width="220" height="125" rx="6" fill="#1E293B" stroke="url(#grad-gemini)" stroke-width="1" />
+          <text x="110" y="22" text-anchor="middle" fill="#FFFFFF" font-size="12" font-weight="bold">Google Gemini API</text>
+          <text x="110" y="37" text-anchor="middle" fill="#00F5D4" font-size="9.5" font-weight="bold">gemini-1.5-flash LLM</text>
+          <line x1="20" y1="46" x2="200" y2="46" stroke="#1E293B" stroke-width="1"/>
+          <text x="110" y="64" text-anchor="middle" fill="#CBD5E1" font-size="9.5">Structured JSON Output</text>
+          <text x="110" y="82" text-anchor="middle" fill="#CBD5E1" font-size="9.5">Adaptive Quiz Logic</text>
+          <text x="110" y="98" text-anchor="middle" fill="#CBD5E1" font-size="9.5">Dynamic preferences inference</text>
+          <text x="110" y="114" text-anchor="middle" fill="#00F5D4" font-size="8.5">Generative AI SDK (v0.24.1)</text>
+        </g>
+        
+        <g transform="translate(15, 355)">
+          <rect width="220" height="110" rx="6" fill="#1E293B" stroke="#4285F4" stroke-width="1" />
+          <text x="110" y="25" text-anchor="middle" fill="#FFFFFF" font-size="12" font-weight="bold">Google Books API</text>
+          <text x="110" y="42" text-anchor="middle" fill="#64748B" font-size="9">Catálogo & Metadados</text>
+          <line x1="20" y1="52" x2="200" y2="52" stroke="#1E293B" stroke-width="1"/>
+          <text x="110" y="70" text-anchor="middle" fill="#CBD5E1" font-size="9.5">Consulta Geral de Livros</text>
+          <text x="110" y="88" text-anchor="middle" fill="#CBD5E1" font-size="9.5">Enriquecimento de Capas</text>
+        </g>
+      </g>
+      
+      <!-- Connectors -->
+      <path d="M 290 230 L 370 230" fill="none" stroke="#64748B" stroke-dasharray="4,4" stroke-width="2" marker-end="url(#arrow)" />
+      <path d="M 370 260 L 290 260" fill="none" stroke="#42B883" stroke-width="2" marker-end="url(#arrow-green)" />
+      <text x="330" y="220" text-anchor="middle" fill="#CBD5E1" font-size="9" font-weight="bold">HTTPS REST</text>
+      <text x="330" y="280" text-anchor="middle" fill="#42B883" font-size="8" font-weight="bold">JWT JSON</text>
+      
+      <path d="M 630 155 L 710 155" fill="none" stroke="#3B82F6" stroke-width="1.5" marker-end="url(#arrow)" />
+      <text x="670" y="145" text-anchor="middle" fill="#60A5FA" font-size="8" font-weight="bold">mTLS/Wallet</text>
+      
+      <path d="M 630 295 L 710 295" fill="none" stroke="#8257E6" stroke-width="1.5" marker-end="url(#arrow-purple)" />
+      <text x="670" y="285" text-anchor="middle" fill="#A855F7" font-size="8" font-weight="bold">AI SDK</text>
+      
+      <path d="M 630 435 L 710 435" fill="none" stroke="#64748B" stroke-dasharray="2,2" stroke-width="1.2" marker-end="url(#arrow)" />
+      <text x="670" y="425" text-anchor="middle" fill="#CBD5E1" font-size="8">HTTP REST</text>
+    </svg>
+    <div class="image-caption">Figura 11: Diagrama Vetorial de Arquitetura e Fluxo de Dados Multicamadas do MVP "Entre Páginas"</div>
+  </div>
+  
+  <p>
+    Como detalhado, o sistema integra de forma assíncrona o fluxo de informações, permitindo que a resposta do usuário no SPA do frontend seja instantaneamente transmitida via endpoints REST autenticados para as camadas de lógica no backend, que interagem transacionalmente com a nuvem da Oracle e os endpoints cognitivos e de catálogo (Google e Gemini).
+  </p>
+
+  <div class="page-break"></div>
+
+  <!-- ==================== 11. INTELIGÊNCIA ARTIFICIAL ==================== -->
+  <h1>11. Descrição da Solução de Inteligência Artificial</h1>
+  <h2>11.1 Base de Dados</h2>
+  <p>
+    A base cognitiva de tomada de decisões da IA é alimentada dinamicamente: extrai-se de forma ativa as preferências registradas na conta do usuário (armazenadas na tabela <code>PREFERENCIAS_USUARIO</code> do Oracle) e o histórico de leituras efetivamente avaliadas por ele (tabela <code>AVALIACOES</code>). Esses dados de preferência e histórico são injetados de forma segura como metadados contextuais em background a cada chamada do chat ou do quiz.
+  </p>
+  <h2>11.2 Pré-processamento dos Dados</h2>
+  <p>
+    Para evitar ruídos, alucinações e ataques de injeção de prompt nas chamadas do chat, os inputs textuais do usuário são sanitizados no controlador do backend. Quando a IA gera a resposta estruturada na rota `/chat/close` para consolidar o perfil do leitor, as saídas em formato string são normalizadas em letras minúsculas e comparadas a um dicionário restrito de mídias ("livro", "hq" e "mangá") antes de atualizar as tabelas relacionais.
+  </p>
+  <h2>11.3 Modelos de IA Utilizados</h2>
+  <p>
+    A plataforma utiliza a API oficial do Google Gemini acionada via SDK oficial (<code>@google/generative-ai</code> na versão 0.24.1). Utiliza-se instruções de sistema extremamente estritas (System Instructions) para modelar o tom, regras de filtragem e forçar o retorno estruturado em JSON puramente limpo. Em caso de quebras eventuais do formato pelo modelo, uma camada de pós-processamento sintático (parser regex) limpa os delimitadores markdown da resposta.
+  </p>
+  <h2>11.4 Treinamento e Validação</h2>
+  <p>
+    Por se tratar de um modelo de linguagem em nuvem consumido na modalidade zero-shot/few-shot prompting, não é efetuado um fine-tuning local. A calibração de tom e assertividade do comportamento foi executada por meio de exaustiva engenharia de prompt e validada no backend por scripts automatizados de injeção de diálogos.
+  </p>
+  <h2>11.5 Métricas de Avaliação</h2>
+  <p>
+    A assertividade técnica e qualitativa da IA foi balizada no MVP pelas métricas declaradas na Seção 5.3 (MQ01 a MQ07), estabelecendo como metas principais o tempo de resposta do LLM (&le; 6 s em 90% das requisições), cobertura de enriquecimento de dados da catalogação (&ge; 80% das respostas) e precisão de formato e detecção de temas sensíveis (&ge; 95%).
+  </p>
+
+  <!-- ==================== 12. TESTES E VALIDAÇÃO ==================== -->
+  <h1>12. Testes e Validação do Sistema</h1>
+  <p>
+    A garantia de qualidade de software do Entre Páginas adota uma estratégia com três pilares:
+  </p>
+  <ol>
+    <li><strong>Testes Unitários:</strong> Roteiros de validação com runners nativos para testar o parser de rotas e hashing bcrypt.</li>
+    <li><strong>Testes de Integração Automatizados:</strong> Suite abrangente no backend executada via linha de comando:
+      <ul>
+        <li><code>npm run test:chat</code>: Testa de ponta a ponta as credenciais de login JWT, rotas protegidas, fluxo completo de conversas sequenciais no chat, persistência e limpeza de histórico.</li>
+        <li><code>npm run test:quiz:run</code>: Inicializa dinamicamente as tabelas no Oracle, sobe a API de teste, gera perguntas iniciais, injeta respostas simuladas e valida a devolução de perguntas adaptativas e recomendações finais.</li>
+      </ul>
+    </li>
+    <li><strong>Testes de Aceitação do Usuário (UAT):</strong> Ensaios de usabilidade e homologação final realizados com os representantes da Comunidade Externa.</li>
+  </ol>
+
+  <div class="page-break"></div>
+
+  <!-- ==================== 13. GESTÃO DO PROJETO ==================== -->
+  <h1>13. Gestão do Projeto</h1>
+  <p>
+    O projeto Entre Páginas adotou a metodologia ágil ágil Scrum para gerenciamento incremental das entregas e garantia de valor contínuo em cada iteração (sprint).
+  </p>
+
+  <h2>13.1 Papéis do Time de Desenvolvimento</h2>
+  <ul>
+    <li><strong>Fernando Furlanetto Cardoso (RA 24005837) — Product Owner & Desenvolvedor Fullstack:</strong> Responsável pela facilitação com clientes externos, modelagem do Círculo Dourado, consolidação do backlog do produto e codificação do front-end responsivo (Vue 3/Vuetify 4).</li>
+    <li><strong>João Pedro Pires de Andrade (RA 23025141) — Scrum Master & Desenvolvedor Backend:</strong> Responsável pela remoção de impedimentos de desenvolvimento ágil, facilitação dos rituais, e arquitetura das rotas Express e segurança JWT.</li>
+    <li><strong>Raul Gruenwaldt Antonio (RA 23025999) — Arquiteto de Software & Administrador de Banco de Dados:</strong> Responsável pela modelagem MER no Oracle Autonomous Database, configuração de mTLS e integrações do backend com o Gemini SDK e Google Books API.</li>
+    <li><strong>Augusto Fidélis dos Santos Custódio (RA 24024320) — QA (Quality Assurance) & Desenvolvedor Fullstack:</strong> Responsável por escrever os planos de testes, configurar o test-runner nativo do Node.js, implementar testes e realizar validações cruzadas dos critérios de aceite.</li>
+  </ul>
+
+  <h2>13.2 Rituais Ágeis Praticados</h2>
+  <ul>
+    <li><strong>Sprint Planning:</strong> Planejamento quinzenal onde a equipe refinava o Product Backlog, estimava a complexidade das tarefas e definia a meta da Sprint e o Sprint Backlog.</li>
+    <li><strong>Daily Scrum:</strong> Encontros curtos de sincronização de progresso realizados três vezes por semana para discutir andamento e remover gargalos técnicos.</li>
+    <li><strong>Sprint Review & Retrospective:</strong> Reuniões executadas ao final de cada Sprint para validar as funcionalidades desenvolvidas com a professora, avaliar as métricas do processo de equipe e traçar ações de melhoria contínua.</li>
+  </ul>
+
+  <h2>13.3 Cronograma das Sprints e Entregas (Realizado)</h2>
+  <ul>
+    <li><strong>Sprint 1 (Concepção e Autenticação - 2 semanas):</strong> Modelagem do banco relacional, configuração do repositório Git, setup do Express e Vue 3, e implementação das rotas <code>/auth/register</code>, <code>/auth/login</code> e <code>/auth/forgot-password</code> (RF01, RF02, RF03).</li>
+    <li><strong>Sprint 2 (Descoberta e Integração de Catálogo - 2 semanas):</strong> Integração da Google Books API para substituir o catálogo local legado, implementação dos filtros combinados por tipo, autor e temas (<code>/books</code>), e carrossel dinâmico da Home com fallback (<code>/books/categories</code>) (RF05, RF06, RF07).</li>
+    <li><strong>Sprint 3 (Chat Inteligente e Persistência de Contexto - 2 semanas):</strong> Integração do SDK <code>@google/generative-ai</code> com instruções de sistema estritas (<code>/chat/message</code>), configuração da tabela <code>CONVERSAS</code> com chave única no Oracle para restringir o histórico ao último chat ativo (<code>/chat/history</code>), e lógica de encerramento (<code>/chat/close</code>) para atualizar preferências (RF08, RF09, RF12, RF13).</li>
+    <li><strong>Sprint 4 (Quiz Adaptativo e Proteção de UX - 2 semanas):</strong> Implementação do motor de quiz com perguntas adaptativas dinâmicas (<code>/quiz/start</code>, <code>/quiz/answer</code>, <code>/quiz/finish</code>), sinalização de temas sensíveis (<code>sensitiveContent</code>) com aviso do frontend e modal de consentimento (RF10, RF11).</li>
+    <li><strong>Sprint 5 (Qualidade e Validação Externa - 2 semanas):</strong> Escrita da suite de testes de integração (<code>testChat.js</code> e <code>testQuiz.js</code>), homologação das personas de uso, refinamento visual fino e validação de aceitação com a Comunidade Externa (Matheus e Giovani).</li>
+  </ul>
+
+  <div class="page-break"></div>
+
+  <!-- ==================== 14. RESULTADOS E DISCUSSÃO ==================== -->
+  <h1>14. Resultados e Discussão</h1>
+  <p>
+    O Entre Páginas alcançou com êxito os objetivos de seu MVP. A integração de um assistente de leitura inteligente com APIs robustas de metadados de catálogo provou-se altamente eficaz na melhoria da experiência de descoberta, atingindo os tempos de resposta especificados nos RNF.
+  </p>
+  <p>
+    <strong>Considerações Éticas e de Privacidade (LGPD):</strong> A privacidade do leitor foi colocada no centro do projeto por meio do cumprimento das normas da LGPD, adotando a retenção exclusiva do último chat do usuário (substituindo diálogos passados) e informando com clareza o processamento de preferências. A tag <em>sensitiveContent</em> combate gatilhos emocionais protegendo a integridade psicológica dos leitores.
+  </p>
+
+  <!-- ==================== 15. CONCLUSÃO ==================== -->
+  <h1>15. Conclusão e Trabalhos Futuros</h1>
+  <p>
+    O MVP demonstrou a viabilidade prática da IA generativa acoplada a sistemas de catálogos tradicionais como alternativa de alta conversão para fomento do hábito de leitura. Como trabalhos futuros, planeja-se:
+  </p>
+  <ol>
+    <li>Expansão para suporte a um histórico completo opcional e gerenciável com busca retroativa de recomendações passadas.</li>
+    <li>Gamificação estendida com conquistas, badges de progresso e árvore de habilidades literárias.</li>
+    <li>Criação de uma versão mobile híbrida (Capacitor) para o ecossistema Android e iOS.</li>
+  </ol>
+
+  <!-- ==================== 16. ACEITE FINAL ==================== -->
+  <h1>16. Aceite final do projeto</h1>
+  <p>
+    Por meio deste termo, os representantes da comunidade externa declaram estar cientes e de pleno acordo com as funcionalidades, requisitos e entregas apresentadas pelo projeto "Entre Páginas".
+  </p>
+  
+  <div class="signature-row">
+    <div class="signature-box">
+      <div class="signature-line"></div>
+      <div class="signature-name">Matheus Zanon Caritá</div>
+      <div class="signature-title">Estagiário de Desenvolvimento Mobile — SIDI</div>
+    </div>
+    
+    <div class="signature-box">
+      <div class="signature-line"></div>
+      <div class="signature-name">Giovani Bellini dos Santos</div>
+      <div class="signature-title">Mentor PADIS 2 — iRede</div>
+    </div>
+  </div>
+
+  <div style="text-align: center; margin-top: 1cm; font-size: 11pt; color: #64748B;">
+    Data de Homologação: 20 de Maio de 2026
+  </div>
+
+  <!-- ==================== REFERÊNCIAS ==================== -->
+  <h1>Referências</h1>
+  <ol>
+    <li>GOODFELLOW, I.; BENGIO, Y.; COURVILLE, A. <strong>Deep learning</strong>. Cambridge: MIT Press, 2016.</li>
+    <li>RUSSELL, S.; NORVIG, P. <strong>Artificial intelligence: a modern approach</strong>. 4. ed. Hoboken: Pearson, 2021.</li>
+    <li>RICCI, F.; ROKACH, L.; SHAPIRA, B. <strong>Recommender Systems Handbook</strong>. 3. ed. New York: Springer, 2022.</li>
+  </ol>
+
+</body>
+</html>
