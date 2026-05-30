@@ -28,6 +28,11 @@ const router = createRouter({
       meta: { requiresAuth: true },
     },
     {
+      path: '/quiz',
+      component: () => import('@/pages/Quiz.vue'),
+      meta: { requiresAuth: true },
+    },
+    {
       path: import.meta.env.VITE_CHATBOT_ROUTE || '/chatbot',
       component: () => import('@/pages/Chatbot.vue'),
       meta: { requiresAuth: true },

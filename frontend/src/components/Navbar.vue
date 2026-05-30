@@ -7,7 +7,7 @@ import profileIcon from "../assets/Icone_perfil.svg"
 const navLinks = [
   { label: 'Início',        to: '/' },
   { label: 'Categorias',    to: '/categorias' },
-  { label: 'Recomendações', to: '/recomendacoes' },
+  { label: 'Recomendações', to: '/quiz' },
   { label: 'Catálogo',      to: '/catalogo' },
 ]
 

@@ -2,6 +2,7 @@
 // Serviço centralizado de comunicação com a API do backend.
 // Todas as requisições passam pelo proxy Vite (/api → http://localhost:3001).
 
+import router from '@/router'
 import { useAuthStore } from '@/stores/authStore'
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api'
@@ -27,6 +28,17 @@ async function request<T>(
     ...options,
     headers,
   })
+
+  if (response.status === 401) {
+    auth.clearToken()
+    if (router.currentRoute.value.path !== '/login') {
+      router.replace({
+        path: '/login',
+        query: { redirect: router.currentRoute.value.fullPath },
+      })
+    }
+    throw new Error('Sessao expirada. Faca login novamente.')
+  }
 
   if (!response.ok) {
     const body = await response.json().catch(() => ({}))
@@ -121,5 +133,148 @@ export const chatService = {
    */
   closeConversation(): Promise<void> {
     return request<void>('/chat/close', { method: 'POST' })
+  },
+}
+
+// ─── Quiz ─────────────────────────────────────────────────────────────────────
+
+export interface QuizQuestion {
+  id: string
+  text: string
+  options: string[]
+}
+
+export interface QuizStartResponse {
+  sessionId: string
+  maxQuestions: number
+  questions: QuizQuestion[]
+  questionNumber: number
+  canFinish: boolean
+}
+
+export interface QuizAnswerResponse {
+  sessionId: string
+  answeredCount: number
+  maxQuestions: number
+  question: QuizQuestion | null
+  canFinish: boolean
+  isComplete: boolean
+}
+
+export interface QuizRecommendation extends BookRecommendation {
+  type?: string
+  justification?: string
+  sensitiveContent?: boolean
+}
+
+export interface QuizPreferences {
+  genres: string[]
+  types: string[]
+  favoriteAuthors: string[]
+}
+
+export interface QuizFinishResponse {
+  message: string
+  preferences: QuizPreferences
+  recommendations: QuizRecommendation[]
+  preferencesSaved: boolean
+}
+
+// ─── Catálogo (Google Books) ───────────────────────────────────────────────────
+
+export interface CatalogItem {
+  googleBooksId: string | null
+  title: string | null
+  author: string | null
+  authors: string[]
+  type: string
+  categories: string[]
+  genres: string[]
+  coverUrl: string | null
+  synopsis: string | null
+  publishedDate: string | null
+  previewLink: string | null
+  webReaderLink: string | null
+  embeddable: boolean
+  viewability: string | null
+}
+
+export interface CatalogResponse {
+  items: CatalogItem[]
+  page: number
+  limit: number
+  totalItems: number
+}
+
+export interface CatalogFilters {
+  search?: string
+  author?: string
+  category?: string
+  theme?: string
+  type?: string
+  page?: number
+  limit?: number
+}
+
+export const bookService = {
+  /**
+   * GET /books
+   * Lista livros do catálogo Google Books com filtros opcionais.
+   */
+  list(filters: CatalogFilters = {}): Promise<CatalogResponse> {
+    const params = new URLSearchParams()
+    for (const [key, value] of Object.entries(filters)) {
+      if (value !== undefined && value !== null && value !== '') {
+        params.set(key, String(value))
+      }
+    }
+    const query = params.toString()
+    return request<CatalogResponse>(`/books${query ? `?${query}` : ''}`)
+  },
+}
+
+export const quizService = {
+  /**
+   * POST /quiz/start
+   * Cria uma nova sessão e devolve as 3 perguntas genéricas iniciais.
+   */
+  start(): Promise<QuizStartResponse> {
+    return request<QuizStartResponse>('/quiz/start', {
+      method: 'POST',
+      body: JSON.stringify({}),
+    })
+  },
+
+  /**
+   * POST /quiz/answer
+   * Registra a resposta e devolve a próxima pergunta (gerada pela IA após a 3ª).
+   */
+  answer(sessionId: string, questionId: string, answer: string): Promise<QuizAnswerResponse> {
+    return request<QuizAnswerResponse>('/quiz/answer', {
+      method: 'POST',
+      body: JSON.stringify({ sessionId, questionId, answer }),
+    })
+  },
+
+  /**
+   * POST /quiz/regenerate
+   * Pede para a IA gerar uma nova pergunta no slot atual (apenas perguntas adaptativas).
+   */
+  regenerate(sessionId: string): Promise<QuizAnswerResponse> {
+    return request<QuizAnswerResponse>('/quiz/regenerate', {
+      method: 'POST',
+      body: JSON.stringify({ sessionId }),
+    })
+  },
+
+  /**
+   * POST /quiz/finish
+   * Encerra a sessão e devolve preferências inferidas + recomendações.
+   */
+  finish(sessionId: string, savePreferences = true): Promise<QuizFinishResponse> {
+    return request<QuizFinishResponse>('/quiz/finish', {
+      method: 'POST',
+      body: JSON.stringify({ sessionId, savePreferences }),
+    })
   },
 }

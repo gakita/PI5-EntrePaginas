@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted, onBeforeUnmount } from 'vue'
+import { useRouter } from 'vue-router'
 import Navbar from '@/components/Navbar.vue'
 import fundoImg from '@/assets/FUNDO.png'
 
@@ -30,6 +31,12 @@ onMounted(() => {
 onBeforeUnmount(() => {
   observer?.disconnect()
 })
+
+const router = useRouter()
+
+function goToQuiz() {
+  router.push('/quiz')
+}
 </script>
 
 <template>
@@ -61,7 +68,7 @@ onBeforeUnmount(() => {
       </div>
 
       <div class="hero__ctas">
-        <button class="cta-primary">
+        <button class="cta-primary" @click="goToQuiz">
           <v-icon>mdi-magnify</v-icon>
           Faça um quiz de recomendações
         </button>
