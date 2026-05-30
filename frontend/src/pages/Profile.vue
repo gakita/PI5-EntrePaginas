@@ -687,7 +687,7 @@ function goToBook(id: string | null) {
   min-height: calc(100vh - 65px);
   background-color: #110c07;
   color: #e8d5b7;
-  overflow-x: hidden;
+  overflow: hidden;
 }
 
 .profile-page::before {
