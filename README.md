@@ -851,6 +851,64 @@ VITE_API_URL=http://localhost:3000
 
 Em produção, troque pelo endereço real do backend.
 
+## 📊 Fluxogramas de Arquitetura e Processos
+
+Para melhor compreensão visual de como o sistema orquestra as integrações com IA, a resiliência de dados e a geração inteligente de conteúdo, detalhamos os fluxogramas abaixo:
+
+### 1. Fluxo de Chat de Recomendação Literária com IA
+O chatbot utiliza a API do Google Gemini com um histórico contextualizado para retornar recomendações de alta qualidade, enriquecendo-as secundariamente com a API do Google Books.
+
+```mermaid
+graph TD
+    A[Usuário envia mensagem no Chat] --> B[Backend recebe requisição]
+    B --> C[Busca Histórico no Oracle DB + Preferências + Histórico de Leitura]
+    C --> D[Envia prompt contextualizado ao Google Gemini]
+    D --> E[Gemini responde com chat + recomendações em JSON]
+    E --> F[Consulta API do Google Books para enriquecimento de metadados]
+    F --> G{Capa encontrada no Google Books?}
+    G -- Sim --> H[Atribui URL da capa oficial]
+    G -- Não --> I[Atribui null -> Aplicado Mapeamento Local de Capa Genérica]
+    H --> J[Salva Histórico no Oracle DB]
+    I --> J
+    J --> K[Retorna JSON completo para o Frontend]
+```
+
+### 2. Quiz Adaptativo de Recomendação (RF10)
+A dinâmica inteligente do quiz começa com perguntas estáticas e se adapta de forma dinâmica nas rodadas subsequentes, cruzando as respostas com a inteligência do Gemini.
+
+```mermaid
+graph TD
+    A[Frontend inicia o quiz] --> B[Backend inicializa sessão no Oracle DB]
+    B --> C[Entrega perguntas padrão predefinidas]
+    C --> D[Usuário responde no Frontend]
+    D --> E[Frontend envia respostas ao backend]
+    E --> F{Respondido < 3 perguntas?}
+    F -- Sim --> G[Entrega próxima pergunta padrão]
+    G --> D
+    F -- Não --> H{Total de perguntas == 8?}
+    H -- Não --> I[Google Gemini gera pergunta adaptativa baseada nas anteriores]
+    I --> D
+    H -- Sim --> J[Libera opção de Finalizar]
+    J --> K[Frontend solicita encerramento do Quiz]
+    K --> L[Gemini infere preferências finais + gera recomendações de livros]
+    L --> M[Salva preferências no perfil + Retorna livros recomendados]
+```
+
+### 3. Resolução e Fallback de Capas de Livros
+Para garantir que a plataforma nunca quebre o visual por falta de imagens na API do Google Books, implementamos uma lógica de fallbacks robusta no frontend utilizando os novos placeholders de categoria.
+
+```mermaid
+graph TD
+    A[Carregar Livro no Frontend] --> B{Tem coverUrl válido do Google Books?}
+    B -- Sim --> C[Exibe capa oficial da editora]
+    B -- Não --> D[Executa getBookPlaceholderCover]
+    D --> E{Identifica tipo ou palavra-chave?}
+    E -- Manga/Mangá --> F[Usa /images/categories/mangaPlaceholder.png]
+    E -- HQ/Quadrinhos --> G[Usa /images/categories/hqPlaceholder.png]
+    E -- Gênero Específico? <br> Terror, Ficção, Distopia, Fantasia, Romance, etc. --> H[Usa <genero>Placeholder.png correspondente]
+    E -- Não mapeado --> I[Usa /images/categories/generic-book.svg]
+```
+
 ---
 
 ## Variáveis de Ambiente do Backend
