@@ -28,7 +28,7 @@ function cacheBookForDetails(book: CatalogBook) {
     cachedBooks[book.googleBooksId] = book
     sessionStorage.setItem(bookDetailsCacheKey, JSON.stringify(cachedBooks))
   } catch {
-    // Cache is only a navigation fallback; ignore storage failures.
+    // Ignora erros ao gravar no sessionStorage
   }
 }
 

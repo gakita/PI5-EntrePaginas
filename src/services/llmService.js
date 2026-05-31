@@ -3,9 +3,9 @@
  *
  * Responsabilidades:
  *   1. Configurar o cliente do Gemini com a API key
- *   2. Montar o prompt de sistema com preferências reais do usuário (RIA01)
- *   3. Gerar recomendações estruturadas em JSON (RIA02/RIA03)
- *   4. Inferir preferências ao encerrar uma conversa (RIA07)
+ *   2. Montar o prompt de sistema com as preferências do usuário
+ *   3. Gerar recomendações estruturadas em JSON
+ *   4. Inferir preferências ao encerrar uma conversa
  *
  * Mudanças em relação à versão anterior:
  *   - generateRecommendation() agora aceita `preferences` como parâmetro
@@ -16,7 +16,7 @@ const { GoogleGenerativeAI } = require('@google/generative-ai');
 const env = require('../config/env');
 const logger = require('../utils/logger');
 
-// ── Preferências padrão (usadas quando o usuário não tem preferências salvas) ──
+// Preferências padrão usadas caso o usuário não possua preferências salvas
 const DEFAULT_PREFERENCES = {
   genres: ['ficção científica', 'fantasia', 'romance', 'terror'],
   types: ['livro', 'hq', 'mangá'],
@@ -109,17 +109,16 @@ async function generateRecommendation(messageHistory, preferences = null, readBo
 
   const model = genAI.getGenerativeModel({
     model: env.geminiModel,
-    systemInstruction: buildSystemInstruction(preferences, readBooks), // Usa preferências reais e histórico (RIA01)
+    systemInstruction: buildSystemInstruction(preferences, readBooks), // Usa as preferências e o histórico do usuário
   });
 
-  // Converte nosso formato {role, content} para o formato do Gemini {role, parts}
-  // "assistant" no nosso sistema = "model" na API do Gemini
+  // Mapeia o histórico de mensagens para o formato do Gemini
   const geminiHistory = messageHistory.map((msg) => ({
     role: msg.role === 'assistant' ? 'model' : 'user',
     parts: [{ text: msg.content }],
   }));
 
-  // Separa a última mensagem (atual) do histórico anterior (contexto)
+  // Separa a mensagem atual do histórico
   const currentMessage = geminiHistory.pop();
   const previousMessages = geminiHistory;
 
@@ -130,8 +129,7 @@ async function generateRecommendation(messageHistory, preferences = null, readBo
     const result = await chat.sendMessage(currentMessage.parts[0].text);
     responseText = result.response.text();
   } catch (err) {
-    // Se o Gemini retornar 503 (sobrecarga) ou outro erro de rede,
-    // retornamos uma mensagem de fallback amigável (RNF12)
+    // Caso ocorra instabilidade ou limite na API, exibe mensagem amigável
     const errStatus = err?.status || err?.statusCode || 0;
     const isServiceError = errStatus >= 500 || errStatus === 429;
     if (isServiceError) {
@@ -147,7 +145,7 @@ async function generateRecommendation(messageHistory, preferences = null, readBo
   const durationMs = Date.now() - start;
   logger.info('LLM request completed', { durationMs, model: env.geminiModel });
 
-  // Tenta parsear JSON — se falhar, usa fallback de texto puro (MQ05 / RNF12)
+  // Tenta realizar o parse do JSON da resposta
   try {
     const cleaned = cleanJsonText(responseText);
 
@@ -168,7 +166,7 @@ async function generateRecommendation(messageHistory, preferences = null, readBo
 
 /**
  * Pede ao Gemini para inferir as preferências do usuário com base na conversa.
- * Usada ao encerrar a conversa (RF13/RIA07).
+ * Usada ao encerrar a conversa.
  *
  * @param {Array} messageHistory - Histórico completo da conversa.
  * @returns {{ genres: string[], types: string[], favoriteAuthors: string[] }}
@@ -176,7 +174,7 @@ async function generateRecommendation(messageHistory, preferences = null, readBo
 async function inferPreferences(messageHistory) {
   const model = genAI.getGenerativeModel({ model: env.geminiModel });
 
-  // Formata a conversa como texto simples para o modelo analisar
+  // Converte a conversa para texto corrido
   const conversationText = messageHistory
     .map((m) => `${m.role === 'user' ? 'Usuário' : 'Assistente'}: ${m.content}`)
     .join('\n');

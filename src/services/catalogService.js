@@ -1,5 +1,5 @@
 /**
- * catalogService.js — Enriquecimento de recomendações via Google Books API (RIA04).
+ * catalogService.js — Enriquecimento de recomendações via Google Books API.
  *
  * Após o Gemini gerar as recomendações, este serviço busca na
  * Google Books API informações adicionais sobre cada obra:
@@ -142,7 +142,7 @@ async function enrichOne(rec) {
       viewability:   access.viewability || null,
     };
   } catch (err) {
-    // Em caso de erro (timeout, rede, etc.), loga e retorna com campos nulos (RNF12)
+    // Em caso de erro (timeout, rede, etc.), retorna com os campos vazios
     if (err.name === 'AbortError') {
       logger.warn('Google Books API timeout', { title: rec.title });
     } else {

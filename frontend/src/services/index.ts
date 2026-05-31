@@ -8,7 +8,7 @@ import { useAuthStore } from '@/stores/authStore'
 const BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api'
 const REQUEST_TIMEOUT_MS = Number(import.meta.env.VITE_API_TIMEOUT_MS || 15000)
 
-// ─── Helper interno ───────────────────────────────────────────────────────────
+// Helper interno
 
 async function request<T>(
   path: string,
@@ -52,7 +52,7 @@ async function request<T>(
   return response.json() as Promise<T>
 }
 
-// ─── Auth ─────────────────────────────────────────────────────────────────────
+// Auth
 
 export interface LoginResponse {
   token: string
@@ -177,7 +177,7 @@ export const authService = {
   },
 }
 
-// ─── Chat ─────────────────────────────────────────────────────────────────────
+// Chat
 
 export interface BookRecommendation {
   googleBooksId?: string | null
@@ -352,7 +352,7 @@ export const chatService = {
   },
 }
 
-// ─── Books / Catálogo ────────────────────────────────────────────────────────
+// Books / Catálogo
 
 export const favoritesService = {
   async listFavorites(): Promise<CatalogBook[]> {
@@ -990,7 +990,7 @@ export const evaluationsService = {
   },
 }
 
-// ─── Quiz ─────────────────────────────────────────────────────────────────────
+// Quiz
 
 export interface QuizQuestion {
   id: string
@@ -1034,7 +1034,7 @@ export interface QuizFinishResponse {
   preferencesSaved: boolean
 }
 
-// ─── Catálogo (Google Books) ───────────────────────────────────────────────────
+// Catálogo (Google Books)
 
 export type CatalogItem = CatalogBook
 

@@ -1,5 +1,5 @@
 /**
- * logger.js — Utilitário de logging estruturado (RNF14).
+ * logger.js — Utilitário de logging estruturado.
  *
  * Por que logging estruturado?
  * Ao invés de usar console.log com texto puro, emitimos JSON
@@ -23,11 +23,10 @@ function log(level, message, data = {}) {
     timestamp: new Date().toISOString(),
     level,
     message,
-    ...data, // Mescla dados extras diretamente no objeto de log
+    ...data, // Inclui dados adicionais no log
   };
 
-  // Em produção, poderíamos enviar para uma API de logs.
-  // Por ora, imprime em formato JSON no stdout/stderr.
+  // Imprime o log no console em formato JSON
   const output = JSON.stringify(entry);
 
   if (level === 'ERROR') {

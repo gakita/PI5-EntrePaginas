@@ -6,7 +6,7 @@
  *   sendMessage()       → recebe mensagem, chama Gemini, enriquece, salva
  *   getHistory()        → busca conversa do banco
  *   clearHistory()      → apaga conversa
- *   closeConversation() → salva preferências inferidas e sugestões (RF13/RIA07)
+ *   closeConversation() → salva preferências inferidas e sugestões do chat
  *   getPreferences()    → retorna preferências salvas
  *   updatePreferences() → atualiza preferências manualmente
  *   clearPreferences()  → apaga/reseta preferências salvas
@@ -23,57 +23,44 @@ const logger         = require('../utils/logger');
 /**
  * Processa uma nova mensagem e retorna a resposta da IA enriquecida.
  *
- * Fluxo:
- *   1. Busca preferências reais do usuário (RIA01)
- *   2. Busca histórico da conversa
- *   3. Adiciona mensagem do usuário ao histórico
- *   4. Chama Gemini com preferências e histórico
- *   5. Enriquece recomendações com Google Books (RIA04)
- *   6. Salva histórico atualizado (com recommendations embutidas) no banco (RF12)
- *   7. Retorna resposta ao controller
- *
  * @param {string} userEmail
  * @param {string} userMessage
  */
 async function sendMessage(userEmail, userMessage) {
   logger.info('Chat message received', { userEmail });
 
-  // ── Passo 1: Preferências reais (RIA01) ──
-  // Busca do banco; se ainda não existirem, o llmService usa as padrão.
+  // Busca preferências salvas do usuário
   const preferences = await preferenceModel.findByUserEmail(userEmail);
 
-  // ── Passo 1.5: Histórico de Leitura (Avaliações) ──
+  // Busca os livros avaliados pelo usuário
   const readBooks = await avaliacaoModel.findReadBooksByUserEmail(userEmail);
 
-  // ── Passo 2: Histórico da conversa ──
+  // Carrega o histórico de mensagens
   const existingConversation = await chatModel.findByUserEmail(userEmail);
   const messages = existingConversation ? existingConversation.messages : [];
 
-  // ── Passo 3: Adicionar mensagem do usuário ──
+  // Adiciona a nova mensagem do usuário
   messages.push({
     role: 'user',
     content: userMessage,
     timestamp: new Date().toISOString(),
   });
 
-  // ── Passo 4: Chamar o Gemini ──
-  // Passamos as preferências reais e livros lidos para personalizar o prompt (RIA01)
+  // Gera a recomendação com o modelo de linguagem
   const aiResponse = await llmService.generateRecommendation(messages, preferences, readBooks);
 
-  // ── Passo 5: Enriquecer com Google Books (RIA04) ──
-  // Adiciona capa, sinopse e data de publicação a cada recomendação
+  // Adiciona detalhes adicionais aos livros recomendados
   const enrichedRecs = await catalogService.enrichRecommendations(aiResponse.recommendations);
 
-  // ── Passo 6: Adicionar resposta da IA ao histórico ──
-  // Guardamos as recommendations junto à mensagem para usar no /close
+  // Adiciona a resposta do assistente ao histórico
   messages.push({
     role: 'assistant',
     content: aiResponse.message,
-    recommendations: enrichedRecs, // armazenado para RF13
+    recommendations: enrichedRecs,
     timestamp: new Date().toISOString(),
   });
 
-  // ── Passo 7: Salvar no banco (RF12 — só a última conversa) ──
+  // Salva a conversa atualizada
   await chatModel.upsertConversation(userEmail, messages);
 
   logger.info('Chat message processed', {
@@ -107,14 +94,7 @@ async function clearHistory(userEmail) {
 }
 
 /**
- * Encerra a conversa atual: salva preferências inferidas e sugestões (RF13/RIA07).
- *
- * Fluxo:
- *   1. Busca a conversa atual no banco
- *   2. Coleta todas as recomendações de mensagens do assistente
- *   3. Pede ao Gemini para inferir as preferências da conversa (RIA07)
- *   4. Salva preferências no banco (mesclando com as existentes)
- *   5. Salva sugestões no banco (deduplica por título)
+ * Encerra a conversa atual, processando as preferências e sugestões do chat.
  *
  * @param {string} userEmail
  */
@@ -127,12 +107,12 @@ async function closeConversation(userEmail) {
     return { saved: false, reason: 'Nenhuma conversa ativa.' };
   }
 
-  // ── Coleta todas as recomendações armazenadas nas mensagens da IA ──
+  // Agrupa todas as recomendações feitas pelo assistente
   const allRecommendations = conversation.messages
     .filter((m) => m.role === 'assistant' && Array.isArray(m.recommendations))
     .flatMap((m) => m.recommendations);
 
-  // Deduplica por título (mesmo livro pode ter sido recomendado mais de uma vez)
+  // Remove duplicadas pelo título
   const seen = new Set();
   const uniqueRecs = allRecommendations.filter((r) => {
     if (!r.title || seen.has(r.title.toLowerCase())) return false;
@@ -140,13 +120,13 @@ async function closeConversation(userEmail) {
     return true;
   });
 
-  // ── Inferir preferências com Gemini (RIA07) ──
+  // Identifica novas preferências do usuário com base no diálogo
   const inferredPrefs = await llmService.inferPreferences(conversation.messages);
 
-  // ── Salvar preferências no banco (mescla com as existentes) ──
+  // Atualiza as preferências no banco de dados
   const savedPrefs = await preferenceModel.upsertPreferences(userEmail, inferredPrefs);
 
-  // ── Salvar sugestões no banco ──
+  // Salva as sugestões recomendadas
   await suggestionModel.saveAll(userEmail, uniqueRecs);
 
   logger.info('Conversation closed', {
@@ -167,7 +147,7 @@ async function closeConversation(userEmail) {
  */
 async function getPreferences(userEmail) {
   const prefs = await preferenceModel.findByUserEmail(userEmail);
-  // Se ainda não tem preferências, retorna o padrão
+  // Retorna objeto padrão se não houver preferências salvas
   return prefs || { genres: [], types: [], favoriteAuthors: [] };
 }
 

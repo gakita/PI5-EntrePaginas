@@ -1,5 +1,5 @@
 /**
- * preferenceModel.js — Model de preferências do usuário (RIA01).
+ * preferenceModel.js — Model de preferências do usuário.
  *
  * Cada usuário tem um único registro de preferências que é
  * criado/atualizado ao encerrar uma conversa.

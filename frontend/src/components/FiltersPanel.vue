@@ -120,11 +120,11 @@ function toggleFilterOption(groupLabel: string, optionKey: string) {
     ...selectedFilters.value,
     [groupLabel]: nextValues,
   }
-  // If the user selected a predefined year chip, clear custom year inputs
+  // Limpa inputs customizados se um período pré-definido for selecionado
   clearYearInputsIfChipSelected(groupLabel, nextValues)
 }
 
-// When a year-range chip is selected, clear any custom year inputs (De/Até)
+// Limpa inputs de ano customizados se um período pré-definido foi selecionado
 function clearYearInputsIfChipSelected(groupLabel: string, nextValues: string[]) {
   if (groupLabel === 'Ano' && (yearFrom.value !== '' || yearTo.value !== '')) {
     yearFrom.value = ''
@@ -132,7 +132,7 @@ function clearYearInputsIfChipSelected(groupLabel: string, nextValues: string[])
   }
 }
 
-// Watch custom year inputs and deselect any predefined year-range chips if user types
+// Monitora inputs customizados para desmarcar opções pré-definidas
 watch([yearFrom, yearTo], ([from, to]) => {
   const hasCustom = (from !== '' && from !== null) || (to !== '' && to !== null)
   if (hasCustom) {

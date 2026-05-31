@@ -1,7 +1,7 @@
 /**
- * suggestionModel.js — Model de sugestões salvas por conversa (RF13/RIA07).
+ * suggestionModel.js — Model de sugestões salvas por conversa.
  *
- * Ao encerrar uma conversa, todas as obras que o Gemini recomendou
+ * Ao encerrar uma conversa, as recomendações do chatbot
  * são persistidas aqui com data/hora. Isso cria um histórico de
  * recomendações do usuário que pode influenciar conversas futuras.
  */
@@ -22,7 +22,7 @@ async function saveAll(userEmail, recommendations) {
   const connection = await getConnection();
 
   try {
-    // Busca títulos já salvos para evitar duplicação
+    // Evita duplicar recomendações já salvas
     const existing = await connection.execute(
       `SELECT TITULO FROM SUGESTOES_CONVERSA WHERE LOWER(USUARIO_EMAIL) = LOWER(:email)`,
       { email: userEmail }
@@ -32,14 +32,14 @@ async function saveAll(userEmail, recommendations) {
       (existing.rows || []).map((r) => r.TITULO.toLowerCase())
     );
 
-    // Filtra apenas as recomendações que ainda não foram salvas
+    // Filtra apenas novas sugestões
     const newRecs = recommendations.filter(
       (r) => r.title && !savedTitles.has(r.title.toLowerCase())
     );
 
     if (newRecs.length === 0) return;
 
-    // Insere cada sugestão nova individualmente
+    // Salva as sugestões no banco
     for (const rec of newRecs) {
       await connection.execute(
         `
