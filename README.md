@@ -140,7 +140,7 @@ Crie a estrutura de tabelas executando o comando de setup na raiz do projeto:
 ```bash
 npm run db:setup
 ```
-*Esse comando irá verificar e criar todas as tabelas necessárias (`CONVERSAS`, `PREFERENCIAS_USUARIO`, `SUGESTOES_CONVERSA`, `FAVORITOS`, `QUIZ_SESSOES`, `PASSWORD_RESET_TOKENS`).*
+*Esse comando irá verificar e criar todas as tabelas necessárias (`CONVERSAS`, `PREFERENCIAS_USUARIO`, `SUGESTOES_CONVERSA`, `FAVORITOS`, `QUIZ_SESSOES`, `PASSWORD_RESET_TOKENS`, `AVALIACOES`).*
 
 ---
 
@@ -193,6 +193,8 @@ npm run dev:all
 | `npm run db:chat` | Cria/verifica a tabela `CONVERSAS` no Oracle DB. |
 | `npm run db:preferences` | Cria/verifica as tabelas `PREFERENCIAS_USUARIO`, `SUGESTOES_CONVERSA` e `FAVORITOS`. |
 | `npm run db:quiz` | Cria/verifica a tabela `QUIZ_SESSOES` no Oracle DB. |
+| `npm run db:password-reset` | Cria/verifica a tabela `PASSWORD_RESET_TOKENS` no Oracle DB. |
+| `npm run db:avaliacoes` | Cria/verifica a tabela `AVALIACOES` no Oracle DB. |
 | `npm test` | Executa os testes unitários integrados com o test runner nativo do Node.js. |
 | `npm run test:chat` | Executa os testes HTTP de fluxo de chat de recomendação com a API no ar. |
 | `npm run test:quiz` | Executa os cenários de teste do fluxo adaptativo de quiz com a API no ar. |

@@ -29,7 +29,7 @@ Cada arquivo descreve:
 
 ## Leitura recomendada
 
-- Contrato geral da API: [README.md](/home/lu3rf3l/PI5-EntrePaginas/README.md)
-- Google Books no frontend: [README_GOOGLE_BOOKS_FRONTEND.md](/home/lu3rf3l/PI5-EntrePaginas/docs/requirements/README_GOOGLE_BOOKS_FRONTEND.md)
-- Quiz no frontend: [README_QUIZ_FRONTEND.md](/home/lu3rf3l/PI5-EntrePaginas/docs/requirements/README_QUIZ_FRONTEND.md)
-- Banco de dados: [README_DATABASE.md](/home/lu3rf3l/PI5-EntrePaginas/docs/requirements/README_DATABASE.md)
+- Contrato geral da API: [README.md](../../README.md)
+- Google Books no frontend: [README_GOOGLE_BOOKS_FRONTEND.md](./README_GOOGLE_BOOKS_FRONTEND.md)
+- Quiz no frontend: [README_QUIZ_FRONTEND.md](./README_QUIZ_FRONTEND.md)
+- Banco de dados: [README_DATABASE.md](./README_DATABASE.md)
