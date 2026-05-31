@@ -3,6 +3,7 @@ import { ref, onMounted, nextTick } from 'vue'
 import { onBeforeRouteLeave, useRoute, useRouter } from 'vue-router'
 import Navbar from '@/components/Navbar.vue'
 import { chatService, type ChatMessage } from '@/services'
+import { getBookPlaceholderCover } from '@/utils/bookTaxonomy'
 
 const router = useRouter()
 const route = useRoute()
@@ -239,9 +240,9 @@ function handleKeydown(event: KeyboardEvent) {
                     </div>
                   </template>
                   <template v-else>
-                    <!-- Capa do livro (quando disponível via Google Books) -->
-                    <div v-if="book.coverUrl" class="book-cover-wrapper">
-                      <img :src="book.coverUrl" :alt="book.title" class="book-cover" />
+                    <!-- Capa do livro -->
+                    <div class="book-cover-wrapper">
+                      <img :src="book.coverUrl || getBookPlaceholderCover(book)" :alt="book.title" class="book-cover" />
                     </div>
 
                     <div class="book-info">

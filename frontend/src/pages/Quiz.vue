@@ -8,6 +8,7 @@ import {
   type QuizFinishResponse,
   type QuizQuestion,
 } from '@/services'
+import { getBookPlaceholderCover } from '@/utils/bookTaxonomy'
 
 const router = useRouter()
 const backgroundImage = `url(${fundoImg})`
@@ -213,14 +214,10 @@ onMounted(() => {
             class="recommendation"
           >
             <img
-              v-if="rec.coverUrl"
-              :src="rec.coverUrl"
+              :src="rec.coverUrl || getBookPlaceholderCover(rec)"
               :alt="`Capa de ${rec.title}`"
               class="recommendation__cover"
             />
-            <div v-else class="recommendation__cover recommendation__cover--empty">
-              <span>Sem capa</span>
-            </div>
             <div class="recommendation__body">
               <h2 class="recommendation__title">{{ rec.title }}</h2>
               <p v-if="rec.author" class="recommendation__author">

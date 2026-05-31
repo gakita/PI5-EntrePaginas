@@ -4,6 +4,7 @@
   import fundoImg from '@/assets/Fundo_Catalogo.jpg'
   import Navbar from '@/components/Navbar.vue'
   import { catalogService, favoritesService, type CatalogBook } from '@/services'
+  import { getBookPlaceholderCover } from '@/utils/bookTaxonomy'
 
   const route = useRoute()
   const router = useRouter()
@@ -23,7 +24,7 @@
 
   const bookDetailsCacheKey = 'entre-paginas:book-details'
   const backgroundImage = `url(${fundoImg})`
-  const coverImage = computed(() => `url(${book.value?.coverUrl || fundoImg})`)
+  const coverImage = computed(() => `url(${book.value?.coverUrl || (book.value ? getBookPlaceholderCover(book.value) : '') || fundoImg})`)
   const title = computed(() => book.value?.title || 'Livro não encontrado')
   const author = computed(() => book.value?.author || 'Autor desconhecido')
   const synopsis = computed(() => book.value?.synopsis || 'Sinopse indisponível para este livro.')
