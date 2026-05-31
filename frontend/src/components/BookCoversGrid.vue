@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import type { CatalogBook } from '@/services'
+import { getBookPlaceholderCover } from '@/utils/bookTaxonomy'
 
 const props = withDefaults(defineProps<{
   books?: CatalogBook[]
@@ -16,7 +17,7 @@ const props = withDefaults(defineProps<{
 
 const emit = defineEmits<{
   pageChange: [page: number]
-}>()
+ }>()
 
 const bookDetailsCacheKey = 'entre-paginas:book-details'
 
@@ -39,7 +40,7 @@ const bookCards = computed(() => {
       book,
       title: book.title || 'Título indisponível',
       author: book.author || '',
-      coverUrl: book.coverUrl || '',
+      coverUrl: book.coverUrl || getBookPlaceholderCover(book),
       to: book.googleBooksId ? `/livros/${encodeURIComponent(book.googleBooksId)}` : '',
       isPlaceholder: false,
       sensitiveContent: !!book.sensitiveContent,

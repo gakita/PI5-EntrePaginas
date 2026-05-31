@@ -11,6 +11,7 @@ import {
   favoritesService, 
   type CatalogBook
 } from '@/services'
+import { getBookPlaceholderCover } from '@/utils/bookTaxonomy'
 
 const router = useRouter()
 const auth = useAuthStore()
@@ -457,7 +458,7 @@ function goToBook(id: string | null) {
                 >
                   <div class="book-card__cover-wrapper">
                     <v-img
-                      :src="book.coverUrl || '/images/categories/generic-book.svg'"
+                      :src="book.coverUrl || getBookPlaceholderCover(book)"
                       class="book-card__cover"
                       cover
                     >
