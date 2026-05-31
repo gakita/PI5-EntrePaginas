@@ -1,675 +1,332 @@
-# Entre Páginas — Sistema de Recomendação de Leitura com IA
+# 📚 Entre Páginas — Plataforma Inteligente de Recomendação Literária com IA
 
-Projeto desenvolvido para a disciplina de Projeto Integrador V (PUC-Campinas). O sistema utiliza Inteligência Artificial (Google Gemini) para recomendar livros, HQs e mangás com base no perfil e preferências do usuário.
-
----
-
-### 🗄️ Como conectar no banco de dados (Oracle SQL Developer)
-
-1. **Baixe a extensão** ou o aplicativo Oracle SQL Developer.
-2. **Adicione uma nova conexão** (nome ao seu critério).
-3. **Username e Senha:** Disponíveis nos canais internos (Zap/Discord).
-4. **Connection Type:** Selecione **Cloud Wallet**.
-5. **Arquivo de Wallet:** Selecione o arquivo `Wallet_ProjetoIntegradorV.zip`.
-   - ⚠️ **AVISO:** NUNCA suba este arquivo para o GitHub!
-6. **Service:** Se solicitado, utilize a opção **HIGH**.
+> **Projeto Integrador V (PUC-Campinas)**
+> Uma plataforma robusta e de alta performance que utiliza Inteligência Artificial para recomendar livros, HQs e mangás de forma personalizada, adaptando-se em tempo real ao perfil, histórico e preferências de leitura do usuário.
 
 ---
 
-# Backend Node.js + Express com Oracle — Entre Páginas
+<div align="center">
 
-Backend em JavaScript com Node.js + Express, autenticação via JWT, persistência no Oracle Database e chat de recomendação com IA usando Google Gemini.
+[![Node.js](https://img.shields.io/badge/Node.js-18+-6DB33F?style=for-the-badge&logo=node.js&logoColor=white)](https://nodejs.org/)
+[![Express](https://img.shields.io/badge/Express-5.1-000000?style=for-the-badge&logo=express&logoColor=white)](https://expressjs.com/)
+[![Oracle Autonomous DB](https://img.shields.io/badge/Oracle_Database-Cloud-F80000?style=for-the-badge&logo=oracle&logoColor=white)](https://www.oracle.com/database/)
+[![Google Gemini](https://img.shields.io/badge/Google_Gemini-2.5_Flash-4285F4?style=for-the-badge&logo=google-gemini&logoColor=white)](https://ai.google.dev/)
+[![Vue.js 3](https://img.shields.io/badge/Vue.js_3-Latest-4FC08D?style=for-the-badge&logo=vuedotjs&logoColor=white)](https://vuejs.org/)
+[![Vuetify 4](https://img.shields.io/badge/Vuetify_4-Framework-1867C0?style=for-the-badge&logo=vuetify&logoColor=white)](https://vuetifyjs.com/)
+[![TailwindCSS](https://img.shields.io/badge/Tailwind_CSS-4.2-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
+[![Puppeteer](https://img.shields.io/badge/Puppeteer-Automated_Tests-40B5A4?style=for-the-badge&logo=puppeteer&logoColor=white)](https://pptr.dev/)
 
-Backend em JavaScript com Node.js + Express, autenticação via JWT, persistência no Oracle Database e chat de recomendação com IA usando Google Gemini.
+</div>
 
 ---
 
-## Requisitos
+## 🚀 Principais Diferenciais e Funcionalidades
 
-- Node.js 18+ instalado
-- Wallet do Oracle Autonomous Database disponível localmente (descompactada)
-- Arquivo `.env` configurado a partir de `.env.example`
+O **Entre Páginas** oferece uma experiência literária imersiva e inteligente por meio das seguintes inovações:
+
+*   🤖 **Recomendação Literária Contextualizada com IA**: Chatbot integrado à API do Google Gemini que gera sugestões personalizadas em tempo real com base no perfil de preferências e no histórico de leitura do usuário salvo no banco de dados.
+*   🧠 **Quiz Adaptativo Dinâmico (RF10)**: Um questionário interativo inteligente de até 8 perguntas que inicia com critérios gerais e se adapta dinamicamente nas etapas seguintes utilizando IA, cruzando as escolhas do usuário com o acervo literário.
+*   🛡️ **Arquitetura de Catálogo Resiliente com Proxy**: Mitigação automática de bloqueios ou rate limits (Erro HTTP 429) da API pública do Google Books. O backend conta com um catálogo local curado de alta fidelidade e uma rota de proxy (`GET /books/:id`) que unifica e garante o carregamento estável do catálogo e dos detalhes.
+*   🖼️ **Fallbacks Inteligentes de Imagens**: Lógica avançada de imagens no frontend para exibir capas dinâmicas e esteticamente agradáveis hospedadas no Unsplash caso a API do Google Books não forneça capas válidas.
+*   ⚠️ **Classificação de Conteúdo Sensível (RF11)**: Detecção automática de temas sensíveis (violência, saúde mental, etc.) pela IA, aplicando tags de aviso e ocultando visualmente capas/detalhes no frontend até a confirmação de exibição pelo usuário.
+*   🔐 **Autenticação JWT Segura e Rate Limiting**: Sessão protegida via token JWT único, middlewares de segurança (Helmet) e controle estrito de requisições por IP nas rotas sensíveis e de autenticação.
+*   📬 **Recuperação de Senha Integrada**: Fluxo completo de redefinição de credenciais via e-mail utilizando SMTP e suporte local para testes com o Mailpit.
+*   📸 **Automação Puppeteer para Slides**: Suíte automatizada capaz de rodar os fluxos da plataforma de ponta a ponta e exportar 15 capturas de tela em alta definição para slides de apresentação.
 
 ---
 
-## Como rodar
+## 📊 Arquitetura de Software e Fluxos de Processo
 
-### 1. Instale as dependências
+Abaixo estão detalhados os fluxogramas que descrevem a engenharia por trás das integrações de IA, resiliência de dados e fallbacks de interface da plataforma.
 
-```bash
-npm install
+### 1. Fluxo de Chat de Recomendação Literária com IA
+O chatbot utiliza a API do Google Gemini com um histórico contextualizado para retornar recomendações de alta qualidade, enriquecendo-as secundariamente com a API do Google Books.
+
+```mermaid
+graph TD
+    A[Usuário envia mensagem no Chat] --> B[Backend recebe requisição]
+    B --> C[Busca Histórico no Oracle DB + Preferências + Histórico de Leitura]
+    C --> D[Envia prompt contextualizado ao Google Gemini]
+    D --> E[Gemini responde com chat + recomendações em JSON]
+    E --> F[Consulta API do Google Books para enriquecimento de metadados]
+    F --> G{Capa encontrada no Google Books?}
+    G -- Sim --> H[Atribui URL da capa oficial]
+    G -- Não --> I[Atribui null -> Aplicado Mapeamento Local de Capa Genérica]
+    H --> J[Salva Histórico no Oracle DB]
+    I --> J
+    J --> K[Retorna JSON completo para o Frontend]
 ```
 
-### 2. Configure o arquivo `.env`
+### 2. Quiz Adaptativo de Recomendação (RF10)
+A dinâmica inteligente do quiz começa com perguntas estáticas e se adapta de forma dinâmica nas rodadas subsequentes, cruzando as respostas com a inteligência do Gemini.
+
+```mermaid
+graph TD
+    A[Frontend inicia o quiz] --> B[Backend inicializa sessão no Oracle DB]
+    B --> C[Entrega perguntas padrão predefinidas]
+    C --> D[Usuário responde no Frontend]
+    D --> E[Frontend envia respostas ao backend]
+    E --> F{Respondido < 3 perguntas?}
+    F -- Sim --> G[Entrega próxima pergunta padrão]
+    G --> D
+    F -- Não --> H{Total de perguntas == 8?}
+    H -- Não --> I[Google Gemini gera pergunta adaptativa baseada nas anteriores]
+    I --> D
+    H -- Sim --> J[Libera opção de Finalizar]
+    J --> K[Frontend solicita encerramento do Quiz]
+    K --> L[Gemini infere preferências finais + gera recomendações de livros]
+    L --> M[Salva preferências no perfil + Retorna livros recomendados]
+```
+
+### 3. Resolução e Fallback de Capas de Livros
+Para garantir que a plataforma nunca quebre o visual por falta de imagens na API do Google Books, implementamos uma lógica de fallbacks robusta no frontend utilizando os novos placeholders de categoria.
+
+```mermaid
+graph TD
+    A[Carregar Livro no Frontend] --> B{Tem coverUrl válido do Google Books?}
+    B -- Sim --> C[Exibe capa oficial da editora]
+    B -- Não --> D[Executa getBookPlaceholderCover]
+    D --> E{Identifica tipo ou palavra-chave?}
+    E -- Manga/Mangá --> F[Usa /images/categories/mangaPlaceholder.png]
+    E -- HQ/Quadrinhos --> G[Usa /images/categories/hqPlaceholder.png]
+    E -- Gênero Específico? <br> Terror, Ficção, Distopia, Fantasia, Romance, etc. --> H[Usa <genero>Placeholder.png correspondente]
+    E -- Não mapeado --> I[Usa /images/categories/generic-book.svg]
+```
+
+---
+
+## ⚙️ Configuração do Ambiente e Instalação
+
+### Pré-requisitos
+
+*   **Node.js**: Versão 18 ou superior instalada localmente.
+*   **Banco de Dados**: Oracle Autonomous Database (ou banco compatível) configurado.
+*   **Wallet do Oracle Autonomous Database** disponível localmente.
+*   **Chave de API do Google Gemini**.
+
+### 1. Preparação das Variáveis de Ambiente
+Copie o modelo de ambiente padrão na raiz do projeto:
 
 ```bash
 cp .env.example .env
 ```
+*(No Windows PowerShell, execute: `Copy-Item .env.example .env`)*
 
-No PowerShell, use:
+Preencha os valores reais no arquivo `.env` gerado.
 
-```powershell
-Copy-Item .env.example .env
-```
+---
 
-Preencha o `.env` com os valores reais. O `.env.example` pode ficar no GitHub como modelo — o `.env` fica só na sua máquina.
+### 🗄️ Conexão e Configuração do Banco de Dados Oracle
 
-### 3. Descompacte o Oracle Wallet
+Para conectar ao Autonomous Database em nuvem, siga os passos abaixo:
 
-O Wallet precisa estar em uma **pasta**, não em `.zip`:
+1.  **Baixe a extensão** ou utilize o software **Oracle SQL Developer**.
+2.  **Credenciais de Acesso**: Username e Senha estão disponíveis em nossos canais internos confidenciais.
+3.  **Tipo de Conexão**: Selecione a opção **Cloud Wallet**.
+4.  **Arquivo da Wallet**: Utilize o arquivo criptografado `Wallet_ProjetoIntegradorV.zip`.
+    *   ⚠️ **IMPORTANTE:** NUNCA faça o upload ou commit deste arquivo no GitHub!
+5.  **Serviço (Service)**: Selecione a opção **HIGH** para garantir máxima performance.
+
+#### Preparando a Wallet localmente para o Backend:
+Descompacte a Wallet do Oracle Database em uma pasta específica:
 
 ```bash
 cd secrets/oracle-wallet
 unzip Wallet_ProjetoIntegradorV.zip -d Wallet_ProjetoIntegradorV
 ```
 
-### 4. Crie as tabelas do banco
+Crie a estrutura de tabelas executando o comando de setup na raiz do projeto:
 
 ```bash
 npm run db:setup
 ```
+*Esse comando irá verificar e criar todas as tabelas necessárias (`CONVERSAS`, `PREFERENCIAS_USUARIO`, `SUGESTOES_CONVERSA`, `FAVORITOS`, `QUIZ_SESSOES`, `PASSWORD_RESET_TOKENS`).*
 
-Esse comando prepara as tabelas usadas pelo backend, incluindo chat, preferencias, sugestoes, favoritos, quiz e recuperacao de senha.
+---
 
-### 5. Inicie a aplicação completa
+### 📬 Executando o Mailpit (SMTP de Testes Local)
 
-Para subir backend e frontend com um único comando, rode na raiz do projeto:
+O Mailpit captura de forma transparente todos os e-mails enviados pelo backend (recuperação de senha e confirmação de cadastro) sem disparar e-mails para caixas postais reais.
 
-```bash
-npm run dev:all
-```
-
-Esse comando inicia:
-
-- backend em `http://localhost:3000`
-- frontend em `http://localhost:3001`
-
-Para encerrar os dois processos, use `Ctrl+C` no terminal.
-
-### 6. Inicie apenas a API
-
-```bash
-npm run dev
-```
-
-### 7. Inicie apenas o frontend
-
-```bash
-cd frontend
-npm run dev
-```
-
-### 8. Como rodar o Mailpit (SMTP de testes local)
-
-O Mailpit captura todos os e-mails enviados pelo backend (recuperação de senha e confirmação de cadastro) sem precisar enviá-los de fato para caixas reais.
-
-Você pode rodá-lo localmente de duas formas:
-
-**Opção A: Usando Docker (Recomendado)**
+#### Opção A: Usando Docker (Recomendado)
 ```bash
 docker run -d --name mailpit -p 1025:1025 -p 8025:8025 axllent/mailpit
 ```
 
-**Opção B: Instalação Manual (sem Docker)**
-* **Windows (via Scoop)**: `scoop install mailpit` e depois execute `mailpit`
-* **macOS (via Homebrew)**: `brew install mailpit` e depois execute `mailpit`
-* **Download direto**: Baixe a versão correspondente ao seu sistema em [GitHub Releases](https://github.com/axllent/mailpit/releases), descompacte e execute o executável `mailpit`.
+#### Opção B: Instalação Manual (sem Docker)
+*   **Windows (via Scoop)**: `scoop install mailpit` e depois execute `mailpit`
+*   **macOS (via Homebrew)**: `brew install mailpit` e depois execute `mailpit`
+*   **Download direto**: Baixe a versão correspondente no [GitHub Releases do Mailpit](https://github.com/axllent/mailpit/releases), descompacte e execute o executável.
 
-Após iniciar o Mailpit, acesse a interface web de leitura de e-mails em: [http://localhost:8025](http://localhost:8025).
-
----
-
-## Scripts disponíveis
-
-| Comando | Descrição |
-|---|---|
-| `npm run dev` | Inicia o servidor em modo desenvolvimento |
-| `npm run dev:all` | Inicia backend e frontend juntos, com logs prefixados |
-| `npm start` | Inicia o servidor em modo produção |
-| `npm run seed:user` | Cria/atualiza um usuário de teste no banco |
-| `npm run db:setup` | Cria/verifica todas as tabelas principais do projeto |
-| `npm run db:chat` | Cria a tabela `CONVERSAS` no Oracle |
-| `npm run db:preferences` | Cria as tabelas `PREFERENCIAS_USUARIO`, `SUGESTOES_CONVERSA` e `FAVORITOS` |
-| `npm run db:quiz` | Cria a tabela `QUIZ_SESSOES` no Oracle |
-| `npm test` | Roda testes unitários com o runner nativo do Node.js |
-| `npm run test:chat` | Roda todos os testes do chat (requer servidor no ar) |
-| `npm run test:quiz` | Roda os cenários HTTP completos do quiz (requer servidor no ar) |
-| `npm run test:quiz:run` | Cria/verifica tabela, sobe a API se necessário e roda os cenários do quiz |
-| `npm run chat:play` | Inicia o chat interativo no terminal |
-| `npm run screenshots` | Executa o script de automação Puppeteer para tirar as 15 capturas de tela de todas as funcionalidades para os slides de apresentação |
-
-### Scripts do frontend
-
-Rode os comandos abaixo dentro da pasta `frontend/`.
-
-| Comando | Descrição |
-|---|---|
-| `npm run dev` | Inicia o frontend em modo desenvolvimento |
-| `npm run build` | Roda type-check e gera build de produção |
-| `npm run type-check` | Valida tipos Vue/TypeScript |
-| `npm run test` | Roda testes do frontend com Vitest |
-| `npm run lint` | Roda ESLint |
+Acesse o painel web para visualização dos e-mails em: [http://localhost:8025](http://localhost:8025).
 
 ---
 
-## Inserir usuário de teste
+### ⚡ Inicialização da Aplicação
+
+#### 1. Instale as dependências na raiz e na pasta do frontend:
+```bash
+npm install
+cd frontend && npm install && cd ..
+```
+
+#### 2. Execute a aplicação completa (Backend + Frontend) em modo de desenvolvimento:
+```bash
+npm run dev:all
+```
+*   **Backend** disponível em: `http://localhost:3000`
+*   **Frontend** disponível em: `http://localhost:3001` (ou na porta atribuída pelo Vite)
+
+---
+
+## 🛠️ Scripts Disponíveis no Ecossistema
+
+### Scripts do Backend (Raiz do Projeto)
+
+| Comando | Descrição |
+|---|---|
+| `npm run dev` | Inicia o servidor do backend em modo desenvolvimento. |
+| `npm run dev:all` | Inicia o backend e o frontend simultaneamente com logs unificados. |
+| `npm start` | Inicia o servidor em ambiente de produção. |
+| `npm run seed:user` | Cria ou atualiza um usuário administrativo/teste no banco Oracle. |
+| `npm run db:setup` | Cria e verifica todas as tabelas principais do projeto de forma sequencial. |
+| `npm run db:chat` | Cria/verifica a tabela `CONVERSAS` no Oracle DB. |
+| `npm run db:preferences` | Cria/verifica as tabelas `PREFERENCIAS_USUARIO`, `SUGESTOES_CONVERSA` e `FAVORITOS`. |
+| `npm run db:quiz` | Cria/verifica a tabela `QUIZ_SESSOES` no Oracle DB. |
+| `npm test` | Executa os testes unitários integrados com o test runner nativo do Node.js. |
+| `npm run test:chat` | Executa os testes HTTP de fluxo de chat de recomendação com a API no ar. |
+| `npm run test:quiz` | Executa os cenários de teste do fluxo adaptativo de quiz com a API no ar. |
+| `npm run test:quiz:run` | Inicializa tabelas, sobe a API caso necessário e roda a suite de testes do quiz. |
+| `npm run chat:play` | Permite interagir e conversar com o chatbot diretamente pelo terminal de comandos. |
+| `npm run screenshots` | Executa a suite automatizada de capturas de tela do Puppeteer para slides de apresentação. |
+
+### Scripts do Frontend (Pasta `/frontend`)
+
+| Comando | Descrição |
+|---|---|
+| `npm run dev` | Inicializa o servidor Vite para o frontend local. |
+| `npm run build` | Valida tipos e compila a build de produção otimizada. |
+| `npm run type-check` | Executa a validação de tipos de compilador TypeScript/Vue. |
+| `npm run test` | Executa a suíte de testes unitários do frontend utilizando o Vitest. |
+| `npm run lint` | Analisa a qualidade de código utilizando ESLint. |
+
+---
+
+## 🔒 Arquitetura de Segurança, Autenticação e Resiliência
+
+### Mecanismo de Autenticação (JWT)
+*   A plataforma implementa autenticação baseada em tokens **JWT (JSON Web Tokens)** assinados digitalmente com `JWT_SECRET` e tempo de expiração (`JWT_EXPIRES_IN`).
+*   No frontend (Vue.js), as rotas protegidas são blindadas utilizando `meta.requiresAuth` no Vue Router.
+*   Usuários sem token ativo no `localStorage` são automaticamente interceptados e redirecionados para `/login`, enquanto usuários logados que tentam acessar `/login` ou `/register` são encaminhados para a Home (`/`).
+
+### Arquitetura de Resiliência do Catálogo
+Para anular completamente os limites severos de requisição da API do Google Books que geravam erros HTTP 429 nos navegadores dos clientes, implementamos uma resiliência robusta de três camadas:
+1.  **Catálogo Local de Alta Fidelidade**: O backend armazena uma base curada local contendo livros populares, HQs e mangás de diversos gêneros que servem como fallback transparente em caso de instabilidade na API pública.
+2.  **Proxy de API (`GET /books/:id`)**: O frontend nunca consome APIs externas diretamente. Todas as requisições por detalhes passam obrigatoriamente pela rota proxy `/books/:id` no backend, centralizando o tráfego sob a cota estável do servidor.
+3.  **Hospedagem Estética de Capas**: Imagens de fallback e placeholders do sistema são servidos através de CDN e conexões estáveis no Unsplash, garantindo carregamentos rápidos e visual livre de erros.
+
+### Segurança da API
+O backend Express aplica os seguintes middlewares de segurança na inicialização:
+*   `helmet()` para cabeçalhos de segurança HTTP.
+*   `express-rate-limit` global e controles estritos específicos para rotas sensíveis de cadastro e autenticação (`/auth/register`, `/auth/login`, `/auth/forgot-password`, `/auth/reset-password`).
+*   Configuração de payloads de requisição limitados a `10mb` via `JSON_BODY_LIMIT`.
+
+---
+
+## 🤖 Integração com Inteligência Artificial (Google Gemini)
+
+O ecossistema consome o modelo `gemini-2.5-flash-lite` (configurado via `GEMINI_MODEL`), estruturando prompts avançados que forçam respostas no formato JSON estruturado e tratam temas sensíveis na origem.
+
+### Fluxo de Criação de Conta e Cadastro
+O script `seed:user` facilita a inserção ágil de contas no banco para testes automatizados e demonstrações:
 
 ```bash
 npm run seed:user -- --email=admin@example.com --password=123456
 ```
-
-O script faz `MERGE`, então atualiza a senha se o email já existir.
-
----
-
-## Endpoints de Autenticação
-
-### Cadastrar usuário
-
-```http
-POST /auth/register
-Content-Type: application/json
-
-{
-  "name": "João",
-  "email": "joao@example.com",
-  "password": "123456"
-}
-```
-
-### Login
-
-```http
-POST /auth/login
-Content-Type: application/json
-
-{
-  "email": "admin@example.com",
-  "password": "123456"
-}
-```
-
-Retorna um `token` JWT. Use ele no header `Authorization: Bearer <token>` em todas as rotas protegidas.
-
-### Como a autenticação funciona hoje
-
-O projeto usa um JWT único, assinado com `JWT_SECRET` e expiração controlada por `JWT_EXPIRES_IN` (padrão: `1h`). Não há refresh token nesta versão.
-
-No frontend, as rotas protegidas usam `meta.requiresAuth` no Vue Router. Usuários sem token são redirecionados para `/login`; usuários autenticados que tentam acessar rotas de visitante, como `/login` e `/registrar`, são redirecionados para `/`.
-
-### Solicitar recuperacao de senha
-
-```http
-POST /auth/forgot-password
-Content-Type: application/json
-
-{
-  "email": "joao@example.com"
-}
-```
-
-Retorna sempre uma mensagem generica para nao revelar se o e-mail existe. Se o SMTP estiver configurado e o e-mail estiver cadastrado, envia um link/token para redefinir a senha.
-
-Antes de usar, crie a tabela:
-
-```bash
-npm run db:password-reset
-```
-
-### Redefinir senha
-
-```http
-POST /auth/reset-password
-Content-Type: application/json
-
-{
-  "token": "TOKEN_RECEBIDO_NO_EMAIL",
-  "newPassword": "novaSenha123"
-}
-```
-
-### Rota protegida (verificar token)
-
-```http
-GET /auth/me
-Authorization: Bearer SEU_TOKEN
-```
+*(O script realiza a operação de `MERGE` no OracleDB, garantindo a atualização segura caso o e-mail já exista).*
 
 ---
 
-## Chat de Recomendação com IA
+## 🛠️ Endpoints Principais da API
 
-O chat usa o **Google Gemini** para recomendar livros, HQs e mangás. Todas as rotas exigem autenticação JWT.
+Todas as rotas indicadas com 🔐 exigem o cabeçalho de autenticação: `Authorization: Bearer <token_jwt>`.
 
-### Fluxo geral
+### 🔑 Autenticação e Credenciais
+*   `POST /auth/register`: Cadastro de novo usuário.
+*   `POST /auth/login`: Login de credenciais (retorna Token JWT).
+*   🔐 `GET /auth/me`: Retorna os dados do usuário autenticado no momento.
+*   `POST /auth/forgot-password`: Solicita token de recuperação de senha por e-mail.
+*   `POST /auth/reset-password`: Redefine a senha utilizando o token recebido no e-mail.
 
-```
-Usuário envia mensagem
-    → Backend monta contexto (histórico + preferências + livros lidos da tabela AVALIACOES)
-    → Gemini gera recomendações em JSON
-    → Backend salva a conversa no Oracle
-    → Retorna resposta + lista de recomendações
-```
+### 💬 Chatbot de Recomendação
+*   🔐 `POST /chat/message`: Envia uma mensagem e recebe resposta com recomendações enriquecidas em JSON.
+*   🔐 `GET /chat/history`: Retorna o histórico de conversas salvo no Oracle.
+*   🔐 `DELETE /chat/history`: Limpa o histórico de mensagens.
+*   🔐 `POST /chat/close`: Encerra a sessão de chat, analisa gostos, salva as preferências inferidas no banco OracleDB e atualiza o perfil.
+*   🔐 `GET /chat/preferences` e `PUT /chat/preferences`: Gerenciamento manual do perfil de preferências literárias do usuário.
 
-### Endpoints do Chat
+### 🧠 Quiz Adaptativo (RF10)
+*   🔐 `POST /quiz/start`: Inicializa uma nova sessão de Quiz e entrega as primeiras perguntas gerais.
+*   🔐 `POST /quiz/answer`: Envia a resposta de uma questão e recebe a próxima pergunta (adaptativa a partir da 3ª rodada).
+*   🔐 `POST /quiz/finish`: Encerra o quiz, processa o perfil do usuário na IA e retorna as obras correspondentes.
 
-#### Enviar mensagem
-
-```http
-POST /chat/message
-Authorization: Bearer SEU_TOKEN
-Content-Type: application/json
-
-{
-  "message": "Me recomenda um mangá de fantasia!"
-}
-```
-
-**Resposta:**
-
-```json
-{
-  "reply": "Claro! Aqui vão algumas sugestões incríveis de mangá de fantasia:",
-  "recommendations": [
-    {
-      "title": "Fullmetal Alchemist",
-      "type": "mangá",
-      "author": "Hiromu Arakawa",
-      "authors": ["Hiromu Arakawa"],
-      "categories": ["Comics & Graphic Novels"],
-      "genres": ["Comics & Graphic Novels"],
-      "justification": "Uma história épica com alquimia, aventura e profundidade emocional.",
-      "sensitiveContent": true,
-      "coverUrl": "https://books.google.com/books/content?id=...",
-      "synopsis": "Neste mundo existem alquimistas, pessoas que estudam e realizam a arte da transmutação...",
-      "publishedDate": "2014",
-      "googleBooksId": "abc123",
-      "previewLink": "https://books.google.com/books?id=abc123",
-      "webReaderLink": "https://play.google.com/books/reader?id=abc123",
-      "embeddable": true,
-      "viewability": "PARTIAL"
-    },
-    {
-      "title": "Frieren: Beyond Journey's End",
-      "type": "mangá",
-      "author": "Kanehito Yamada",
-      "authors": [],
-      "categories": [],
-      "genres": [],
-      "justification": "Uma fantasia reflexiva e emocionante sobre o tempo e memória.",
-      "sensitiveContent": false,
-      "coverUrl": null,
-      "synopsis": null,
-      "publishedDate": null,
-      "googleBooksId": null,
-      "previewLink": null,
-      "webReaderLink": null,
-      "embeddable": false,
-      "viewability": null
-    }
-  ],
-  "messageCount": 2
-}
-```
-
-> O campo `sensitiveContent: true` indica que o item tem temas sensíveis (violência, saúde mental, etc.) — use isso no frontend para exibir um aviso de confirmação (RF11).
-> Os campos `authors`, `categories`, `genres`, `coverUrl`, `synopsis`, `publishedDate`, `googleBooksId`, `previewLink`, `webReaderLink`, `embeddable` e `viewability` vêm do Google Books quando o volume é encontrado.
-
-#### Testar metadados do Google Books
-
-```http
-GET /books/search?title=Duna&author=Frank%20Herbert
-```
-
-Essa rota simples consulta o Google Books pelo backend e retorna os mesmos campos usados para enriquecer as recomendações. Para testar visualmente, suba a API e abra:
-
-```text
-http://localhost:3000/google-books-test.html
-```
-
-Guias detalhados:
-
-- `docs/requirements/README_GOOGLE_BOOKS.md`: funcionamento da integração no backend
-- `docs/requirements/README_GOOGLE_BOOKS_FRONTEND.md`: como consumir esses campos no frontend
-
-#### Categorias da home
-
-```http
-GET /books/categories
-```
-
-Retorna a lista curada usada no carrossel da home:
-
-```json
-[
-  {
-    "slug": "fantasia",
-    "label": "Fantasia",
-    "imageUrl": "/images/categories/generic-book.svg",
-    "fallbackImageUrl": "/images/categories/generic-book.svg",
-    "googleBooksQuery": "subject:fantasy"
-  }
-]
-```
-
-Fluxo recomendado para o frontend:
-
-1. Buscar as categorias em `GET /books/categories`.
-2. Para cada categoria, buscar um item em `GET /books?category=...&limit=1`.
-3. Usar `coverUrl` do primeiro item como imagem do card.
-4. Se `coverUrl` vier `null`, usar `fallbackImageUrl`.
-
-#### Catalogo geral com filtros
-
-```http
-GET /books?search=harry%20potter&author=Rowling&category=fantasy&theme=magic&type=livro&page=1&limit=10
-```
-
-Essa rota consulta o Google Books, pagina os resultados e normaliza o payload para o frontend:
-
-```json
-{
-  "items": [
-    {
-      "googleBooksId": "abc123",
-      "title": "Harry Potter e a Pedra Filosofal",
-      "author": "J.K. Rowling",
-      "authors": ["J.K. Rowling"],
-      "type": "livro",
-      "categories": ["Fantasy / Wizards"],
-      "genres": ["Fantasy"],
-      "coverUrl": "https://books.google.com/books/content?id=abc123",
-      "synopsis": "Um jovem bruxo descobre seu destino.",
-      "publishedDate": "1997",
-      "previewLink": "https://books.google.com/books?id=abc123",
-      "webReaderLink": "https://play.google.com/books/reader?id=abc123",
-      "embeddable": true,
-      "viewability": "PARTIAL"
-    }
-  ],
-  "page": 1,
-  "limit": 10,
-  "totalItems": 42
-}
-```
-
-O campo `type` e inferido pelo backend:
-
-- `manga` quando houver indicios de manga
-- `hq` quando houver indicios de comics / graphic novel / quadrinhos
-- `livro` nos demais casos
-
-#### Avaliacoes do usuario
-
-As avaliacoes ficam no Oracle e sao vinculadas ao `googleBooksId` do item retornado pelo catalogo.
-
-```http
-GET /avaliacoes
-Authorization: Bearer SEU_TOKEN
-```
-
-```http
-POST /avaliacoes
-Authorization: Bearer SEU_TOKEN
-Content-Type: application/json
-
-{
-  "googleBooksId": "abc123",
-  "title": "Duna",
-  "rating": 5,
-  "comment": "Excelente."
-}
-```
-
-O `POST /avaliacoes` faz upsert: atualiza a avaliacao se o usuario ja avaliou aquele `googleBooksId`, ou cria uma nova caso contrario.
-
-#### Buscar histórico da conversa
-
-```http
-GET /chat/history
-Authorization: Bearer SEU_TOKEN
-```
-
-**Resposta:**
-
-```json
-{
-  "messages": [
-    { "role": "user",      "content": "Me recomenda um mangá de fantasia!", "timestamp": "2026-04-28T19:00:00.000Z" },
-    { "role": "assistant", "content": "Claro! Aqui vão algumas sugestões...", "timestamp": "2026-04-28T19:00:03.000Z" }
-  ]
-}
-```
-
-#### Limpar histórico (iniciar nova conversa)
-
-```http
-DELETE /chat/history
-Authorization: Bearer SEU_TOKEN
-```
-
-**Resposta:**
-
-```json
-{ "message": "Historico do chat limpo com sucesso." }
-```
-
-#### Encerrar Conversa (Salvar Histórico)
-
-O fluxo ideal não é apenas limpar o chat, mas **encerrá-lo**. Isso faz a IA analisar as mensagens trocadas, inferir os gostos do usuário e salvar essas preferências no banco. Também guarda o histórico de obras que foram sugeridas.
-
-```http
-POST /chat/close
-Authorization: Bearer SEU_TOKEN
-```
-
-**Resposta:**
-
-```json
-{
-  "message": "Conversa encerrada e dados salvos com sucesso.",
-  "suggestionsSaved": 3,
-  "preferencesUpdated": {
-    "genres": ["fantasia", "ficção científica"],
-    "types": ["mangá", "livro"],
-    "favoriteAuthors": ["Hiromu Arakawa"]
-  }
-}
-```
-
-#### Buscar e Atualizar Preferências
-
-As preferências do usuário (usadas para personalizar o chat) podem ser buscadas ou atualizadas manualmente pelo frontend (ex: na tela de Configurações do perfil).
-
-```http
-GET /chat/preferences
-Authorization: Bearer SEU_TOKEN
-```
-
-**Resposta:**
-
-```json
-{
-  "genres": ["fantasia", "terror"],
-  "types": ["livro"],
-  "favoriteAuthors": ["Stephen King"]
-}
-```
-
-```http
-PUT /chat/preferences
-Authorization: Bearer SEU_TOKEN
-Content-Type: application/json
-
-{
-  "genres": ["romance"],
-  "types": ["hq", "livro"],
-  "favoriteAuthors": ["Jane Austen"]
-}
-```
+### 📚 Catálogo e Avaliações
+*   `GET /books`: Retorna o catálogo geral com filtros de busca, paginação, tipo (HQ, Mangá, Livro) e mitigação local.
+*   `GET /books/:id`: Rota de proxy para retornar detalhes completos de uma obra de forma resiliente.
+*   🔐 `GET /avaliacoes` e `POST /avaliacoes`: Recupera ou envia avaliações (com nota de 1 a 5 e comentários) de livros específicos salvos no Oracle Database (operação de *upsert*).
 
 ---
 
-## Quiz Adaptativo de Recomendação
+## 🧪 Testes, Automação e Validação
 
-O quiz atende ao RF10: começa com perguntas objetivas genéricas e, depois das respostas iniciais, usa a IA para criar perguntas adaptativas até o limite de 8 perguntas. Todas as rotas exigem autenticação JWT.
-
-Guia detalhado para o frontend: [README_QUIZ_FRONTEND.md](docs/requirements/README_QUIZ_FRONTEND.md).
-
-Antes de usar o quiz, crie a tabela:
-
+### Testes do Backend
+Execute a suíte de testes unitários do Node.js:
 ```bash
-npm run db:quiz
+npm test
 ```
 
-### Fluxo geral
-
-```
-Frontend inicia o quiz
-    → Backend cria 3 perguntas genéricas
-    → Usuário responde uma por vez
-    → IA gera próximas perguntas adaptativas
-    → Usuário finaliza
-    → Backend infere preferências, salva opcionalmente, cruza com histórico de leitura (AVALIACOES) e retorna recomendações enriquecidas
-```
-
-### Iniciar quiz
-
-```http
-POST /quiz/start
-Authorization: Bearer SEU_TOKEN
-```
-
-**Resposta:**
-
-```json
-{
-  "sessionId": "9f0b9a6e-0d7c-4b52-8d6a-1c9e7a4c6d3a",
-  "maxQuestions": 8,
-  "questions": [
-    {
-      "id": "preferred_type",
-      "text": "Qual formato voce quer ler agora?",
-      "options": ["Livro", "HQ", "Manga", "Tanto faz"]
-    }
-  ],
-  "questionNumber": 1,
-  "canFinish": false
-}
-```
-
-### Responder pergunta
-
-```http
-POST /quiz/answer
-Authorization: Bearer SEU_TOKEN
-Content-Type: application/json
-
-{
-  "sessionId": "9f0b9a6e-0d7c-4b52-8d6a-1c9e7a4c6d3a",
-  "questionId": "preferred_type",
-  "answer": "Manga"
-}
-```
-
-Depois da terceira resposta, o backend passa a retornar uma pergunta adaptativa gerada pela IA.
-
-```json
-{
-  "sessionId": "9f0b9a6e-0d7c-4b52-8d6a-1c9e7a4c6d3a",
-  "answeredCount": 3,
-  "maxQuestions": 8,
-  "question": {
-    "id": "ai_4",
-    "text": "Voce prefere uma historia mais leve ou mais intensa?",
-    "options": ["Leve", "Intensa", "Reflexiva", "Com muita acao"]
-  },
-  "canFinish": true,
-  "isComplete": false
-}
-```
-
-### Finalizar quiz
-
-```http
-POST /quiz/finish
-Authorization: Bearer SEU_TOKEN
-Content-Type: application/json
-
-{
-  "sessionId": "9f0b9a6e-0d7c-4b52-8d6a-1c9e7a4c6d3a",
-  "savePreferences": true
-}
-```
-
-**Resposta:**
-
-```json
-{
-  "message": "Aqui estao algumas recomendacoes baseadas no seu quiz.",
-  "preferences": {
-    "genres": ["fantasia", "misterio"],
-    "types": ["manga"],
-    "favoriteAuthors": []
-  },
-  "recommendations": [],
-  "preferencesSaved": true
-}
-```
-
-### Testar o Quiz
-
-Com o servidor rodando (`npm run dev` em outro terminal), execute:
-
+Execute a suíte de integração de fluxos e validações completas de endpoints:
 ```bash
-npm run test:quiz -- --email=admin@example.com --password=123456
-```
-
-Para executar o fluxo completo em um comando, incluindo `db:quiz` e subida automática da API quando ela não estiver rodando:
-
-```bash
+npm run test:chat -- --email=admin@example.com --password=123456
 npm run test:quiz:run -- --email=admin@example.com --password=123456
 ```
 
-Se a tabela já existir e você quiser pular a etapa de banco:
-
+### Testes do Frontend
+Navegue até a pasta `/frontend` e execute a suíte de testes unitários do Vue.js/Vitest:
 ```bash
-npm run test:quiz:run -- --skip-db --email=admin@example.com --password=123456
+cd frontend
+npm run test
+npm run type-check
+npm run build
 ```
 
 ---
 
-## Testar o Chat
+## 📸 Automação de Capturas de Tela (Fotos dos Slides do TCC)
 
-Com o servidor rodando (`npm run dev` em outro terminal), execute:
+A plataforma possui uma suíte desenvolvida em **Puppeteer** criada especificamente para validar os fluxos funcionais e extrair capturas de tela em alta definição de todas as rotas e componentes:
 
 ```bash
-npm run test:chat -- --email=admin@example.com --password=123456
+npm run screenshots
 ```
 
-Isso roda **7 cenários** automaticamente:
-
-| Cenário | O que testa |
-|---|---|
-| 1 | Login e obtenção do token JWT |
-| 2 | Enviar mensagem e receber recomendações da IA |
-| 3 | Conversa com múltiplas mensagens (contexto) |
-| 4 | Buscar histórico salvo no banco Oracle |
-| 5 | Limpar histórico |
-| 6 | Nova conversa após limpeza |
-| 7 | Erros de validação (mensagem vazia, sem token, token inválido) |
+#### O script executa automaticamente as seguintes ações:
+1.  Popula o banco com dados de teste.
+2.  Preenche e executa o cadastro passo a passo do fluxo principal do usuário (RF09, RF11).
+3.  Efetua o Login de segurança.
+4.  Navega e captura imagens em alta definição do **Dashboard**, **Catálogo**, **Detalhes do Livro**, **Chatbot**, **Quiz Adaptativo**, **Sugestões** e **Favoritos**.
+5.  Exporta as 15 capturas de tela prontas para slides na pasta `/presentation_screenshots/` na raiz do projeto.
 
 ---
 
-## Implementação no Frontend (Vue.js)
+## 📂 Apêndice: Implementação de Referência (Vue.js)
 
-### 1. Serviço de Chat (`src/services/chatService.js`)
+Esta seção disponibiliza o código de integração de referência implementado no frontend para comunicação direta com as APIs estruturadas do backend.
 
-Crie um arquivo de serviço para centralizar todas as chamadas à API:
+<details>
+<summary><b>🛠️ Clique para expandir: Serviço de Integração do Chat (src/services/chatService.js)</b></summary>
 
 ```javascript
-// src/services/chatService.js
-
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
 /**
@@ -725,10 +382,12 @@ export async function clearHistory() {
 }
 ```
 
-### 2. Componente de Chat (`src/components/ChatBox.vue`)
+</details>
+
+<details>
+<summary><b>🛠️ Clique para expandir: Componente do ChatBox (src/components/ChatBox.vue)</b></summary>
 
 ```vue
-<!-- src/components/ChatBox.vue -->
 <template>
   <div class="chat-box">
     <!-- Histórico de mensagens -->
@@ -841,188 +500,23 @@ async function handleClear() {
 </script>
 ```
 
-### 3. Variável de Ambiente no Frontend
+</details>
 
-Crie um arquivo `.env` na raiz do projeto Vue com:
+<details>
+<summary><b>🛠️ Clique para expandir: Variáveis de Ambiente do Frontend</b></summary>
 
-```
+Crie o arquivo `.env` na raiz da pasta `frontend/` para definir a comunicação local com o backend:
+
+```env
 VITE_API_URL=http://localhost:3000
 ```
+*(Nota: Para ambientes de produção ou homologação, substitua pelo endereço IP ou DNS de deploy da sua API).*
 
-Em produção, troque pelo endereço real do backend.
-
-## 📊 Fluxogramas de Arquitetura e Processos
-
-Para melhor compreensão visual de como o sistema orquestra as integrações com IA, a resiliência de dados e a geração inteligente de conteúdo, detalhamos os fluxogramas abaixo:
-
-### 1. Fluxo de Chat de Recomendação Literária com IA
-O chatbot utiliza a API do Google Gemini com um histórico contextualizado para retornar recomendações de alta qualidade, enriquecendo-as secundariamente com a API do Google Books.
-
-```mermaid
-graph TD
-    A[Usuário envia mensagem no Chat] --> B[Backend recebe requisição]
-    B --> C[Busca Histórico no Oracle DB + Preferências + Histórico de Leitura]
-    C --> D[Envia prompt contextualizado ao Google Gemini]
-    D --> E[Gemini responde com chat + recomendações em JSON]
-    E --> F[Consulta API do Google Books para enriquecimento de metadados]
-    F --> G{Capa encontrada no Google Books?}
-    G -- Sim --> H[Atribui URL da capa oficial]
-    G -- Não --> I[Atribui null -> Aplicado Mapeamento Local de Capa Genérica]
-    H --> J[Salva Histórico no Oracle DB]
-    I --> J
-    J --> K[Retorna JSON completo para o Frontend]
-```
-
-### 2. Quiz Adaptativo de Recomendação (RF10)
-A dinâmica inteligente do quiz começa com perguntas estáticas e se adapta de forma dinâmica nas rodadas subsequentes, cruzando as respostas com a inteligência do Gemini.
-
-```mermaid
-graph TD
-    A[Frontend inicia o quiz] --> B[Backend inicializa sessão no Oracle DB]
-    B --> C[Entrega perguntas padrão predefinidas]
-    C --> D[Usuário responde no Frontend]
-    D --> E[Frontend envia respostas ao backend]
-    E --> F{Respondido < 3 perguntas?}
-    F -- Sim --> G[Entrega próxima pergunta padrão]
-    G --> D
-    F -- Não --> H{Total de perguntas == 8?}
-    H -- Não --> I[Google Gemini gera pergunta adaptativa baseada nas anteriores]
-    I --> D
-    H -- Sim --> J[Libera opção de Finalizar]
-    J --> K[Frontend solicita encerramento do Quiz]
-    K --> L[Gemini infere preferências finais + gera recomendações de livros]
-    L --> M[Salva preferências no perfil + Retorna livros recomendados]
-```
-
-### 3. Resolução e Fallback de Capas de Livros
-Para garantir que a plataforma nunca quebre o visual por falta de imagens na API do Google Books, implementamos uma lógica de fallbacks robusta no frontend utilizando os novos placeholders de categoria.
-
-```mermaid
-graph TD
-    A[Carregar Livro no Frontend] --> B{Tem coverUrl válido do Google Books?}
-    B -- Sim --> C[Exibe capa oficial da editora]
-    B -- Não --> D[Executa getBookPlaceholderCover]
-    D --> E{Identifica tipo ou palavra-chave?}
-    E -- Manga/Mangá --> F[Usa /images/categories/mangaPlaceholder.png]
-    E -- HQ/Quadrinhos --> G[Usa /images/categories/hqPlaceholder.png]
-    E -- Gênero Específico? <br> Terror, Ficção, Distopia, Fantasia, Romance, etc. --> H[Usa <genero>Placeholder.png correspondente]
-    E -- Não mapeado --> I[Usa /images/categories/generic-book.svg]
-```
+</details>
 
 ---
 
-## Variáveis de Ambiente do Backend
+## 👥 Equipe de Desenvolvimento (Grupo 25)
 
-| Variável | Descrição |
-|---|---|
-| `PORT` | Porta do servidor (padrão: 3000) |
-| `JWT_SECRET` | Chave secreta para assinar tokens JWT |
-| `JWT_EXPIRES_IN` | Tempo de expiração do token JWT unico usado pela API (padrao: `1h`) |
-| `JSON_BODY_LIMIT` | Limite do body JSON aceito pelo Express (padrao: `10mb`) |
-| `RATE_LIMIT_WINDOW_MS` | Janela do rate limit global em milissegundos (padrao: `900000`) |
-| `RATE_LIMIT_MAX` | Maximo de requisicoes por janela no limite global (padrao: `300`) |
-| `AUTH_RATE_LIMIT_MAX` | Maximo de requisicoes por janela nas rotas de autenticacao (padrao: `20`) |
-| `ORACLE_USER` | Usuário do Oracle Database |
-| `ORACLE_PASSWORD` | Senha do Oracle |
-| `ORACLE_CONNECT_STRING` | String de conexão (do tnsnames.ora) |
-| `ORACLE_CONFIG_DIR` | Caminho para a pasta do Wallet |
-| `ORACLE_WALLET_LOCATION` | Caminho para a pasta do Wallet |
-| `ORACLE_WALLET_PASSWORD` | Senha do Wallet |
-| `GEMINI_API_KEY` | API Key do Google Gemini |
-| `GEMINI_MODEL` | Modelo do Gemini (padrão: `gemini-2.5-flash-lite`) |
-| `GOOGLE_BOOKS_API_KEY` | API Key da Google Books API (Opcional, usado para enriquecimento do catálogo com capa, autores, gêneros, sinopse e links de preview) |
-| `SMTP_HOST` | Servidor SMTP para envio de recuperacao de senha |
-| `SMTP_PORT` | Porta SMTP (padrao: `587`) |
-| `SMTP_SECURE` | Use `true` para SMTP com TLS direto, geralmente porta `465` |
-| `SMTP_USER` | Usuario da conta SMTP |
-| `SMTP_PASS` | Senha/app password da conta SMTP |
-| `MAIL_FROM` | Remetente exibido nos e-mails |
-| `PASSWORD_RESET_FRONTEND_URL` | URL do frontend de redefinicao; o backend adiciona `?token=...` |
-| `PASSWORD_RESET_TOKEN_MINUTES` | Tempo de validade do token (padrao: `30`) |
-| `MAILPIT_HOST` | Endereço do Mailpit local (padrão: `127.0.0.1`) |
-| `MAILPIT_PORT` | Porta SMTP do Mailpit local (padrão: `1025`) |
-| `MAILPIT_ENABLED` | Ativa o envio duplicado para o Mailpit local (padrão: `true` no dev) |
-
----
-
-## Segurança da API
-
-O backend aplica os middlewares de segurança na inicialização do Express:
-
-- `helmet()` para headers de segurança HTTP.
-- `express-rate-limit` global para limitar volume de requisições.
-- `express-rate-limit` específico nas rotas públicas de autenticação (`/auth/register`, `/auth/login`, `/auth/forgot-password`, `/auth/reset-password`, `/auth/send-code`, `/auth/verify-code`).
-- `express.json({ limit: env.jsonBodyLimit })`, com limite padrão de `10mb`.
-
-As configurações principais ficam nas variáveis `JSON_BODY_LIMIT`, `RATE_LIMIT_WINDOW_MS`, `RATE_LIMIT_MAX` e `AUTH_RATE_LIMIT_MAX`.
-
----
-
-## Testes e Validação
-
-### Backend
-
-```bash
-npm test
-```
-
-Esse comando roda os testes JavaScript em `test/*.test.js`, incluindo controllers, services, catálogo, quiz, segurança da API e o script `dev:all`.
-
-### Frontend
-
-```bash
-cd frontend
-npm run test
-npm run type-check
-npm run build
-```
-
-Os testes do frontend usam Vitest. O teste atual cobre o guard de autenticação do Vue Router.
-
----
-
-## 📸 Automação de Capturas de Tela (Fotos dos Slides do TCC)
-
-O sistema possui uma suíte de automação em **Puppeteer** desenvolvida especificamente para testar e capturar prints em alta definição de todas as páginas e fluxos do projeto. 
-
-As imagens geradas são ideais para a elaboração de slides de apresentação de TCC e demonstração das funcionalidades.
-
-### Como rodar a automação:
-1. Certifique-se de que o backend e o frontend estão rodando em background (ou use o comando `npm run dev:all` na raiz do projeto).
-2. Execute o comando de automação na raiz do projeto:
-   ```bash
-   npm run screenshots
-   ```
-3. O script irá:
-   - Popular automaticamente o banco OracleDB com dados de teste.
-   - Navegar programaticamente por todo o fluxo de cadastro passo-a-passo (RF09, RF11).
-   - Efetuar o login.
-   - Navegar pelas páginas de **Dashboard**, **Catálogo**, **Detalhes do Livro**, **Chatbot com IA** (enviando mensagem e revelando recomendações sensíveis!), **Quiz Adaptativo**, **Sugestões da IA** e **Favoritos**.
-   - Gerar 15 arquivos de imagem em alta definição na pasta `/presentation_screenshots/` da raiz do seu projeto.
-
-*(Nota: Esta pasta foi removida do `.gitignore` para que você possa commitar as capturas facilmente no seu Git e compartilhar com o grupo!).*
-
----
-
-## 🛡️ Arquitetura de Catálogo Resiliente e Rota Proxy de Detalhes
-
-Devido aos limites severos de requisições (**HTTP 429 - Too Many Requests**) aplicados pela API pública do Google Books no lado do cliente (navegador), implementamos uma arquitetura de resiliência multicamadas para garantir o funcionamento 100% ininterrupto do sistema:
-
-1. **Catálogo Resiliente Local**: O backend possui uma lista curada de alta fidelidade de livros com múltiplos gêneros (Terror, Fantasia, Sci-Fi, Romance, HQs e Mangás). Se as chamadas externas falharem ou houver limitação de rede, o catálogo é servido a partir deste fallback estável de forma transparente.
-2. **Proxy de Detalhes de Livro (`GET /books/:id`)**: Anteriormente, o frontend fazia requisições diretas à API pública do Google Books por ID para carregar a página de detalhes, o que resultava em falhas 404 para livros do catálogo de fallback ou telas pretas. Agora, a busca passa obrigatoriamente pela nossa API `/books/:id` do backend, que busca no Google (usando a cota do servidor) ou serve o fallback local mapeado.
-3. **Imagens Resilientes via Unsplash**: Todas as capas de livros de fallback e favoritos usam URLs estéticas e estáveis hospedadas no Unsplash. Elas carregam instantaneamente no navegador do usuário, livre de rate limits ou erros de imagem quebrada (*"image not available"*).
-
----
-
-## Pendências e Decisões de Escopo
-
-Apesar de a base principal do backend e frontend estar implementada, os seguintes pontos ainda dependem de decisão de produto ou atualização de documentação externa:
-
-1. **Carrossel de Banners/Categorias (RF05)**
-   - A home atual não exibe o carrossel descrito no PDF. Isso foi tratado como decisão de design; reimplementar o RF05 deve ser uma tarefa separada.
-
-2. **PDF do projeto**
-   - O arquivo `Time_13_pdf-2.pdf` ainda precisa ser atualizado para refletir o código atual: Gemini padrão `gemini-2.5-flash-lite`, JWT único sem refresh token, comando `npm run db:setup`, tabela `FAVORITOS`, Helmet, rate limiting e payload `10mb`.
-
-3. **Refresh token**
-   - Não foi implementado nesta versão. O projeto usa JWT único com expiração por `JWT_EXPIRES_IN`, mantendo o fluxo de autenticação mais simples.
+*   **PUC-Campinas - Projeto Integrador V**
+*   Trabalho acadêmico desenvolvido em cooperação e alinhado aos padrões e requisitos estipulados no plano pedagógico da disciplina.
